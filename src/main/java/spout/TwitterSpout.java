@@ -21,6 +21,8 @@ package spout;
  */
 
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -54,14 +56,19 @@ public class TwitterSpout  extends BaseRichSpout {
     String consumerSecret;
     String accessToken;
     String accessTokenSecret;
+    ArrayList<Date> lastDate = new ArrayList<>();
+    double blockTimeInterval;
 //    String[] keyWords;
 
     public TwitterSpout(String consumerKey, String consumerSecret,
-                        String accessToken, String accessTokenSecret/*, String[] keyWords*/) {
+                        String accessToken, String accessTokenSecret,
+                        double blockTimeIntervalInHours /*, String[] keyWords*/) {
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.accessToken = accessToken;
         this.accessTokenSecret = accessTokenSecret;
+        lastDate.add(new Date());
+        blockTimeInterval = blockTimeIntervalInHours*60*60;
 //        this.keyWords = keyWords;
     }
 
@@ -129,10 +136,21 @@ public class TwitterSpout  extends BaseRichSpout {
     public void nextTuple() {
         Status ret = null;
         try {
-
             ret = queue.poll(10, TimeUnit.SECONDS);
             if (ret != null)  {
-                _collector.emit(new Values(ret));
+                Date tweetDate = ret.getCreatedAt();
+
+                Date lastDateTmp = lastDate.get(lastDate.size()-1);
+                long seconds = (tweetDate.getTime()-lastDateTmp.getTime())/1000;
+                if(seconds>blockTimeInterval)
+                {
+                    lastDate.add(tweetDate);
+                    _collector.emit(new Values(ret, lastDate, true));
+                }
+                else
+                {
+                    _collector.emit(new Values(ret, lastDate, false));
+                }
             }
 
         } catch (InterruptedException e) {
@@ -164,7 +182,7 @@ public class TwitterSpout  extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("tweet"));
+        declarer.declare(new Fields("tweet", "dates","blockEnd"));
     }
 
 
