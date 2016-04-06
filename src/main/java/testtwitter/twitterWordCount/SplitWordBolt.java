@@ -35,13 +35,13 @@ public class SplitWordBolt extends BaseRichBolt {
         String[] words = sentence_preprocessed.split(" ");
         for(String word : words){
             if(!word.equals("") && word.length()>4 && !word.startsWith("#"))
-                this.collector.emit(new Values(word));
+                this.collector.emit(new Values(word, "WordCount"));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word"));
+        declarer.declare(new Fields("word", "inputBolt"));
     }
 }

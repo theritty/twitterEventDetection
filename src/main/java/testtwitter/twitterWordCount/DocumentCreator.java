@@ -12,6 +12,7 @@ import org.apache.storm.shade.org.joda.time.DateTime;
 import org.apache.storm.shade.org.joda.time.Duration;
 import org.apache.storm.shade.org.joda.time.Instant;
 import org.apache.storm.shade.org.joda.time.Interval;
+import twitter4j.Status;
 
 import java.io.*;
 import java.util.*;
@@ -29,18 +30,20 @@ public class DocumentCreator extends BaseRichBolt{
     @Override
     public void execute(Tuple tuple) {
         ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
-        String fileName = dates.get(dates.size()-1) + ".txt";
-        String tweet = tuple.getStringByField("tweet");
+        String fileName = dates.get(dates.size()-1).toString() + ".txt";
+        Status tweet_pre = (Status) tuple.getValueByField( "tweet" );
+        String tweet = tweet_pre.getText();
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
+//        System.out.println("Writing to file " + fileName);
         writeToFile(fileName, tweet);
 
-        this.collector.emit(new Values(dates, blockEnd));
+        this.collector.emit(new Values(dates, blockEnd, "DocumentCreator"));
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("dates", "blockEnd"));
+        declarer.declare(new Fields("dates", "blockEnd", "inputBolt"));
     }
 
     public void writeToFile(String fileName, String tweet)
@@ -62,6 +65,6 @@ public class DocumentCreator extends BaseRichBolt{
 
     public void write(PrintWriter writer, String line) {
         writer.println(line);
-        System.out.println(line);
+//        System.out.println(line);
     }
 }

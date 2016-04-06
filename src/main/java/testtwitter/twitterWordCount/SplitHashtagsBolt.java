@@ -38,13 +38,13 @@ public class SplitHashtagsBolt extends BaseRichBolt {
                     "[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
 
             if(!word.equals("") && word.length()>4)
-                this.collector.emit(new Values(word));
+                this.collector.emit(new Values(word, "HashtagCount"));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word"));
+        declarer.declare(new Fields("word", "inputBolt"));
     }
 }
