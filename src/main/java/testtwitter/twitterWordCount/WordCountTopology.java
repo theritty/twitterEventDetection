@@ -23,6 +23,8 @@ public class WordCountTopology {
     private static final String CASS_BOLT_ID = "cassandraBolt";
     private static final String DOCUMENT_CREATOR = "document-creator";
     private static final String EVENT_DETECTOR_BOLT = "event-detector-bolt";
+    private static final String EVENT_DETECTOR_BOLT2 = "event-detector-bolt2";
+    private static final String EVENT_DETECTOR_BOLT3 = "event-detector-bolt3";
     private static final String EVENT_DETECTOR_MANAGER_BOLT = "event-detector-manager-bolt";
     private static final String EVENT_DETECTOR_MANAGER_BOLT2 = "event-detector-manager-bolt2";
     private static final String EVENT_DETECTOR_MANAGER_BOLT3 = "event-detector-manager-bolt3";
@@ -40,7 +42,7 @@ public class WordCountTopology {
     }
 
     public static void main(String[] args) throws Exception {
-        double timeInterval = 0.020;
+        double timeInterval = 0.003;
         TwitterSpout spout = new TwitterSpout(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, timeInterval);
         SplitWordBolt splitBolt = new SplitWordBolt();
         SplitHashtagsBolt splitHashtagsBolt = new SplitHashtagsBolt();
@@ -52,6 +54,7 @@ public class WordCountTopology {
         EventDetectorBolt eventDetectorBolt = new EventDetectorBolt();
         EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(3);
 
+        System.out.println("time interval " + timeInterval*60*60 + " & threshold " + 3);
 
         TopologyBuilder builder = new TopologyBuilder();
 
@@ -67,10 +70,9 @@ public class WordCountTopology {
 
 //        builder.setBolt( CASS_BOLT_ID, new CassBolt() ).shuffleGrouping( TWITTER_SPOUT_ID);
         builder.setBolt( DOCUMENT_CREATOR, documentCreator).shuffleGrouping(TWITTER_SPOUT_ID);
-        builder.setBolt( EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).globalGrouping(DOCUMENT_CREATOR);
-        builder.setBolt( EVENT_DETECTOR_MANAGER_BOLT2, eventDetectorManagerBolt).globalGrouping(COUNT_BOLT_ID);
-        builder.setBolt( EVENT_DETECTOR_MANAGER_BOLT3, eventDetectorManagerBolt).globalGrouping(COUNT_HASHTAG_BOLT_ID);
+        builder.setBolt( EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).globalGrouping(DOCUMENT_CREATOR).globalGrouping(COUNT_BOLT_ID).globalGrouping(COUNT_HASHTAG_BOLT_ID);
         builder.setBolt( EVENT_DETECTOR_BOLT, eventDetectorBolt,5).fieldsGrouping(EVENT_DETECTOR_MANAGER_BOLT, new Fields("key"));
+
 
         Config config = new Config();
 //        config.setMaxTaskParallelism(3);

@@ -4,10 +4,7 @@ import scala.util.parsing.combinator.testing.Str;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 
 /**
@@ -17,14 +14,14 @@ public class TFIDFCalculator {
     private List<List<String>> docs;
     private List<String> doc;
     private String term;
+    private UUID id = UUID.randomUUID();
 
-    TFIDFCalculator(ArrayList<String> files, String term, String currentFile)
-    {
-        readFiles(files, currentFile);
-        this.term = term;
-    }
 
     public void readFiles(ArrayList<String> fileList, String currentFile) {
+        if (docs == null)
+        {
+            docs = new ArrayList<List<String>>();
+        }
         for(String file : fileList)
         {
             List<String> new_list;
@@ -85,7 +82,12 @@ public class TFIDFCalculator {
     /**
      * @return the TF-IDF of term
      */
-    public double tfIdf() {
+    public double tfIdf(ArrayList<String> files, String term, String currentFile) {
+
+        docs = new ArrayList<List<String>>();
+        readFiles(files, currentFile);
+        this.term = term;
+
         return tf() * idf();
 
     }

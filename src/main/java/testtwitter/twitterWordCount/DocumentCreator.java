@@ -15,6 +15,9 @@ import org.apache.storm.shade.org.joda.time.Interval;
 import twitter4j.Status;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class DocumentCreator extends BaseRichBolt{
@@ -32,25 +35,29 @@ public class DocumentCreator extends BaseRichBolt{
         ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
         String fileName = dates.get(dates.size()-1).toString() + ".txt";
         Status tweet_pre = (Status) tuple.getValueByField( "tweet" );
+        int round = tuple.getIntegerByField("round");
         String tweet = tweet_pre.getText();
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
 //        System.out.println("Writing to file " + fileName);
         writeToFile(fileName, tweet);
-
-        this.collector.emit(new Values(dates, blockEnd, "DocumentCreator"));
+        this.collector.emit(new Values(dates, blockEnd, "DocumentCreator", round));
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("dates", "blockEnd", "inputBolt"));
+        declarer.declare(new Fields("dates", "blockEnd", "inputBolt", "round"));
     }
 
     public void writeToFile(String fileName, String tweet)
     {
+
+
         try {
-            PrintWriter writer;
-            writer = new PrintWriter(fileName );
+            PrintWriter writer = new PrintWriter(new FileOutputStream(
+                    new File(fileName),
+                    true /* append = true */));
+
             write(writer, tweet);
             writer.close();
 

@@ -25,16 +25,17 @@ public class EventDetectorBolt extends BaseRichBolt {
         ArrayList<String> dates = (ArrayList<String>)tuple.getValueByField("dates");
         String key = tuple.getStringByField("key");
         String type = tuple.getStringByField("type");
+        int round = tuple.getIntegerByField("round");
 
         ArrayList<Double> tfidfs = new ArrayList<>();
 
         for (String date: dates)
         {
-            TFIDFCalculator calculator = new TFIDFCalculator(dates,key,date);
-            tfidfs.add(calculator.tfIdf());
+            TFIDFCalculator calculator = new TFIDFCalculator();
+            tfidfs.add(calculator.tfIdf(dates,key,date));
         }
 
-        System.out.println("Tfidfs:::::::::::::::::::::...." + tfidfs.toString() );
+        System.out.println("Tfidfs:::::" + tfidfs.toString() + "for word " + key + " round " + round  );
     }
 
     @Override

@@ -57,6 +57,8 @@ public class TwitterSpout  extends BaseRichSpout {
     String accessToken;
     String accessTokenSecret;
     ArrayList<Date> lastDate = new ArrayList<>();
+    int round ;
+
     double blockTimeInterval;
 //    String[] keyWords;
 
@@ -67,8 +69,8 @@ public class TwitterSpout  extends BaseRichSpout {
         this.consumerSecret = consumerSecret;
         this.accessToken = accessToken;
         this.accessTokenSecret = accessTokenSecret;
-        lastDate.add(new Date());
         blockTimeInterval = blockTimeIntervalInHours*60*60;
+        round = 0;
 //        this.keyWords = keyWords;
     }
 
@@ -140,16 +142,28 @@ public class TwitterSpout  extends BaseRichSpout {
             if (ret != null)  {
                 Date tweetDate = ret.getCreatedAt();
 
-                Date lastDateTmp = lastDate.get(lastDate.size()-1);
-                long seconds = (tweetDate.getTime()-lastDateTmp.getTime())/1000;
-                if(seconds>blockTimeInterval)
+                Date lastDateTmp;
+                if(lastDate.size() == 0 )
                 {
                     lastDate.add(tweetDate);
-                    _collector.emit(new Values(ret, lastDate, true));
+                }
+
+                lastDateTmp = lastDate.get(lastDate.size() - 1);
+                long seconds = (tweetDate.getTime()-lastDateTmp.getTime())/1000;
+                if(seconds>blockTimeInterval )
+                {
+                    lastDate.add(tweetDate);
+                    if(lastDate.size() > 5) {
+                        _collector.emit(new Values(ret, lastDate, true, round++));
+                    }
+                    else
+                    {
+                        _collector.emit(new Values(ret, lastDate, false, round));
+                    }
                 }
                 else
                 {
-                    _collector.emit(new Values(ret, lastDate, false));
+                    _collector.emit(new Values(ret, lastDate, false, round));
                 }
             }
 
@@ -182,7 +196,7 @@ public class TwitterSpout  extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("tweet", "dates","blockEnd"));
+        declarer.declare(new Fields("tweet", "dates","blockEnd", "round"));
     }
 
 

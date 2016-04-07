@@ -17,6 +17,7 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
     private HashMap<String,Long> hashtagcount;
     private ArrayList<String> documents;
     private int threshold;
+    private UUID id = UUID.randomUUID();
 
     public EventDetectorManagerBolt(int threshold)
     {
@@ -39,14 +40,14 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
             String word = tuple.getStringByField("word");
             Long count = tuple.getLongByField("count");
             wordcount.put(word,count);
-//            System.out.println("word count for " + word + " " + count);
+//            System.out.println("word count for " + word + " " + count + " id " + id);
         }
         else if(inputBolt.equals("HashtagCount"))
         {
             String word = tuple.getStringByField("word");
             Long count = tuple.getLongByField("count");
             hashtagcount.put(word,count);
-//            System.out.println("word count for " + word + " " + count);
+//            System.out.println("word count for " + word + " " + count + " id " + id);
         }
         else //Document creator bolt
         {
@@ -54,8 +55,9 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
 
             if(blockEnd)
             {
-                System.out.println(", and it is blockend.. ");
+                System.out.println(", and it is blockend.. " + " id " + id);
                 ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
+                int round = tuple.getIntegerByField("round");
                 ArrayList<String> dateList = new ArrayList<>();
 
                 for (Date date : dates)
@@ -74,12 +76,12 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
 
                 for(String word : words)
                 {
-                    this.collector.emit(new Values(dateList, word, "word"));
+                    this.collector.emit(new Values(dateList, word, "word", round));
                 }
 
                 for(String hashtag : hashtags)
                 {
-                    this.collector.emit(new Values(dateList, hashtag, "hashtag"));
+                    this.collector.emit(new Values(dateList, hashtag, "hashtag", round));
                 }
             }
             else
@@ -137,6 +139,6 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("dates", "key", "type"));
+        declarer.declare(new Fields("dates", "key", "type", "round"));
     }
 }
