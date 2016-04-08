@@ -57,7 +57,6 @@ public class TFIDFCalculator {
     public double tf() {
         double result = 0;
         for (String word : doc) {
-            if(word == null) continue;
             if (term.equalsIgnoreCase(word) || word.equalsIgnoreCase("#" + term))
                 result++;
         }
@@ -67,7 +66,7 @@ public class TFIDFCalculator {
             System.out.println("tf Nan");
             return Double.MAX_VALUE;
         }
-        return result / doc.size() ;
+        return result / doc.size();
     }
 
     /**
@@ -77,7 +76,6 @@ public class TFIDFCalculator {
         double n = 0;
         for (List<String> doc : docs) {
             for (String word : doc) {
-                if(word == null) continue;
                 if (term.equalsIgnoreCase(word) || word.equalsIgnoreCase("#" + term)) {
                     n++;
                     break;
@@ -104,11 +102,12 @@ public class TFIDFCalculator {
         readFiles(files, currentFile);
 //        System.out.println("Files: " + files.toString());
 //        System.out.println("File: " + currentFile);
+        this.term = term;
+        System.out.print("Term: " + term);
 
         double tf = tf() ;
         double idf = idf();
-        System.out.println("Term: " + term + " tf: " + Double.toString(tf) +  " idf: " + Double.toString(idf) );
-        this.term = term;
+        System.out.println( " tf: " + Double.toString(tf) +  " idf: " + Double.toString(idf) );
 
         double result = tf * idf;
 
@@ -118,20 +117,6 @@ public class TFIDFCalculator {
     }
 
 
-
-//    public static void main(String[] args) {
-//
-//        List<String> doc1 = Arrays.asList("Lorem", "ipsum", "dolor", "ipsum", "sit", "ipsum");
-//        List<String> doc2 = Arrays.asList("Vituperata", "incorrupte", "at", "ipsum", "pro", "quo");
-//        List<String> doc3 = Arrays.asList("Has", "persius", "disputationi", "id", "simul");
-//        List<List<String>> documents = Arrays.asList(doc1, doc2, doc3);
-//
-//        TFIDFCalculator calculator = new TFIDFCalculator();
-//        double tfidf = calculator.tfIdf(doc1, documents, "ipsum");
-//        System.out.println("TF-IDF (ipsum) = " + tfidf);
-//
-//
-//    }
 
 
 }

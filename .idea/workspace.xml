@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9cc33c3-ae09-4a33-8836-2a9d15f8df83" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java" afterPath="$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java" />
     </list>
     <ignored path="storm-twitter.iws" />
@@ -40,8 +42,8 @@
       <file leaf-file-name="EventDetectorManagerBolt.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="20.0">
-              <caret line="63" column="17" selection-start-line="63" selection-start-column="17" selection-end-line="63" selection-end-column="17" />
+            <state vertical-scroll-proportion="3.2258065">
+              <caret line="54" column="0" selection-start-line="54" selection-start-column="0" selection-end-line="54" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -52,8 +54,8 @@
       <file leaf-file-name="TFIDFCalculator.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.36023915">
-              <caret line="69" column="34" selection-start-line="69" selection-start-column="34" selection-end-line="69" selection-end-column="34" />
+            <state vertical-scroll-proportion="0.2690583">
+              <caret line="58" column="33" selection-start-line="58" selection-start-column="33" selection-end-line="58" selection-end-column="33" />
               <folding />
             </state>
           </provider>
@@ -63,7 +65,7 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorBolt.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="38" column="43" selection-start-line="38" selection-start-column="43" selection-end-line="38" selection-end-column="43" />
+              <caret line="38" column="49" selection-start-line="38" selection-start-column="49" selection-end-line="38" selection-end-column="49" />
               <folding />
             </state>
           </provider>
@@ -93,7 +95,7 @@
         <entry file="file://$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="156" column="51" selection-start-line="156" selection-start-column="51" selection-end-line="156" selection-end-column="51" />
+              <caret line="155" column="42" selection-start-line="155" selection-start-column="42" selection-end-line="155" selection-end-column="42" />
               <folding />
             </state>
           </provider>
@@ -150,8 +152,6 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/main/java/cass/CassandraDao.java" />
-        <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java" />
-        <option value="$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java" />
         <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/ReportBolt.java" />
         <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/WordCountTopology.java" />
         <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/DocumentCreator.java" />
@@ -159,6 +159,8 @@
         <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/SplitWordBolt.java" />
         <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorBolt.java" />
         <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/WordCountBolt.java" />
+        <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java" />
+        <option value="$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java" />
         <option value="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java" />
       </list>
     </option>
@@ -932,7 +934,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java</url>
-          <line>112</line>
+          <line>111</line>
           <properties />
           <option name="timeStamp" value="5" />
         </line-breakpoint>
@@ -944,13 +946,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java</url>
-          <line>77</line>
+          <line>76</line>
           <properties />
           <option name="timeStamp" value="15" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java</url>
-          <line>69</line>
+          <line>68</line>
           <properties />
           <option name="timeStamp" value="17" />
         </line-breakpoint>
@@ -1297,28 +1299,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="20.0">
-          <caret line="63" column="17" selection-start-line="63" selection-start-column="17" selection-end-line="63" selection-end-column="17" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/ReportBolt.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="71" column="39" selection-start-line="71" selection-start-column="39" selection-end-line="71" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="156" column="51" selection-start-line="156" selection-start-column="51" selection-end-line="156" selection-end-column="51" />
           <folding />
         </state>
       </provider>
@@ -1355,14 +1339,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorBolt.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="38" column="43" selection-start-line="38" selection-start-column="43" selection-end-line="38" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/WordCountBolt.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1371,10 +1347,36 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorBolt.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="38" column="49" selection-start-line="38" selection-start-column="49" selection-end-line="38" selection-end-column="49" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="3.2258065">
+          <caret line="54" column="0" selection-start-line="54" selection-start-column="0" selection-end-line="54" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="155" column="42" selection-start-line="155" selection-start-column="42" selection-end-line="155" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.36023915">
-          <caret line="69" column="34" selection-start-line="69" selection-start-column="34" selection-end-line="69" selection-end-column="34" />
+        <state vertical-scroll-proportion="0.2690583">
+          <caret line="58" column="33" selection-start-line="58" selection-start-column="33" selection-end-line="58" selection-end-column="33" />
           <folding />
         </state>
       </provider>

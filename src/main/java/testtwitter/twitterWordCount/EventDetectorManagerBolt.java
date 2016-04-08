@@ -76,12 +76,16 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
 
                 for(String word : words)
                 {
-                    this.collector.emit(new Values(dateList, word, "word", round));
+                    if(word != null) {
+                        this.collector.emit(new Values(dateList, word, "word", round));
+                    }
                 }
 
                 for(String hashtag : hashtags)
                 {
-                    this.collector.emit(new Values(dateList, hashtag, "hashtag", round));
+                    if(hashtag != null) {
+                        this.collector.emit(new Values(dateList, hashtag, "hashtag", round));
+                    }
                 }
             }
             else
