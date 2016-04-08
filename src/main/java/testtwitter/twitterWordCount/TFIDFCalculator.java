@@ -57,6 +57,7 @@ public class TFIDFCalculator {
     public double tf() {
         double result = 0;
         for (String word : doc) {
+            if(word == null) continue;
             if (term.equalsIgnoreCase(word) || word.equalsIgnoreCase("#" + term))
                 result++;
         }
@@ -66,7 +67,7 @@ public class TFIDFCalculator {
             System.out.println("tf Nan");
             return Double.MAX_VALUE;
         }
-        return result / doc.size();
+        return result / doc.size() ;
     }
 
     /**
@@ -76,6 +77,7 @@ public class TFIDFCalculator {
         double n = 0;
         for (List<String> doc : docs) {
             for (String word : doc) {
+                if(word == null) continue;
                 if (term.equalsIgnoreCase(word) || word.equalsIgnoreCase("#" + term)) {
                     n++;
                     break;
@@ -102,10 +104,13 @@ public class TFIDFCalculator {
         readFiles(files, currentFile);
 //        System.out.println("Files: " + files.toString());
 //        System.out.println("File: " + currentFile);
-//        System.out.println("Term: " + term);
+
+        double tf = tf() ;
+        double idf = idf();
+        System.out.println("Term: " + term + " tf: " + Double.toString(tf) +  " idf: " + Double.toString(idf) );
         this.term = term;
 
-        double result = tf() * idf();
+        double result = tf * idf;
 
 //        System.out.println("---------------------------------");
         return result;

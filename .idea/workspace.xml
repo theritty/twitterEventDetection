@@ -5,17 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9cc33c3-ae09-4a33-8836-2a9d15f8df83" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java" afterPath="$PROJECT_DIR$/src/main/java/spout/TwitterSpout.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/DocumentCreator.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/DocumentCreator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorBolt.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorBolt.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/EventDetectorManagerBolt.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/ReportBolt.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/ReportBolt.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/SplitHashtagsBolt.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/SplitHashtagsBolt.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/SplitWordBolt.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/SplitWordBolt.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/WordCountBolt.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/WordCountBolt.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/WordCountTopology.java" afterPath="$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/WordCountTopology.java" />
     </list>
     <ignored path="storm-twitter.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -62,8 +52,8 @@
       <file leaf-file-name="TFIDFCalculator.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.59641254">
-              <caret line="101" column="24" selection-start-line="101" selection-start-column="24" selection-end-line="101" selection-end-column="24" />
+            <state vertical-scroll-proportion="0.36023915">
+              <caret line="69" column="34" selection-start-line="69" selection-start-column="34" selection-end-line="69" selection-end-column="34" />
               <folding />
             </state>
           </provider>
@@ -942,7 +932,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java</url>
-          <line>107</line>
+          <line>112</line>
           <properties />
           <option name="timeStamp" value="5" />
         </line-breakpoint>
@@ -954,13 +944,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java</url>
-          <line>76</line>
+          <line>77</line>
           <properties />
           <option name="timeStamp" value="15" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java</url>
-          <line>68</line>
+          <line>69</line>
           <properties />
           <option name="timeStamp" value="17" />
         </line-breakpoint>
@@ -1383,8 +1373,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/testtwitter/twitterWordCount/TFIDFCalculator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.59641254">
-          <caret line="101" column="24" selection-start-line="101" selection-start-column="24" selection-end-line="101" selection-end-column="24" />
+        <state vertical-scroll-proportion="0.36023915">
+          <caret line="69" column="34" selection-start-line="69" selection-start-column="34" selection-end-line="69" selection-end-column="34" />
           <folding />
         </state>
       </provider>
