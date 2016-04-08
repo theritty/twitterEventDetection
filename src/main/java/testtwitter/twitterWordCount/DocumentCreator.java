@@ -35,8 +35,8 @@ public class DocumentCreator extends BaseRichBolt{
         ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
         String fileName = dates.get(dates.size()-1).toString() + ".txt";
         Status tweet_pre = (Status) tuple.getValueByField( "tweet" );
-        int round = tuple.getIntegerByField("round");
-        String tweet = tweet_pre.getText();
+        long round = tuple.getLongByField("round");
+        String tweet = tweet_pre.getText().toLowerCase();
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
 //        System.out.println("Writing to file " + fileName);
@@ -51,8 +51,6 @@ public class DocumentCreator extends BaseRichBolt{
 
     public void writeToFile(String fileName, String tweet)
     {
-
-
         try {
             PrintWriter writer = new PrintWriter(new FileOutputStream(
                     new File(fileName),

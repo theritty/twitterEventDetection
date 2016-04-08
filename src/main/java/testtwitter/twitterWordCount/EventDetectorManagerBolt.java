@@ -57,7 +57,7 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
             {
                 System.out.println(", and it is blockend.. " + " id " + id);
                 ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
-                int round = tuple.getIntegerByField("round");
+                long round = tuple.getLongByField("round");
                 ArrayList<String> dateList = new ArrayList<>();
 
                 for (Date date : dates)

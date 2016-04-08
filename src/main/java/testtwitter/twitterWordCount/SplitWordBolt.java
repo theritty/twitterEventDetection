@@ -25,9 +25,8 @@ public class SplitWordBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         Status tweet = (Status) tuple.getValueByField( "tweet" );
-        String sentence = tweet.getText();
-//        HashtagEntity[] hashtags = tweet.getHashtagEntities();
-//        hashtags[0].getText();
+        String sentence = tweet.getText().toLowerCase();
+        long round = tuple.getLongByField("round");
 
         if(sentence.startsWith("I'm at ")) return;
         String sentence_preprocessed = sentence.replaceAll("[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
@@ -35,13 +34,13 @@ public class SplitWordBolt extends BaseRichBolt {
         String[] words = sentence_preprocessed.split(" ");
         for(String word : words){
             if(!word.equals("") && word.length()>4 && !word.startsWith("#"))
-                this.collector.emit(new Values(word, "WordCount"));
+                this.collector.emit(new Values(word, "WordCount", round));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word", "inputBolt"));
+        declarer.declare(new Fields("word", "inputBolt", "round"));
     }
 }

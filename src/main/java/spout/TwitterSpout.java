@@ -57,7 +57,7 @@ public class TwitterSpout  extends BaseRichSpout {
     String accessToken;
     String accessTokenSecret;
     ArrayList<Date> lastDate = new ArrayList<>();
-    int round ;
+    long round ;
 
     double blockTimeInterval;
 //    String[] keyWords;

@@ -60,17 +60,17 @@ public class WordCountTopology {
 
         builder.setSpout(TWITTER_SPOUT_ID, spout);
 
-        builder.setBolt(SPLIT_BOLT_ID, splitBolt).shuffleGrouping(TWITTER_SPOUT_ID);
-        builder.setBolt(COUNT_BOLT_ID, countBolt,5).fieldsGrouping(SPLIT_BOLT_ID, new Fields("word"));
+//        builder.setBolt(SPLIT_BOLT_ID, splitBolt).shuffleGrouping(TWITTER_SPOUT_ID);
+//        builder.setBolt(COUNT_BOLT_ID, countBolt,5).fieldsGrouping(SPLIT_BOLT_ID, new Fields("word"));
 //        builder.setBolt(REPORT_BOLT_ID, reportBolt).globalGrouping(COUNT_BOLT_ID);
 
         builder.setBolt(SPLIT_HASHTAG_BOLT_ID, splitHashtagsBolt).shuffleGrouping(TWITTER_SPOUT_ID);
         builder.setBolt(COUNT_HASHTAG_BOLT_ID, countHashtagBolt,5).fieldsGrouping(SPLIT_HASHTAG_BOLT_ID, new Fields("word"));
-//        builder.setBolt(REPORT_HASHTAG_BOLT_ID, reportHashtagBolt).globalGrouping(COUNT_HASHTAG_BOLT_ID);
+        builder.setBolt(REPORT_HASHTAG_BOLT_ID, reportHashtagBolt).globalGrouping(COUNT_HASHTAG_BOLT_ID);
 
 //        builder.setBolt( CASS_BOLT_ID, new CassBolt() ).shuffleGrouping( TWITTER_SPOUT_ID);
         builder.setBolt( DOCUMENT_CREATOR, documentCreator).shuffleGrouping(TWITTER_SPOUT_ID);
-        builder.setBolt( EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).globalGrouping(DOCUMENT_CREATOR).globalGrouping(COUNT_BOLT_ID).globalGrouping(COUNT_HASHTAG_BOLT_ID);
+        builder.setBolt( EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).globalGrouping(DOCUMENT_CREATOR)/*.globalGrouping(COUNT_BOLT_ID)*/.globalGrouping(COUNT_HASHTAG_BOLT_ID);
         builder.setBolt( EVENT_DETECTOR_BOLT, eventDetectorBolt,5).fieldsGrouping(EVENT_DETECTOR_MANAGER_BOLT, new Fields("key"));
 
 
