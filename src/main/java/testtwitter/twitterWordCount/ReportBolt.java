@@ -21,6 +21,7 @@ public class ReportBolt extends BaseRichBolt{
     private Date lastTime;
     private long writeInterval;
     private long round;
+    private int threshold;
 
     @Override
     public String toString() {
@@ -28,11 +29,12 @@ public class ReportBolt extends BaseRichBolt{
     }
 
 
-    ReportBolt(String fileName, long writeIntervalInSeconds)
+    ReportBolt(String fileName, long writeIntervalInSeconds, int threshold)
     {
         this.fileName = fileName;
         this.lastTime = new Date();
         this.writeInterval = writeIntervalInSeconds;
+        this.threshold = threshold;
         this.round = 0;
     }
 
@@ -88,7 +90,9 @@ public class ReportBolt extends BaseRichBolt{
                     }
             );
             for (Map.Entry<String,Long> e : entries) {
-                write(writer, e.getKey() + ":" + e.getValue());
+                if(e.getValue() >= threshold) {
+                    write(writer, e.getKey() + ":" + e.getValue());
+                }
             }
 
             write(writer, "------------------------");

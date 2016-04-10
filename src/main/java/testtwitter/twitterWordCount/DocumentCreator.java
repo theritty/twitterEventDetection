@@ -41,7 +41,9 @@ public class DocumentCreator extends BaseRichBolt{
 
 //        System.out.println("Writing to file " + fileName);
         writeToFile(fileName, tweet);
-        this.collector.emit(new Values(dates, blockEnd, "DocumentCreator", round));
+        if(blockEnd){
+            this.collector.emit(new Values(dates, blockEnd, "DocumentCreator", round));
+        }
     }
 
     @Override

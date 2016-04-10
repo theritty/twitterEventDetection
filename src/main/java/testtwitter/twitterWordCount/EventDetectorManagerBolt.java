@@ -39,14 +39,18 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
         {
             String word = tuple.getStringByField("word");
             Long count = tuple.getLongByField("count");
-            wordcount.put(word,count);
+            if(count >= threshold) {
+                wordcount.put(word, count);
+            }
 //            System.out.println("word count for " + word + " " + count + " id " + id);
         }
         else if(inputBolt.equals("HashtagCount"))
         {
             String word = tuple.getStringByField("word");
             Long count = tuple.getLongByField("count");
-            hashtagcount.put(word,count);
+            if(count >= threshold) {
+                hashtagcount.put(word, count);
+            }
 //            System.out.println("word count for " + word + " " + count + " id " + id);
         }
         else //Document creator bolt
@@ -73,6 +77,9 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
 
                 System.out.println("Lists are from manager Word:  " + words.toString());
                 System.out.println("Lists are from manager Hash:  " + hashtags.toString());
+
+                wordcount.clear();
+                hashtagcount.clear();
 
                 for(String word : words)
                 {

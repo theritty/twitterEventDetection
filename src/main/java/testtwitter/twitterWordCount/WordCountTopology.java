@@ -34,6 +34,8 @@ public class WordCountTopology {
     private static final String CONSUMER_SECRET = "bqXPvV4JFFwX8rRm9PfMGO25ZKiYlgIALijov31hTYllmhNVSo";
     private static final String ACCESS_TOKEN = "98180950-valFJ9XUpwrs0QUaco3nnQegx3ruQfABfhuOmeJvt";
     private static final String ACCESS_TOKEN_SECRET = "ZKtcJTCqsBWlQbsRDVWnENg9lEKQ8TKNR0tzy5pFVvssr";
+    private static final int COUNT_THRESHOLD = 10;
+    private static final double TIMEINTERVAL =  0.015;
 
 
     public WordCountTopology( )
@@ -42,19 +44,19 @@ public class WordCountTopology {
     }
 
     public static void main(String[] args) throws Exception {
-        double timeInterval = 0.003;
-        TwitterSpout spout = new TwitterSpout(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, timeInterval);
+
+        TwitterSpout spout = new TwitterSpout(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, TIMEINTERVAL);
         SplitWordBolt splitBolt = new SplitWordBolt();
         SplitHashtagsBolt splitHashtagsBolt = new SplitHashtagsBolt();
         WordCountBolt countBolt = new WordCountBolt();
         WordCountBolt countHashtagBolt = new WordCountBolt();
-        ReportBolt reportBolt = new ReportBolt("sentences",30);
-        ReportBolt reportHashtagBolt = new ReportBolt("hashtags",60);
+        ReportBolt reportBolt = new ReportBolt("sentences",30,COUNT_THRESHOLD);
+        ReportBolt reportHashtagBolt = new ReportBolt("hashtags",60,COUNT_THRESHOLD);
         DocumentCreator documentCreator = new DocumentCreator();
         EventDetectorBolt eventDetectorBolt = new EventDetectorBolt();
-        EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(3);
+        EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(COUNT_THRESHOLD);
 
-        System.out.println("time interval " + timeInterval*60*60 + " & threshold " + 3);
+        System.out.println("time interval " + TIMEINTERVAL*60*60 + " & threshold " + COUNT_THRESHOLD);
 
         TopologyBuilder builder = new TopologyBuilder();
 

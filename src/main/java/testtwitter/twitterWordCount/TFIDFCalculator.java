@@ -86,7 +86,7 @@ public class TFIDFCalculator {
         if ( n == 0)
         {
             System.out.println("idf Nan");
-            return Double.MAX_VALUE;
+            return 0;
         }
         return Math.log(docs.size() / n);
     }
@@ -103,13 +103,12 @@ public class TFIDFCalculator {
 //        System.out.println("Files: " + files.toString());
 //        System.out.println("File: " + currentFile);
         this.term = term;
-        System.out.print("Term: " + term);
 
         double tf = tf() ;
         double idf = idf();
-        System.out.println( " tf: " + Double.toString(tf) +  " idf: " + Double.toString(idf) );
-
         double result = tf * idf;
+        System.out.println( "Term: " + term + " current doc: " + currentFile + " tf: " + Double.toString(tf) +  " idf: " + Double.toString(idf) +" result " + result );
+
 
 //        System.out.println("---------------------------------");
         return result;
