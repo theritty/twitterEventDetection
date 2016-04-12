@@ -2,4 +2,3 @@ target/
 *.txt
 *.iml
 .idea/
-.idea/*
