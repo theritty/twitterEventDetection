@@ -22,6 +22,7 @@ public class TFIDFCalculator {
         {
             docs = new ArrayList<List<String>>();
         }
+
         for(String file : fileList)
         {
             List<String> new_list;
@@ -95,8 +96,6 @@ public class TFIDFCalculator {
      * @return the TF-IDF of term
      */
     public double tfIdf(ArrayList<String> files, String term, String currentFile) {
-
-        docs = new ArrayList<List<String>>();
 
 //        System.out.println("---------------------------------");
         readFiles(files, currentFile);

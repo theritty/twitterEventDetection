@@ -68,6 +68,7 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
                 {
                     dateList.add(date.toString() + ".txt");
                 }
+                dateList.remove(dateList.size()-1);
 
                 ArrayList<String> words = new ArrayList<>();
                 ArrayList<String> hashtags = new ArrayList<>();

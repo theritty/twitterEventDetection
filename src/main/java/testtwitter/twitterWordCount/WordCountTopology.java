@@ -8,7 +8,6 @@ import backtype.storm.utils.Utils;
 
 import spout.TwitterSpout;
 
-import java.util.DoubleSummaryStatistics;
 
 
 public class WordCountTopology {

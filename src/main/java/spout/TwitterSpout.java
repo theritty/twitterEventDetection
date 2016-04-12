@@ -153,7 +153,7 @@ public class TwitterSpout  extends BaseRichSpout {
                 if(seconds>blockTimeInterval )
                 {
                     lastDate.add(tweetDate);
-                    if(lastDate.size() > 2) {
+                    if(lastDate.size() > 4) {
                         _collector.emit(new Values(ret, lastDate, true, round++));
                     }
                     else
