@@ -68,7 +68,7 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
                 {
                     dateList.add(date.toString() + ".txt");
                 }
-                dateList.remove(dateList.size()-1);
+//                dateList.remove(dateList.size()-1);
 
                 ArrayList<String> words = new ArrayList<>();
                 ArrayList<String> hashtags = new ArrayList<>();
@@ -81,6 +81,9 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
 
                 wordcount.clear();
                 hashtagcount.clear();
+
+
+                System.out.println("manager::: dates " + dates + " datelist " + dateList);
 
                 for(String word : words)
                 {

@@ -33,15 +33,18 @@ public class DocumentCreator extends BaseRichBolt{
     @Override
     public void execute(Tuple tuple) {
         ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
-        String fileName = dates.get(dates.size()-1).toString() + ".txt";
+        Date currentDate = (Date) tuple.getValueByField("currentDate");
+        String fileName = currentDate.toString() + ".txt";
         Status tweet_pre = (Status) tuple.getValueByField( "tweet" );
         long round = tuple.getLongByField("round");
         String tweet = tweet_pre.getText().toLowerCase();
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
+
 //        System.out.println("Writing to file " + fileName);
         writeToFile(fileName, tweet);
         if(blockEnd){
+            System.out.println("Doc::: current " + currentDate + " dates " + dates + " filename " + fileName);
             this.collector.emit(new Values(dates, blockEnd, "DocumentCreator", round));
         }
     }

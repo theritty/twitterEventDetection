@@ -33,6 +33,9 @@ public class EventDetectorBolt extends BaseRichBolt {
 
         ArrayList<Double> tfidfs = new ArrayList<>();
 
+
+        System.out.println("detect::: dates " + dates);
+
         for (String date: dates)
         {
             TFIDFCalculator calculator = new TFIDFCalculator();
