@@ -21,6 +21,8 @@ package spout;
  */
 
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +44,6 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-import backtype.storm.utils.Utils;
 
 @SuppressWarnings("serial")
 public class TwitterSpout  extends BaseRichSpout {
@@ -54,15 +55,21 @@ public class TwitterSpout  extends BaseRichSpout {
     String consumerSecret;
     String accessToken;
     String accessTokenSecret;
-//    String[] keyWords;
+    ArrayList<Date> dates = new ArrayList<>();
+    Date currentDate = null;
+    long round ;
+
+    double blockTimeInterval;
 
     public TwitterSpout(String consumerKey, String consumerSecret,
-                        String accessToken, String accessTokenSecret/*, String[] keyWords*/) {
+                        String accessToken, String accessTokenSecret,
+                        double blockTimeIntervalInHours /*, String[] keyWords*/) {
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.accessToken = accessToken;
         this.accessTokenSecret = accessTokenSecret;
-//        this.keyWords = keyWords;
+        blockTimeInterval = blockTimeIntervalInHours*60*60;
+        round = 0;
     }
 
     public TwitterSpout() {
@@ -129,10 +136,34 @@ public class TwitterSpout  extends BaseRichSpout {
     public void nextTuple() {
         Status ret = null;
         try {
-
             ret = queue.poll(10, TimeUnit.SECONDS);
             if (ret != null)  {
-                _collector.emit(new Values(ret));
+                Date tweetDate = ret.getCreatedAt();
+
+                if(currentDate == null )
+                {
+                    currentDate = tweetDate;
+                }
+
+                long seconds = (tweetDate.getTime()-currentDate.getTime())/1000;
+                if(seconds>blockTimeInterval )
+                {
+                    dates.add(currentDate);
+                    currentDate = tweetDate;
+
+                    System.out.println("Spout::: current " + currentDate + " dates " + dates);
+                    if(dates.size() > 4) {
+                        _collector.emit(new Values(ret, dates, currentDate, true, round++));
+                    }
+                    else
+                    {
+                        _collector.emit(new Values(ret, dates, currentDate, false, round));
+                    }
+                }
+                else
+                {
+                    _collector.emit(new Values(ret, dates, currentDate, false, round));
+                }
             }
 
         } catch (InterruptedException e) {
@@ -164,7 +195,7 @@ public class TwitterSpout  extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("tweet"));
+        declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round"));
     }
 
 

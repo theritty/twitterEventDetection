@@ -29,22 +29,23 @@ public class SplitHashtagsBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         Status tweet = (Status) tuple.getValueByField( "tweet" );
+        long round = tuple.getLongByField("round");
 
         HashtagEntity[] hashtags = tweet.getHashtagEntities();
 
         for(HashtagEntity hashtagEntity : hashtags){
-            String word_prev = hashtagEntity.getText();
+            String word_prev = hashtagEntity.getText().toLowerCase();
             String word = word_prev.replaceAll(
                     "[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
 
             if(!word.equals("") && word.length()>4)
-                this.collector.emit(new Values(word));
+                this.collector.emit(new Values(word, "HashtagCount", round));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word"));
+        declarer.declare(new Fields("word", "inputBolt", "round"));
     }
 }

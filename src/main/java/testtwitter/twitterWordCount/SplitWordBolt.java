@@ -25,23 +25,40 @@ public class SplitWordBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         Status tweet = (Status) tuple.getValueByField( "tweet" );
-        String sentence = tweet.getText();
-//        HashtagEntity[] hashtags = tweet.getHashtagEntities();
-//        hashtags[0].getText();
+        String sentence = tweet.getText().toLowerCase();
+        long round = tuple.getLongByField("round");
 
         if(sentence.startsWith("I'm at ")) return;
-        String sentence_preprocessed = sentence.replaceAll("[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
+        String sentence_preprocessed = endWordElimination(removeUnnecessary(sentence));
+
 
         String[] words = sentence_preprocessed.split(" ");
         for(String word : words){
-            if(!word.equals("") && word.length()>4 && !word.startsWith("#"))
-                this.collector.emit(new Values(word));
+            String wordAfterNlp = stemWord(word);
+            if(!wordAfterNlp.equals("") && wordAfterNlp.length()>4 && !wordAfterNlp.startsWith("#"))
+                this.collector.emit(new Values(wordAfterNlp, "WordCount", round));
         }
+    }
+
+    public String removeUnnecessary(String sentence)
+    {
+        String sentence_processed = sentence.replaceAll("[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
+        return sentence_processed;
+
+    }
+    public String endWordElimination(String sentence)
+    {
+        return sentence;
+    }
+
+    public String stemWord(String word)
+    {
+        return word;
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word"));
+        declarer.declare(new Fields("word", "inputBolt", "round"));
     }
 }

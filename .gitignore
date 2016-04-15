@@ -2,3 +2,7 @@ target/
 *.classpath
 *.project
 .settings/
+*.txt
+!stopWords.txt
+*.iml
+.idea/

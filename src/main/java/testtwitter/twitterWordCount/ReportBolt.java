@@ -20,6 +20,8 @@ public class ReportBolt extends BaseRichBolt{
     private String fileName;
     private Date lastTime;
     private long writeInterval;
+    private long round;
+    private int threshold;
 
     @Override
     public String toString() {
@@ -27,11 +29,13 @@ public class ReportBolt extends BaseRichBolt{
     }
 
 
-    ReportBolt(String fileName, long writeIntervalInSeconds)
+    ReportBolt(String fileName, long writeIntervalInSeconds, int threshold)
     {
         this.fileName = fileName;
         this.lastTime = new Date();
         this.writeInterval = writeIntervalInSeconds;
+        this.threshold = threshold;
+        this.round = 0;
     }
 
     @Override
@@ -44,15 +48,21 @@ public class ReportBolt extends BaseRichBolt{
     public void execute(Tuple tuple) {
         String word = tuple.getStringByField("word");
         Long count = tuple.getLongByField("count");
+        long round = tuple.getLongByField("round");
         this.counts.put(word, count);
 
-        Date now = new Date();
-        long seconds = (now.getTime()-lastTime.getTime())/1000;
-
-        if(seconds >= writeInterval )
+//        Date now = new Date();
+//        long seconds = (now.getTime()-lastTime.getTime())/1000;
+//
+//        if(seconds >= writeInterval )
+//        {
+//            writeToFile(now);
+//            lastTime = now;
+//        }
+        if(this.round < round)
         {
-            writeToFile(now);
-            lastTime = now;
+            writeToFile(this.round);
+            this.round = round;
         }
     }
 
@@ -61,11 +71,11 @@ public class ReportBolt extends BaseRichBolt{
         // this bolt does not emit anything
     }
 
-    public void writeToFile(Date now)
+    public void writeToFile(long round)
     {
         try {
             PrintWriter writer;
-            writer = new PrintWriter(fileName + now.toString() + ".txt");
+            writer = new PrintWriter(fileName + Long.toString(round) + ".txt");
             write(writer, "----- FINAL COUNTS -----");
 
             List<Map.Entry<String,Long>> entries = new ArrayList<>(
@@ -80,7 +90,9 @@ public class ReportBolt extends BaseRichBolt{
                     }
             );
             for (Map.Entry<String,Long> e : entries) {
-                write(writer, e.getKey() + ":" + e.getValue());
+                if(e.getValue() >= threshold) {
+                    write(writer, e.getKey() + ":" + e.getValue());
+                }
             }
 
             write(writer, "------------------------");
@@ -93,11 +105,11 @@ public class ReportBolt extends BaseRichBolt{
     }
     @Override
     public void cleanup() {
-        writeToFile(new Date());
+        //writeToFile(new Date());
     }
 
     public void write(PrintWriter writer, String line) {
         writer.println(line);
-        System.out.println(line);
+//        System.out.println(line);
     }
 }
