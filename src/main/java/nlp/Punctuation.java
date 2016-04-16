@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 public class Punctuation {
 	
 	// TODO: Add these punctuations as well:[][(){}<>%]"  
-	private static final Pattern PUNCTUATION = Pattern.compile("[,.;!?']");
+	private static final Pattern PUNCTUATION = Pattern.compile("[,.:;!?+'&]");
 	
 	public static String removePunctuation(String text) {
 		return PUNCTUATION.matcher(text).replaceAll("");

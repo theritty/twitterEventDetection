@@ -1,9 +1,12 @@
+'s
 a
 about
 above
 after
 again
 against
+aight
+ain't
 all
 am
 an
@@ -163,6 +166,8 @@ with
 won't
 would
 wouldn't
+yall
+y'all
 you
 you'd
 you'll

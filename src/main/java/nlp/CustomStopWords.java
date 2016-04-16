@@ -24,7 +24,7 @@ public class CustomStopWords {
 		}
 	}
 	
-	public static Set<String> getStopWords() {
+	public Set<String> getStopWords() {
 		return stopWords;
 	}
 

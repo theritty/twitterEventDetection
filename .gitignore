@@ -4,5 +4,7 @@ target/
 .settings/
 *.txt
 !stopWords.txt
+!abbreviations.txt
+!specialPrefixes.txt
 *.iml
 .idea/
