@@ -120,9 +120,9 @@ public class TextAnalyzer {
         String tweet7 = "I only follow'ed you bc I was waiting for you to finish http://cliffhorse.com . "
         		+ "Now, I follow bc you're damn funny.";
         
-        String tweet8 = "lol afaik this is the best thing related to league of legends omg ahahah";
-        String tweet9 = "I liked a @YouTube video http://youtu.be/Vi1tkUNpohM?a  Cologne Shop Roleplay (ASMR)";
-        String tweet10 = "I'm at @AstirBeach in Vouliagmeni, Athens https://www.swarmapp.com/c/7lwQrizYC06";
+        String tweet8 = "lol afaik this #test is the best thing related to league of legends omg ahahah";
+        String tweet9 = "I liked a @YouTube video http://youtu.be/Vi1tkUNpohM?a  Cologne Shop Roleplay (ASMR) #test";
+        String tweet10 = "I'm at @AstirBeach in Vouliagmeni, Athens https://www.swarmapp.com/c/7lwQrizYC06 #test";
        
       TextAnalyzer ta = new TextAnalyzer();
       System.out.println(ta.extractWordList(text));

@@ -23,6 +23,12 @@ import java.util.*;
 public class DocumentCreator extends BaseRichBolt{
 
     private OutputCollector collector;
+    private int fileNum;
+
+    DocumentCreator(int fileNum)
+    {
+        this.fileNum = fileNum;
+    }
 
     @Override
     public void prepare(Map config, TopologyContext context,
@@ -35,11 +41,16 @@ public class DocumentCreator extends BaseRichBolt{
         ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
         Date currentDate = (Date) tuple.getValueByField("currentDate");
         String fileName = currentDate.toString() + ".txt";
-        Status tweet_pre = (Status) tuple.getValueByField( "tweet" );
+        List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
         long round = tuple.getLongByField("round");
-        String tweet = tweet_pre.getText().toLowerCase();
+
+        String tweet = "";// tweets.toString(); //tweet_pre.getText().toLowerCase();
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
+        for(String twee:tweets)
+        {
+            tweet += twee + " ";
+        }
 
 //        System.out.println("Writing to file " + fileName);
         writeToFile(fileName, tweet);
@@ -58,7 +69,7 @@ public class DocumentCreator extends BaseRichBolt{
     {
         try {
             PrintWriter writer = new PrintWriter(new FileOutputStream(
-                    new File(fileName),
+                    new File(fileNum + "/" + fileName),
                     true /* append = true */));
 
             write(writer, tweet);

@@ -22,6 +22,7 @@ public class ReportBolt extends BaseRichBolt{
     private long writeInterval;
     private long round;
     private int threshold;
+    private int fileNum;
 
     @Override
     public String toString() {
@@ -29,9 +30,10 @@ public class ReportBolt extends BaseRichBolt{
     }
 
 
-    ReportBolt(String fileName, long writeIntervalInSeconds, int threshold)
+    ReportBolt(String fileName, long writeIntervalInSeconds, int threshold, int fileNum)
     {
         this.fileName = fileName;
+        this.fileNum = fileNum;
         this.lastTime = new Date();
         this.writeInterval = writeIntervalInSeconds;
         this.threshold = threshold;
@@ -75,7 +77,7 @@ public class ReportBolt extends BaseRichBolt{
     {
         try {
             PrintWriter writer;
-            writer = new PrintWriter(fileName + Long.toString(round) + ".txt");
+            writer = new PrintWriter(fileNum + "/" + fileName + Long.toString(round) + ".txt");
             write(writer, "----- FINAL COUNTS -----");
 
             List<Map.Entry<String,Long>> entries = new ArrayList<>(
@@ -90,7 +92,7 @@ public class ReportBolt extends BaseRichBolt{
                     }
             );
             for (Map.Entry<String,Long> e : entries) {
-                if(e.getValue() >= threshold) {
+                if(e.getValue() >= 0/*threshold*/) {
                     write(writer, e.getKey() + ":" + e.getValue());
                 }
             }

@@ -10,6 +10,7 @@ import backtype.storm.tuple.Values;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
+import java.util.List;
 import java.util.Map;
 
 public class SplitWordBolt extends BaseRichBolt {
@@ -24,37 +25,43 @@ public class SplitWordBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        Status tweet = (Status) tuple.getValueByField( "tweet" );
-        String sentence = tweet.getText().toLowerCase();
+//        Status tweet = (Status) tuple.getValueByField( "tweet" );
+        List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
         long round = tuple.getLongByField("round");
 
-        if(sentence.startsWith("I'm at ")) return;
-        String sentence_preprocessed = endWordElimination(removeUnnecessary(sentence));
+//        String[] words = sentence_preprocessed.split(" ");
+//        for(String word : words){
+//            String wordAfterNlp = stemWord(word);
+//            if(!wordAfterNlp.equals("") && wordAfterNlp.length()>4 && !wordAfterNlp.startsWith("#"))
+//                this.collector.emit(new Values(wordAfterNlp, "WordCount", round));
+//        }
 
-
-        String[] words = sentence_preprocessed.split(" ");
-        for(String word : words){
-            String wordAfterNlp = stemWord(word);
-            if(!wordAfterNlp.equals("") && wordAfterNlp.length()>4 && !wordAfterNlp.startsWith("#"))
-                this.collector.emit(new Values(wordAfterNlp, "WordCount", round));
+        for(String tweet: tweets)
+        {
+            if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>4
+                    && !tweet.equals("hiring") && !tweet.equals("careerarc"))
+            {
+                this.collector.emit(new Values(tweet, "WordCount", round));
+            }
         }
-    }
-
-    public String removeUnnecessary(String sentence)
-    {
-        String sentence_processed = sentence.replaceAll("[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
-        return sentence_processed;
 
     }
-    public String endWordElimination(String sentence)
-    {
-        return sentence;
-    }
 
-    public String stemWord(String word)
-    {
-        return word;
-    }
+//    public String removeUnnecessary(String sentence)
+//    {
+//        String sentence_processed = sentence.replaceAll("[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
+//        return sentence_processed;
+//
+//    }
+//    public String endWordElimination(String sentence)
+//    {
+//        return sentence;
+//    }
+//
+//    public String stemWord(String word)
+//    {
+//        return word;
+//    }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)

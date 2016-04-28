@@ -115,7 +115,9 @@ public class TwitterSpout  extends BaseRichSpout {
         };
 
 //        double [][]location ={{27,34},{40,38}};
-        double [][]location ={{-124,31},{-66,49}};
+//        double [][]location ={{-124,31},{-66,49}};
+        double [][]location ={{-124,31},{-115,41}};
+
 
         TwitterStream twitterStream = new TwitterStreamFactory(
                 new ConfigurationBuilder().setJSONStoreEnabled(true).build())
@@ -149,10 +151,11 @@ public class TwitterSpout  extends BaseRichSpout {
                 if(seconds>blockTimeInterval )
                 {
                     dates.add(currentDate);
+                    if(dates.size() > 10) dates.remove(0);
                     currentDate = tweetDate;
 
                     System.out.println("Spout::: current " + currentDate + " dates " + dates);
-                    if(dates.size() > 4) {
+                    if(dates.size() > 3) {
                         _collector.emit(new Values(ret, dates, currentDate, true, round++));
                     }
                     else

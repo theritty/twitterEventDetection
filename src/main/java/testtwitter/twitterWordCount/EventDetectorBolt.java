@@ -16,6 +16,12 @@ import java.util.*;
 public class EventDetectorBolt extends BaseRichBolt {
 
     private OutputCollector collector;
+    private int fileNum;
+
+    EventDetectorBolt(int fileNum)
+    {
+        this.fileNum = fileNum;
+    }
 
     @Override
     public void prepare(Map config, TopologyContext context,
@@ -39,10 +45,10 @@ public class EventDetectorBolt extends BaseRichBolt {
         for (String date: dates)
         {
             TFIDFCalculator calculator = new TFIDFCalculator();
-            tfidfs.add(calculator.tfIdf(dates,key,date));
+            tfidfs.add(calculator.tfIdf(fileNum, dates,key,date));
         }
 
-        writeToFile("tfidf-" + Long.toString(round)+".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+        writeToFile(fileNum + "/tfidf-" + Long.toString(round)+".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
     }
 
     public void writeToFile(String fileName, String tweet)

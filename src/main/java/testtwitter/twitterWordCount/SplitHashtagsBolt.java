@@ -11,6 +11,7 @@ import scala.util.parsing.combinator.testing.Str;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,19 +29,30 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        Status tweet = (Status) tuple.getValueByField( "tweet" );
+//        Status tweet = (Status) tuple.getValueByField( "tweet" );
         long round = tuple.getLongByField("round");
 
-        HashtagEntity[] hashtags = tweet.getHashtagEntities();
+        //Fields("tweet","dates","currentDate","blockEnd", "round")
+        List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
 
-        for(HashtagEntity hashtagEntity : hashtags){
-            String word_prev = hashtagEntity.getText().toLowerCase();
-            String word = word_prev.replaceAll(
-                    "[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
+//        HashtagEntity[] hashtags = tweet.getHashtagEntities();
 
-            if(!word.equals("") && word.length()>4)
-                this.collector.emit(new Values(word, "HashtagCount", round));
+        for(String tweet: tweets)
+        {
+            if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>4
+                    && !tweet.equals("hiring") && !tweet.equals("careerarc"))
+            {
+
+                this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round));
+            }
         }
+//        for(HashtagEntity hashtagEntity : hashtags){
+//            String word_prev = hashtagEntity.getText().toLowerCase();
+//            String word = word_prev.replaceAll(
+//                    "[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
+//
+//
+//        }
     }
 
     @Override
