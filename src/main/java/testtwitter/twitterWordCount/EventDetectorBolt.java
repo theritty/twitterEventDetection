@@ -6,6 +6,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,8 +59,17 @@ public class EventDetectorBolt extends BaseRichBolt {
                 break;
             }
         }
-        if(!allzero)
-            writeToFile(fileNum + "/tfidf-" + Long.toString(round)+".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+        if(!allzero) {
+            writeToFile(fileNum + "/tfidf-" + Long.toString(round) + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+            if(tfidfs.get(tfidfs.size()-2) == 0 && tfidfs.get(tfidfs.size()-1)/0.0001>50)
+            {
+                this.collector.emit(new Values(key, tfidfs, type, round));
+            }
+            else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>50)
+            {
+                this.collector.emit(new Values(key, tfidfs, type, round));
+            }
+        }
         else
             writeToFile(fileNum + "/tfidf-" + Long.toString(round)+"-allzero.txt", "Key: " + key );
     }
@@ -87,6 +97,6 @@ public class EventDetectorBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        //declarer.declare(new Fields("word"));
+        declarer.declare(new Fields( "key", "tfidfs", "type", "round"));
     }
 }

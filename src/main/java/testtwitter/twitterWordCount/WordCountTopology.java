@@ -26,6 +26,7 @@ public class WordCountTopology {
     private static final String CASS_BOLT_ID = "cassandraBolt";
     private static final String DOCUMENT_CREATOR = "document-creator";
     private static final String EVENT_DETECTOR_BOLT = "event-detector-bolt";
+    private static final String EVENT_COMPARE_BOLT = "event-compare-bolt";
     private static final String EVENT_DETECTOR_MANAGER_BOLT = "event-detector-manager-bolt";
     private static final String TOPOLOGY_NAME = "word-count-topology";
 
@@ -59,6 +60,7 @@ public class WordCountTopology {
         DocumentCreator documentCreator = new DocumentCreator(FILENUM, TWEET_DOC_CREATION);
         EventDetectorBolt eventDetectorBolt = new EventDetectorBolt(FILENUM);
         EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(COUNT_THRESHOLD);
+        EventCompareBolt eventCompareBolt = new EventCompareBolt(FILENUM);
 
         System.out.println("time interval " + TIMEINTERVAL*60*60 + " & threshold " + COUNT_THRESHOLD);
 
@@ -84,6 +86,7 @@ public class WordCountTopology {
         builder.setBolt( DOCUMENT_CREATOR, documentCreator).shuffleGrouping(PREPROCESS_SPOUT_ID);
         builder.setBolt( EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).globalGrouping(DOCUMENT_CREATOR).globalGrouping(COUNT_BOLT_ID).globalGrouping(COUNT_HASHTAG_BOLT_ID);
         builder.setBolt( EVENT_DETECTOR_BOLT, eventDetectorBolt,5).fieldsGrouping(EVENT_DETECTOR_MANAGER_BOLT, new Fields("key"));
+        builder.setBolt( EVENT_COMPARE_BOLT, eventCompareBolt).globalGrouping(EVENT_DETECTOR_BOLT);
 
 
         Config config = new Config();
