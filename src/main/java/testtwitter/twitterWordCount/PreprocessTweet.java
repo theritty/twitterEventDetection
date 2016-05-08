@@ -34,9 +34,11 @@ public class PreprocessTweet extends BaseRichBolt {
     //new Fields("tweet", "dates","currentDate","blockEnd", "round")
     @Override
     public void execute(Tuple tuple) {
-        Status tweet = (Status) tuple.getValueByField( "tweet" );
 
-        List<String> preprocessText = textAnalyzer.extractWordList(tweet.getText());
+//        String tweet = ((Status) tuple.getValueByField( "tweet" )).getText();
+        String tweet = (String) tuple.getValueByField( "tweet" );
+
+        List<String> preprocessText = textAnalyzer.extractWordList(tweet);
         this.collector.emit(new Values(preprocessText,
                 tuple.getValueByField( "dates" ),
                 tuple.getValueByField( "currentDate" ),

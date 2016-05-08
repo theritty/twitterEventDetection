@@ -45,10 +45,23 @@ public class EventDetectorBolt extends BaseRichBolt {
         for (String date: dates)
         {
             TFIDFCalculator calculator = new TFIDFCalculator();
-            tfidfs.add(calculator.tfIdf(fileNum, dates,key,date));
+//            tfidfs.add(calculator.tfIdf(Integer.toString(fileNum), dates,key,date));
+            tfidfs.add(calculator.tfIdf("tweets", dates,key,date));
         }
 
-        writeToFile(fileNum + "/tfidf-" + Long.toString(round)+".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+        boolean allzero=true;
+        for(double tfidf: tfidfs)
+        {
+            if(tfidf != 0.0)
+            {
+               allzero=false;
+                break;
+            }
+        }
+        if(!allzero)
+            writeToFile(fileNum + "/tfidf-" + Long.toString(round)+".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+        else
+            writeToFile(fileNum + "/tfidf-" + Long.toString(round)+"-allzero.txt", "Key: " + key );
     }
 
     public void writeToFile(String fileName, String tweet)

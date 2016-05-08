@@ -6,6 +6,7 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
 
+import spout.FileSpout;
 import spout.TwitterSpout;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.io.File;
 public class WordCountTopology {
 
     private static final String TWITTER_SPOUT_ID = "twitter-spout";
+    private static final String FILE_SPOUT_ID = "file-spout";
     private static final String PREPROCESS_SPOUT_ID = "preprocess-spout";
     private static final String SPLIT_BOLT_ID = "split-bolt";
     private static final String SPLIT_HASHTAG_BOLT_ID = "split-hashtag-bolt";
@@ -24,11 +26,7 @@ public class WordCountTopology {
     private static final String CASS_BOLT_ID = "cassandraBolt";
     private static final String DOCUMENT_CREATOR = "document-creator";
     private static final String EVENT_DETECTOR_BOLT = "event-detector-bolt";
-    private static final String EVENT_DETECTOR_BOLT2 = "event-detector-bolt2";
-    private static final String EVENT_DETECTOR_BOLT3 = "event-detector-bolt3";
     private static final String EVENT_DETECTOR_MANAGER_BOLT = "event-detector-manager-bolt";
-    private static final String EVENT_DETECTOR_MANAGER_BOLT2 = "event-detector-manager-bolt2";
-    private static final String EVENT_DETECTOR_MANAGER_BOLT3 = "event-detector-manager-bolt3";
     private static final String TOPOLOGY_NAME = "word-count-topology";
 
     private static final String CONSUMER_KEY = "4w67IxCDr1zA8WGbgyTIHKMoU";
@@ -37,7 +35,8 @@ public class WordCountTopology {
     private static final String ACCESS_TOKEN_SECRET = "ZKtcJTCqsBWlQbsRDVWnENg9lEKQ8TKNR0tzy5pFVvssr";
     private static final int COUNT_THRESHOLD = 50;
     private static final double TIMEINTERVAL =  0.2;
-    private static final int FILENUM = 21;
+    private static final int FILENUM = 25;
+    private static final boolean TWEET_DOC_CREATION = false;
 
 
     public WordCountTopology( )
@@ -48,6 +47,8 @@ public class WordCountTopology {
     public static void main(String[] args) throws Exception {
 
         TwitterSpout spout = new TwitterSpout(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, TIMEINTERVAL);
+        FileSpout fileSpout = new FileSpout();
+
         PreprocessTweet preprocessor = new PreprocessTweet();
         SplitWordBolt splitBolt = new SplitWordBolt();
         SplitHashtagsBolt splitHashtagsBolt = new SplitHashtagsBolt();
@@ -55,7 +56,7 @@ public class WordCountTopology {
         WordCountBolt countHashtagBolt = new WordCountBolt();
         ReportBolt reportBolt = new ReportBolt("sentences",30,COUNT_THRESHOLD,FILENUM);
         ReportBolt reportHashtagBolt = new ReportBolt("hashtags",60,COUNT_THRESHOLD,FILENUM);
-        DocumentCreator documentCreator = new DocumentCreator(FILENUM);
+        DocumentCreator documentCreator = new DocumentCreator(FILENUM, TWEET_DOC_CREATION);
         EventDetectorBolt eventDetectorBolt = new EventDetectorBolt(FILENUM);
         EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(COUNT_THRESHOLD);
 
@@ -64,8 +65,12 @@ public class WordCountTopology {
         TopologyBuilder builder = new TopologyBuilder();
 
         createFolder(Integer.toString(FILENUM));
-        builder.setSpout(TWITTER_SPOUT_ID, spout);
-        builder.setBolt(PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(TWITTER_SPOUT_ID);
+//        builder.setSpout(TWITTER_SPOUT_ID, spout);
+//        builder.setBolt(PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(TWITTER_SPOUT_ID);
+
+
+        builder.setSpout(FILE_SPOUT_ID, fileSpout);
+        builder.setBolt(PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(FILE_SPOUT_ID);
 
         builder.setBolt(SPLIT_BOLT_ID, splitBolt).shuffleGrouping(PREPROCESS_SPOUT_ID);
         builder.setBolt(COUNT_BOLT_ID, countBolt,5).fieldsGrouping(SPLIT_BOLT_ID, new Fields("word"));

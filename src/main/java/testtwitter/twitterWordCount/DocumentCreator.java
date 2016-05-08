@@ -24,10 +24,13 @@ public class DocumentCreator extends BaseRichBolt{
 
     private OutputCollector collector;
     private int fileNum;
+    private boolean active = true;
+    private String oldFile="";
 
-    DocumentCreator(int fileNum)
+    DocumentCreator(int fileNum, boolean active)
     {
         this.fileNum = fileNum;
+        this.active  = active;
     }
 
     @Override
@@ -47,13 +50,21 @@ public class DocumentCreator extends BaseRichBolt{
         String tweet = "";// tweets.toString(); //tweet_pre.getText().toLowerCase();
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
-        for(String twee:tweets)
-        {
-            tweet += twee + " ";
-        }
+        if(active) {
+            for (String twee : tweets) {
+                tweet += twee + " ";
+            }
 
 //        System.out.println("Writing to file " + fileName);
-        writeToFile(fileName, tweet);
+//            System.out.println("Doc:::  filename " + fileName);
+            if(!oldFile.equals(fileName))
+            {
+                System.out.println("new Tweet Doc created: " + fileName);
+                oldFile = fileName;
+            }
+            writeToFile(fileName, tweet);
+        }
+
         if(blockEnd){
             System.out.println("Doc::: current " + currentDate + " dates " + dates + " filename " + fileName);
             this.collector.emit(new Values(dates, blockEnd, "DocumentCreator", round));

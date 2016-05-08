@@ -63,6 +63,7 @@ public class ReportBolt extends BaseRichBolt{
 //        }
         if(this.round < round)
         {
+            System.out.println("New count report: " + fileName + Long.toString(round));
             writeToFile(this.round);
             this.round = round;
         }
