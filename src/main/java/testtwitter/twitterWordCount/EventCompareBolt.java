@@ -4,9 +4,7 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,12 +16,13 @@ public class EventCompareBolt extends BaseRichBolt {
 
     private OutputCollector collector;
     private int fileNum;
-    private int currentRound = 0;
+    private long currentRound = 0;
     ArrayList<HashMap<String, Object>> wordList;
 
     EventCompareBolt(int fileNum)
     {
         this.fileNum = fileNum;
+        wordList = new ArrayList<>();
     }
 
     @Override
@@ -42,7 +41,7 @@ public class EventCompareBolt extends BaseRichBolt {
 
         ArrayList<ArrayList<HashMap<String, Object>>> compareList = new ArrayList<>();
 
-        if (round != currentRound && round > 0) {
+        if (round > currentRound ) {
             for (HashMap<String, Object> hm : wordList) {
                 ArrayList<Double> currentTfidfs = (ArrayList<Double>) hm.get("tfidfs");
                 boolean added = false;
@@ -68,15 +67,16 @@ public class EventCompareBolt extends BaseRichBolt {
                 }
             }
             wordList.clear();
-        } else {
-            HashMap<String, Object> xx = new HashMap<>();
-            xx.put("word", key);
-            xx.put("type", type);
-            xx.put("tfidfs", tfidfs);
-
-            wordList.add(xx);
+            currentRound = round;
         }
-        writeToFile("events-" + round, compareList);
+        HashMap<String, Object> xx = new HashMap<>();
+        xx.put("word", key);
+        xx.put("type", type);
+        xx.put("tfidfs", tfidfs);
+
+        wordList.add(xx);
+
+        writeToFile(fileNum + "/events-" + round, compareList);
     }
 
     public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
