@@ -8,3 +8,5 @@ target/
 !specialPrefixes.txt
 *.iml
 .idea/
+tweets/
+
