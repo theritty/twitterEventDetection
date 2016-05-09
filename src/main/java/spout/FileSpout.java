@@ -56,7 +56,7 @@ public class FileSpout extends BaseRichSpout {
         {
             try {
                 if(currentDate!=null) dates.add(currentDate);
-                if(dates.size() > 10) dates.remove(0);
+                if(dates.size() > 15) dates.remove(0);
                 currentDate = fileName;
 
                 String currentFileToRead = "tweets/" + fileName.toString() + ".txt";
@@ -66,7 +66,7 @@ public class FileSpout extends BaseRichSpout {
                     /**
                      * By each line emmit a new value with the line as a their
                      */
-                    Thread.sleep(5);
+//                    Thread.sleep(5);
                     collector.emit(new Values(str, dates, currentDate, false, round));
 
                 }
@@ -92,10 +92,10 @@ public class FileSpout extends BaseRichSpout {
                 throw new RuntimeException("Error reading file ["+fileName.toString() + ".txt"+"]");
             } catch (IOException e) {
                 throw new RuntimeException("Error reading tuple",e);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
             } finally{
-//               System.out.println("Reading " + fileName + " finished.");
+               System.out.println("Reading " + fileName + " finished.");
             }
 
         }

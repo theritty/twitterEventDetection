@@ -36,7 +36,7 @@ public class WordCountTopology {
     private static final String ACCESS_TOKEN_SECRET = "ZKtcJTCqsBWlQbsRDVWnENg9lEKQ8TKNR0tzy5pFVvssr";
     private static final int COUNT_THRESHOLD = 50;
     private static final double TIMEINTERVAL =  0.2;
-    private static final int FILENUM = 25;
+    private static final int FILENUM = 28;
     private static final boolean TWEET_DOC_CREATION = false;
 
 

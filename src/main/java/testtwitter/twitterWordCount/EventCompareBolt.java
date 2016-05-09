@@ -43,29 +43,39 @@ public class EventCompareBolt extends BaseRichBolt {
 
         if (round > currentRound ) {
             for (HashMap<String, Object> hm : wordList) {
+                String currentKey = (String) hm.get("word");
                 ArrayList<Double> currentTfidfs = (ArrayList<Double>) hm.get("tfidfs");
                 boolean added = false;
+
+
                 for (ArrayList<HashMap<String, Object>> al : compareList) {
                     for (HashMap<String, Object> chm : al) {
-                        ArrayList<Double> tmpTfidfs = (ArrayList<Double>) chm.get("tfidfs");
+                        String keyToCompare = (String) chm.get("word");
+                        ArrayList<Double> tfidfToCompare = (ArrayList<Double>) chm.get("tfidfs");
                         int cnt = 0;
-                        for (int i = 0; i < tmpTfidfs.size(); i++) {
-                            if (currentTfidfs.get(i) != 0 && tmpTfidfs.get(i) != 0) cnt++;
+
+                        for (int i = 0; i < tfidfToCompare.size(); i++) {
+                            if (currentTfidfs.get(i) != 0 && tfidfToCompare.get(i) != 0) cnt++;
                         }
-                        if (cnt / tmpTfidfs.size() > 0.5) {
+
+                        if ( ( (double) cnt / (double) tfidfToCompare.size()) > 0.5) {
                             added = true;
                             al.add(hm);
+                            break;
                         }
-                        break;
                     }
                     if (added) break;
                 }
 
+
                 if (!added) {
                     ArrayList<HashMap<String, Object>> tmp = new ArrayList<>();
+                    tmp.add(hm);
                     compareList.add(tmp);
                 }
             }
+            if(compareList.size()>0)
+                writeToFile(fileNum + "/events-" + round, compareList);
             wordList.clear();
             currentRound = round;
         }
@@ -75,8 +85,6 @@ public class EventCompareBolt extends BaseRichBolt {
         xx.put("tfidfs", tfidfs);
 
         wordList.add(xx);
-
-        writeToFile(fileNum + "/events-" + round, compareList);
     }
 
     public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)

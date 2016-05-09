@@ -65,7 +65,7 @@ public class EventDetectorBolt extends BaseRichBolt {
             {
                 this.collector.emit(new Values(key, tfidfs, type, round));
             }
-            else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>50)
+            else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>1)
             {
                 this.collector.emit(new Values(key, tfidfs, type, round));
             }
