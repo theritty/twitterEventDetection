@@ -2,18 +2,34 @@ package testtwitter.twitterWordCount;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.StormSubmitter;
+import backtype.storm.generated.AlreadyAliveException;
+import backtype.storm.generated.AuthorizationException;
+import backtype.storm.generated.InvalidTopologyException;
+import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
 
+import org.apache.storm.shade.org.json.simple.JSONValue;
+import org.apache.thrift7.TException;
+import org.apache.thrift7.transport.TTransportException;
 import spout.FileSpout;
 import spout.TwitterSpout;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 
 public class WordCountTopology {
 
+    private static LocalCluster localCluster;
     private static final String TWITTER_SPOUT_ID = "twitter-spout";
     private static final String FILE_SPOUT_ID = "file-spout";
     private static final String PREPROCESS_SPOUT_ID = "preprocess-spout";
@@ -46,6 +62,10 @@ public class WordCountTopology {
     }
 
     public static void main(String[] args) throws Exception {
+
+        Properties properties = loadProperties( "config.properties" );
+
+
 
         TwitterSpout spout = new TwitterSpout(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET, TIMEINTERVAL);
         FileSpout fileSpout = new FileSpout();
@@ -102,6 +122,101 @@ public class WordCountTopology {
 
         cluster.killTopology(TOPOLOGY_NAME);
         cluster.shutdown();
+    }
+
+    protected static synchronized void loadTopologyPropertiesAndSubmit( Properties properties, Config config, StormTopology stormTopology )
+            throws InvalidTopologyException, AuthorizationException, AlreadyAliveException, InterruptedException, TTransportException {
+        String stormExecutionMode = properties.getProperty( "storm.execution.mode" );
+        String topologyName = properties.getProperty( "storm.topology.name" );
+        String nimbusHost = properties.getProperty( "nimbus.host" );
+        int nimbusPort = Integer.parseInt( properties.getProperty( "nimbus.port" ) );
+        String stormZookeeperServers = properties.getProperty( "storm.zookeeper.serverss" );
+        String stormPorts = properties.getProperty( "storm.ports" );
+
+        config.setDebug( true );
+
+        switch ( stormExecutionMode )
+        {
+            case ( "cluster" ):
+                config.put( Config.NIMBUS_HOST, nimbusHost );
+                config.put( Config.STORM_ZOOKEEPER_SERVERS, stormZookeeperServers );
+                config.put( Config.SUPERVISOR_SLOTS_PORTS, stormPorts );
+                config.setNumAckers( 3 );
+                //config.setNumWorkers( 3 );
+                Map storm_conf = Utils.readStormConfig();
+                storm_conf.put("nimbus.host", nimbusHost);
+                List<String> servers = splitString( stormZookeeperServers );
+                storm_conf.put( "storm.zookeeper.servers", servers  );
+                List<Integer> ports = splitInteger( stormPorts );
+                storm_conf.put( "supervisor.slots.ports",ports  );
+                String workingDir = System.getProperty("user.dir");
+                String inputJar = workingDir + "/target/Demo-jar-with-dependencies.jar";
+                NimbusClient nimbus = new NimbusClient(storm_conf, nimbusHost, nimbusPort );
+                String uploadedJarLocation = StormSubmitter.submitJar(storm_conf,inputJar );
+                try {
+                    String jsonConf = JSONValue.toJSONString( storm_conf );
+                    nimbus.getClient().submitTopology( topologyName,
+                            uploadedJarLocation, jsonConf, stormTopology );
+                } catch ( TException e ) {
+                    e.printStackTrace();
+                }
+                Thread.sleep(6000);
+                break;
+
+            case ( "local" ):
+                if(localCluster==null) localCluster = new LocalCluster();
+                localCluster.submitTopology( topologyName, config, stormTopology );
+
+        }
+    }
+
+
+
+    public static List<Integer> splitInteger( String sentence )
+    {
+        List<Integer> list = new ArrayList<>();
+        String[] parts = sentence.split(",");
+
+        for ( final String part : parts )
+        {
+            list.add( Integer.parseInt( part ) );
+        }
+        return list;
+    }
+
+    public static List<String> splitString( String sentence )
+    {
+        List<String> list = new ArrayList<>();
+        String[] parts = sentence.split(",");
+
+        for ( final String part : parts )
+        {
+            list.add( part );
+        }
+        return list;
+    }
+
+    protected static synchronized Config copyPropertiesToStormConfig( Properties properties )
+    {
+        Config stormConfig = new Config();
+        for (String name : properties.stringPropertyNames()) {
+            stormConfig.put(name, properties.getProperty(name));
+        }
+        return stormConfig;
+    }
+
+    protected static synchronized Properties loadProperties( String propertiesFile ) throws IOException
+    {
+        try {
+            Properties properties = new Properties();
+            InputStream inputStream = WordCountTopology.class.getClassLoader().getResourceAsStream( propertiesFile );
+            properties.load( inputStream );
+            inputStream.close();
+            return properties;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void createFolder(String fileName)
