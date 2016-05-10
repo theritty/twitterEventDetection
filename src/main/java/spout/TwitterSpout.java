@@ -57,17 +57,22 @@ public class TwitterSpout  extends BaseRichSpout {
     String accessTokenSecret;
     ArrayList<Date> dates = new ArrayList<>();
     Date currentDate = null;
+    int trainSize;
+    int compareSize;
     long round ;
 
     double blockTimeInterval;
 
     public TwitterSpout(String consumerKey, String consumerSecret,
                         String accessToken, String accessTokenSecret,
-                        double blockTimeIntervalInHours /*, String[] keyWords*/) {
+                        double blockTimeIntervalInHours,
+                        int trainSize, int compareSize) {
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
         this.accessToken = accessToken;
         this.accessTokenSecret = accessTokenSecret;
+        this.trainSize = trainSize;
+        this.compareSize = compareSize;
         blockTimeInterval = blockTimeIntervalInHours*60*60;
         round = 0;
     }
@@ -151,11 +156,11 @@ public class TwitterSpout  extends BaseRichSpout {
                 if(seconds>blockTimeInterval )
                 {
                     dates.add(currentDate);
-                    if(dates.size() > 10) dates.remove(0);
+                    if(dates.size() > trainSize) dates.remove(0);
                     currentDate = tweetDate;
 
                     System.out.println("Spout::: current " + currentDate + " dates " + dates);
-                    if(dates.size() > 3) {
+                    if(dates.size() > compareSize) {
                         _collector.emit(new Values(ret, dates, currentDate, true, round++));
                     }
                     else

@@ -1,4 +1,4 @@
-package testtwitter.twitterWordCount;
+package bolts;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -19,7 +19,7 @@ public class EventCompareBolt extends BaseRichBolt {
     private long currentRound = 0;
     ArrayList<HashMap<String, Object>> wordList;
 
-    EventCompareBolt(int fileNum)
+    public EventCompareBolt(int fileNum)
     {
         this.fileNum = fileNum;
         wordList = new ArrayList<>();

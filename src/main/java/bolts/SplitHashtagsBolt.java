@@ -1,4 +1,4 @@
-package testtwitter.twitterWordCount;
+package bolts;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -7,9 +7,6 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import scala.util.parsing.combinator.testing.Str;
-import twitter4j.HashtagEntity;
-import twitter4j.Status;
 
 import java.util.List;
 import java.util.Map;

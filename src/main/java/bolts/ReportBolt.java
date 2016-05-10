@@ -1,4 +1,4 @@
-package testtwitter.twitterWordCount;
+package bolts;
 
 
 import backtype.storm.task.OutputCollector;
@@ -6,10 +6,6 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-import org.apache.storm.shade.org.joda.time.DateTime;
-import org.apache.storm.shade.org.joda.time.Duration;
-import org.apache.storm.shade.org.joda.time.Instant;
-import org.apache.storm.shade.org.joda.time.Interval;
 
 import java.io.*;
 import java.util.*;
@@ -30,12 +26,11 @@ public class ReportBolt extends BaseRichBolt{
     }
 
 
-    ReportBolt(String fileName, long writeIntervalInSeconds, int threshold, int fileNum)
+    public ReportBolt(String fileName, int threshold, int fileNum)
     {
         this.fileName = fileName;
         this.fileNum = fileNum;
         this.lastTime = new Date();
-        this.writeInterval = writeIntervalInSeconds;
         this.threshold = threshold;
         this.round = 0;
     }
@@ -53,14 +48,6 @@ public class ReportBolt extends BaseRichBolt{
         long round = tuple.getLongByField("round");
         this.counts.put(word, count);
 
-//        Date now = new Date();
-//        long seconds = (now.getTime()-lastTime.getTime())/1000;
-//
-//        if(seconds >= writeInterval )
-//        {
-//            writeToFile(now);
-//            lastTime = now;
-//        }
         if(this.round < round)
         {
             System.out.println("New count report: " + fileName + Long.toString(round));

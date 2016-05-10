@@ -1,4 +1,4 @@
-package testtwitter.twitterWordCount;
+package bolts;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -8,17 +8,14 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import nlp.TextAnalyzer;
-import twitter4j.HashtagEntity;
-import twitter4j.Status;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Created by ceren on 28.04.2016.
  */
-public class PreprocessTweet extends BaseRichBolt {
+public class PreprocessTweetBolt extends BaseRichBolt {
 
     private TextAnalyzer textAnalyzer;
     private OutputCollector collector;

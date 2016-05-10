@@ -1,4 +1,4 @@
-package testtwitter.twitterWordCount;
+package bolts;
 
 
 import backtype.storm.task.OutputCollector;
@@ -8,16 +8,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import org.apache.storm.shade.org.joda.time.DateTime;
-import org.apache.storm.shade.org.joda.time.Duration;
-import org.apache.storm.shade.org.joda.time.Instant;
-import org.apache.storm.shade.org.joda.time.Interval;
-import twitter4j.Status;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class DocumentCreator extends BaseRichBolt{
@@ -27,7 +19,7 @@ public class DocumentCreator extends BaseRichBolt{
     private boolean active = true;
     private String oldFile="";
 
-    DocumentCreator(int fileNum, boolean active)
+    public DocumentCreator(int fileNum, boolean active)
     {
         this.fileNum = fileNum;
         this.active  = active;

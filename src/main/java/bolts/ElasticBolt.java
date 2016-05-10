@@ -1,4 +1,4 @@
-package testtwitter.twitterWordCount;
+package bolts;
 /*
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;

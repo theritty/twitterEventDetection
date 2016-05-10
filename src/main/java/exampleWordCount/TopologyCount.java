@@ -1,4 +1,4 @@
-package testtwitter.exampleWordCount;
+package exampleWordCount;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;

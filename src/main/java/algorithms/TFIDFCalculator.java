@@ -1,6 +1,4 @@
-package testtwitter.twitterWordCount;
-
-import scala.util.parsing.combinator.testing.Str;
+package algorithms;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,7 +18,7 @@ public class TFIDFCalculator {
     public void readFiles(String fileNum, ArrayList<String> fileList, String currentFile) {
         if (docs == null)
         {
-            docs = new ArrayList<List<String>>();
+            docs = new ArrayList<>();
         }
 
         for(String file : fileList)

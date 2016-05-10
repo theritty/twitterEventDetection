@@ -1,5 +1,6 @@
-package testtwitter.twitterWordCount;
+package bolts;
 
+import algorithms.TFIDFCalculator;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -19,7 +20,7 @@ public class EventDetectorBolt extends BaseRichBolt {
     private OutputCollector collector;
     private int fileNum;
 
-    EventDetectorBolt(int fileNum)
+    public EventDetectorBolt(int fileNum)
     {
         this.fileNum = fileNum;
     }

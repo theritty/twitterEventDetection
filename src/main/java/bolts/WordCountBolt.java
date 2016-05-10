@@ -1,4 +1,4 @@
-package testtwitter.twitterWordCount;
+package bolts;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;

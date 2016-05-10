@@ -1,4 +1,4 @@
-package testtwitter.exampleWordCount;
+package exampleWordCount;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;

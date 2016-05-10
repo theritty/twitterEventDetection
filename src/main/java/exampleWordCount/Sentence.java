@@ -1,4 +1,4 @@
-package testtwitter.exampleWordCount;
+package exampleWordCount;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
