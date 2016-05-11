@@ -26,6 +26,7 @@ public class WordCountBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String inputBolt = tuple.getStringByField( "inputBolt" );
+        String source = (String) tuple.getValueByField( "source" );
         String word = tuple.getStringByField("word");
         long round = tuple.getLongByField("round");
 
@@ -35,7 +36,7 @@ public class WordCountBolt extends BaseRichBolt {
         }
         count++;
         this.counts.put(word, count);
-        this.collector.emit(new Values(word, count, inputBolt, round));
+        this.collector.emit(new Values(word, count, inputBolt, round,source));
         if(this.round < round)
         {
             this.counts.clear();
@@ -45,7 +46,7 @@ public class WordCountBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("word", "count", "inputBolt", "round"));
+        declarer.declare(new Fields("word", "count", "inputBolt", "round", "source"));
     }
 
 }

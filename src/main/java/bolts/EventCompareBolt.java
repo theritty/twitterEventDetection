@@ -15,13 +15,13 @@ import java.util.*;
 public class EventCompareBolt extends BaseRichBolt {
 
     private OutputCollector collector;
-    private int fileNum;
+    private String filePath;
     private long currentRound = 0;
     ArrayList<HashMap<String, Object>> wordList;
 
-    public EventCompareBolt(int fileNum)
+    public EventCompareBolt(String filePath, int fileNum)
     {
-        this.fileNum = fileNum;
+        this.filePath = filePath + fileNum;
         wordList = new ArrayList<>();
     }
 
@@ -38,6 +38,7 @@ public class EventCompareBolt extends BaseRichBolt {
         String key = tuple.getStringByField("key");
         String type = tuple.getStringByField("type");
         long round = tuple.getLongByField("round");
+        String source = (String) tuple.getValueByField( "source" );
 
         ArrayList<ArrayList<HashMap<String, Object>>> compareList = new ArrayList<>();
 
@@ -75,7 +76,7 @@ public class EventCompareBolt extends BaseRichBolt {
                 }
             }
             if(compareList.size()>0)
-                writeToFile(fileNum + "/events-" + round, compareList);
+                writeToFile(filePath + "/events-" + round, compareList);
             wordList.clear();
             currentRound = round;
         }

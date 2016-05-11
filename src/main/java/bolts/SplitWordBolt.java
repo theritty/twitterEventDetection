@@ -8,6 +8,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -23,47 +24,32 @@ public class SplitWordBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-//        Status tweet = (Status) tuple.getValueByField( "tweet" );
-        List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
+        List<String> tweets;
         long round = tuple.getLongByField("round");
+        String source = (String) tuple.getValueByField( "source" );
 
-//        String[] words = sentence_preprocessed.split(" ");
-//        for(String word : words){
-//            String wordAfterNlp = stemWord(word);
-//            if(!wordAfterNlp.equals("") && wordAfterNlp.length()>4 && !wordAfterNlp.startsWith("#"))
-//                this.collector.emit(new Values(wordAfterNlp, "WordCount", round));
-//        }
+        if(source.equals("twitter"))
+        {
+            tweets = (List<String>) tuple.getValueByField( "tweet" );
+        }
+        else
+        {
+            tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
+        }
 
         for(String tweet: tweets)
         {
             if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>4
                     && !tweet.equals("hiring") && !tweet.equals("careerarc"))
             {
-                this.collector.emit(new Values(tweet, "WordCount", round));
+                this.collector.emit(new Values(tweet, "WordCount", round, source));
             }
         }
-
     }
-
-//    public String removeUnnecessary(String sentence)
-//    {
-//        String sentence_processed = sentence.replaceAll("[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
-//        return sentence_processed;
-//
-//    }
-//    public String endWordElimination(String sentence)
-//    {
-//        return sentence;
-//    }
-//
-//    public String stemWord(String word)
-//    {
-//        return word;
-//    }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word", "inputBolt", "round"));
+        declarer.declare(new Fields("word", "inputBolt", "round", "source"));
     }
 }

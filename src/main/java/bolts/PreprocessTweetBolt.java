@@ -8,13 +8,12 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import nlp.TextAnalyzer;
+import twitter4j.Status;
 
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by ceren on 28.04.2016.
- */
+
 public class PreprocessTweetBolt extends BaseRichBolt {
 
     private TextAnalyzer textAnalyzer;
@@ -27,25 +26,31 @@ public class PreprocessTweetBolt extends BaseRichBolt {
         textAnalyzer = new TextAnalyzer();
     }
 
-    //new Values(ret, dates, currentDate, false, round)
-    //new Fields("tweet", "dates","currentDate","blockEnd", "round")
     @Override
     public void execute(Tuple tuple) {
-
-//        String tweet = ((Status) tuple.getValueByField( "tweet" )).getText();
-        String tweet = (String) tuple.getValueByField( "tweet" );
+        String tweet;
+        String source = (String) tuple.getValueByField( "source" );
+        if(source.equals("twitter"))
+        {
+            tweet = ((Status) tuple.getValueByField( "tweet" )).getText();
+        }
+        else
+        {
+            tweet = (String) tuple.getValueByField( "tweet" );
+        }
 
         List<String> preprocessText = textAnalyzer.extractWordList(tweet);
         this.collector.emit(new Values(preprocessText,
                 tuple.getValueByField( "dates" ),
                 tuple.getValueByField( "currentDate" ),
                 tuple.getValueByField( "blockEnd" ),
-                tuple.getLongByField("round")));
+                tuple.getLongByField("round"),
+                source));
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("tweet","dates","currentDate","blockEnd", "round"));
+        declarer.declare(new Fields("tweet","dates","currentDate","blockEnd", "round", "source"));
     }
 }

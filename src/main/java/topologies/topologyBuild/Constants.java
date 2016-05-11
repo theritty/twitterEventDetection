@@ -19,5 +19,7 @@ public class Constants {
     public static final String EVENT_COMPARE_BOLT = "event-compare-bolt";
     public static final String EVENT_DETECTOR_MANAGER_BOLT = "event-detector-manager-bolt";
     public static final String TOPOLOGY_NAME = "word-count-topology";
+    public static final String RESULT_FILE_PATH = "/home/ceren/Desktop/CENG/tez/results/";
+    public static final String STREAM_FILE_PATH = "/home/ceren/Desktop/CENG/tez/streamData2/";
 
 }

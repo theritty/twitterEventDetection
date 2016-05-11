@@ -71,7 +71,7 @@ public class FileSpout extends BaseRichSpout {
                      * By each line emmit a new value with the line as a their
                      */
 //                    Thread.sleep(5);
-                    collector.emit(new Values(str, dates, currentDate, false, round));
+                    collector.emit(new Values(str, dates, currentDate, false, round, "file", "fileSpout"));
 
                 }
 //                System.out.println("Spout::: current " + currentDate + " dates " + dates);
@@ -81,7 +81,7 @@ public class FileSpout extends BaseRichSpout {
                         System.out.println("\t " + d);
 
                     collector.emit(new Values("XXXXXXXXXXXXX----------END----------XXXXXXXXXXXXX",
-                            dates, currentDate, true, round++));
+                            dates, currentDate, true, round++, "file", "fileSpout"));
                 }
                 else
                 {
@@ -89,7 +89,7 @@ public class FileSpout extends BaseRichSpout {
                     for(Date d : dates)
                         System.out.println("\t " + d);
                     collector.emit(new Values("XXXXXXXXXXXXX----------END----------XXXXXXXXXXXXX",
-                            dates, currentDate, false, round));
+                            dates, currentDate, false, round, "file", "fileSpout"));
                 }
 
             } catch (FileNotFoundException e) {
@@ -145,7 +145,7 @@ public class FileSpout extends BaseRichSpout {
      * Declare the output field "word"
      */
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round"));
+        declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt"));
     }
 
 }

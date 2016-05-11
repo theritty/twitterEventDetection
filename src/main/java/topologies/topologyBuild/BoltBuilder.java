@@ -11,12 +11,11 @@ import java.util.Properties;
 
 
 public class BoltBuilder {
-    public static StormTopology prepareBolts(Properties properties)
+    public static StormTopology prepareBoltsForTwitter(Properties properties)
     {
         int COUNT_THRESHOLD = Integer.parseInt(properties.getProperty("topology.count.threshold"));
         double TIME_INTERVAL_IN_HOURS =  Double.parseDouble(properties.getProperty("topology.time.interval"));
         int FILENUM = Integer.parseInt(properties.getProperty("topology.file.number"));
-        boolean TWEET_DOC_CREATION = Boolean.parseBoolean(properties.getProperty("topology.tweet.doc.creation"));
 
         String CONSUMER_KEY = properties.getProperty("consumer.key");
         String CONSUMER_SECRET = properties.getProperty("consumer.secret");
@@ -28,51 +27,72 @@ public class BoltBuilder {
         TwitterSpout spout = new TwitterSpout(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN,
                 ACCESS_TOKEN_SECRET, TIME_INTERVAL_IN_HOURS, Integer.parseInt(properties.getProperty("topology.train.size")),
                 Integer.parseInt(properties.getProperty("topology.compare.size")));
+
+        PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
+        DocumentCreator documentCreator = new DocumentCreator(Constants.STREAM_FILE_PATH, FILENUM, true);
+
+        System.out.println("time interval " + TIME_INTERVAL_IN_HOURS*60*60 + " & threshold " + COUNT_THRESHOLD);
+
+        TopologyHelper.createFolder(Constants.STREAM_FILE_PATH + Integer.toString(FILENUM));
+        builder.setSpout(Constants.TWITTER_SPOUT_ID, spout);
+        builder.setBolt(Constants.PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(Constants.TWITTER_SPOUT_ID);
+
+//        builder.setBolt( CASS_BOLT_ID, new CassBolt() ).shuffleGrouping( TWITTER_SPOUT_ID);
+        builder.setBolt( Constants.DOCUMENT_CREATOR, documentCreator).
+                shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
+        return builder.createTopology();
+    }
+
+
+    public static StormTopology prepareBolts(Properties properties)
+    {
+        int COUNT_THRESHOLD = Integer.parseInt(properties.getProperty("topology.count.threshold"));
+        int FILENUM = Integer.parseInt(properties.getProperty("topology.file.number"));
+        boolean TWEET_DOC_CREATION = Boolean.parseBoolean(properties.getProperty("topology.tweet.doc.creation"));
+
+        TopologyBuilder builder = new TopologyBuilder();
+
         FileSpout fileSpout = new FileSpout(Integer.parseInt(properties.getProperty("topology.train.size")),
                 Integer.parseInt(properties.getProperty("topology.compare.size")));
 
-        PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
+//        PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
         SplitWordBolt splitBolt = new SplitWordBolt();
         SplitHashtagsBolt splitHashtagsBolt = new SplitHashtagsBolt();
         WordCountBolt countBolt = new WordCountBolt();
         WordCountBolt countHashtagBolt = new WordCountBolt();
-        ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, FILENUM);
-        ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, FILENUM);
-        DocumentCreator documentCreator = new DocumentCreator(FILENUM, TWEET_DOC_CREATION);
-        EventDetectorBolt eventDetectorBolt = new EventDetectorBolt(FILENUM);
+        ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
+        ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
+//        DocumentCreator documentCreator = new DocumentCreator(Constants.RESULT_FILE_PATH, FILENUM, TWEET_DOC_CREATION);
+        EventDetectorBolt eventDetectorBolt = new EventDetectorBolt(Constants.RESULT_FILE_PATH, FILENUM);
         EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(COUNT_THRESHOLD);
-        EventCompareBolt eventCompareBolt = new EventCompareBolt(FILENUM);
+        EventCompareBolt eventCompareBolt = new EventCompareBolt(Constants.RESULT_FILE_PATH, FILENUM);
 
-        System.out.println("time interval " + TIME_INTERVAL_IN_HOURS*60*60 + " & threshold " + COUNT_THRESHOLD);
+        System.out.println("Count threshold " + COUNT_THRESHOLD);
 
-        TopologyHelper.createFolder(Integer.toString(FILENUM));
-//        builder.setSpout(TWITTER_SPOUT_ID, spout);
-//        builder.setBolt(PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(TWITTER_SPOUT_ID);
-
+        TopologyHelper.createFolder(Constants.RESULT_FILE_PATH + Integer.toString(FILENUM));
 
         builder.setSpout(Constants.FILE_SPOUT_ID, fileSpout);
-        builder.setBolt(Constants.PREPROCESS_SPOUT_ID, preprocessor).
-                shuffleGrouping(Constants.FILE_SPOUT_ID);
+//        builder.setBolt(Constants.PREPROCESS_SPOUT_ID, preprocessor).
+//                shuffleGrouping(Constants.FILE_SPOUT_ID);
 
         builder.setBolt(Constants.SPLIT_BOLT_ID, splitBolt).
-                shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
+                shuffleGrouping(Constants.FILE_SPOUT_ID);
         builder.setBolt(Constants.COUNT_BOLT_ID, countBolt,5).
                 fieldsGrouping(Constants.SPLIT_BOLT_ID, new Fields("word"));
         builder.setBolt(Constants.REPORT_BOLT_ID, reportBolt).
                 globalGrouping(Constants.COUNT_BOLT_ID);
 
         builder.setBolt(Constants.SPLIT_HASHTAG_BOLT_ID, splitHashtagsBolt).
-                shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
+                shuffleGrouping(Constants.FILE_SPOUT_ID);
         builder.setBolt(Constants.COUNT_HASHTAG_BOLT_ID, countHashtagBolt,5).
                 fieldsGrouping(Constants.SPLIT_HASHTAG_BOLT_ID, new Fields("word"));
         builder.setBolt(Constants.REPORT_HASHTAG_BOLT_ID, reportHashtagBolt).
                 globalGrouping(Constants.COUNT_HASHTAG_BOLT_ID);
-
-//        builder.setBolt( CASS_BOLT_ID, new CassBolt() ).shuffleGrouping( TWITTER_SPOUT_ID);
-        builder.setBolt( Constants.DOCUMENT_CREATOR, documentCreator).
-                shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
+//
+//        builder.setBolt( Constants.DOCUMENT_CREATOR, documentCreator).
+//                shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
         builder.setBolt( Constants.EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).
-                globalGrouping(Constants.DOCUMENT_CREATOR).
+                globalGrouping(Constants.FILE_SPOUT_ID).
                 globalGrouping(Constants.COUNT_BOLT_ID).
                 globalGrouping(Constants.COUNT_HASHTAG_BOLT_ID);
         builder.setBolt( Constants.EVENT_DETECTOR_BOLT, eventDetectorBolt,5).

@@ -8,12 +8,11 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by ceren on 08.03.2016.
- */
 public class SplitHashtagsBolt extends BaseRichBolt {
 
     private OutputCollector collector;
@@ -26,35 +25,32 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-//        Status tweet = (Status) tuple.getValueByField( "tweet" );
+        List<String> tweets;
         long round = tuple.getLongByField("round");
+        String source = (String) tuple.getValueByField( "source" );
 
-        //Fields("tweet","dates","currentDate","blockEnd", "round")
-        List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
-
-//        HashtagEntity[] hashtags = tweet.getHashtagEntities();
+        if(source.equals("twitter"))
+        {
+            tweets = (List<String>) tuple.getValueByField( "tweet" );
+        }
+        else
+        {
+            tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
+        }
 
         for(String tweet: tweets)
         {
             if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>4
                     && !tweet.equals("#hiring") && !tweet.equals("#careerarc"))
             {
-
-                this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round));
+                this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round, source));
             }
         }
-//        for(HashtagEntity hashtagEntity : hashtags){
-//            String word_prev = hashtagEntity.getText().toLowerCase();
-//            String word = word_prev.replaceAll(
-//                    "[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
-//
-//
-//        }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word", "inputBolt", "round"));
+        declarer.declare(new Fields("word", "inputBolt", "round", "source"));
     }
 }

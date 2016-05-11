@@ -35,6 +35,7 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String inputBolt = tuple.getStringByField( "inputBolt" );
+        String source = (String) tuple.getValueByField( "source" );
         if(inputBolt.equals("WordCount"))
         {
             String word = tuple.getStringByField("word");
@@ -68,7 +69,6 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
                 {
                     dateList.add(date.toString() + ".txt");
                 }
-//                dateList.remove(dateList.size()-1);
 
                 ArrayList<String> words = new ArrayList<>();
                 ArrayList<String> hashtags = new ArrayList<>();
@@ -88,14 +88,14 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
                 for(String word : words)
                 {
                     if(word != null) {
-                        this.collector.emit(new Values(dateList, word, "word", round));
+                        this.collector.emit(new Values(dateList, word, "word", round, source));
                     }
                 }
 
                 for(String hashtag : hashtags)
                 {
                     if(hashtag != null) {
-                        this.collector.emit(new Values(dateList, hashtag, "hashtag", round));
+                        this.collector.emit(new Values(dateList, hashtag, "hashtag", round, source));
                     }
                 }
             }
@@ -154,6 +154,6 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("dates", "key", "type", "round"));
+        declarer.declare(new Fields("dates", "key", "type", "round", "source"));
     }
 }

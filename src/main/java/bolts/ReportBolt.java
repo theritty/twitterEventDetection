@@ -13,12 +13,10 @@ import java.util.*;
 public class ReportBolt extends BaseRichBolt{
 
     private HashMap<String, Long> counts = new HashMap<>();
-    private String fileName;
+    private String filePath;
     private Date lastTime;
-    private long writeInterval;
     private long round;
     private int threshold;
-    private int fileNum;
 
     @Override
     public String toString() {
@@ -26,10 +24,9 @@ public class ReportBolt extends BaseRichBolt{
     }
 
 
-    public ReportBolt(String fileName, int threshold, int fileNum)
+    public ReportBolt(String fileName, int threshold, String filePath, int fileNum)
     {
-        this.fileName = fileName;
-        this.fileNum = fileNum;
+        this.filePath = filePath + fileNum + "/" + fileName;
         this.lastTime = new Date();
         this.threshold = threshold;
         this.round = 0;
@@ -50,7 +47,7 @@ public class ReportBolt extends BaseRichBolt{
 
         if(this.round < round)
         {
-            System.out.println("New count report: " + fileName + Long.toString(round));
+            System.out.println("New count report: " + filePath + Long.toString(round));
             writeToFile(this.round);
             this.round = round;
         }
@@ -65,7 +62,7 @@ public class ReportBolt extends BaseRichBolt{
     {
         try {
             PrintWriter writer;
-            writer = new PrintWriter(fileNum + "/" + fileName + Long.toString(round) + ".txt");
+            writer = new PrintWriter(filePath + Long.toString(round) + ".txt");
             write(writer, "----- FINAL COUNTS -----");
 
             List<Map.Entry<String,Long>> entries = new ArrayList<>(

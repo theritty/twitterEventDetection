@@ -15,13 +15,13 @@ import java.util.*;
 public class DocumentCreator extends BaseRichBolt{
 
     private OutputCollector collector;
-    private int fileNum;
+    private String fileLocation;
     private boolean active = true;
     private String oldFile="";
 
-    public DocumentCreator(int fileNum, boolean active)
+    public DocumentCreator(String prefix, int fileNum, boolean active)
     {
-        this.fileNum = fileNum;
+        this.fileLocation = prefix + fileNum;
         this.active  = active;
     }
 
@@ -38,8 +38,9 @@ public class DocumentCreator extends BaseRichBolt{
         String fileName = currentDate.toString() + ".txt";
         List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
         long round = tuple.getLongByField("round");
+        String source = (String) tuple.getValueByField( "source" );
 
-        String tweet = "";// tweets.toString(); //tweet_pre.getText().toLowerCase();
+        String tweet = "";
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
         if(active) {
@@ -47,8 +48,6 @@ public class DocumentCreator extends BaseRichBolt{
                 tweet += twee + " ";
             }
 
-//        System.out.println("Writing to file " + fileName);
-//            System.out.println("Doc:::  filename " + fileName);
             if(!oldFile.equals(fileName))
             {
                 System.out.println("new Tweet Doc created: " + fileName);
@@ -59,20 +58,20 @@ public class DocumentCreator extends BaseRichBolt{
 
         if(blockEnd){
             System.out.println("Doc::: current " + currentDate + " dates " + dates + " filename " + fileName);
-            this.collector.emit(new Values(dates, blockEnd, "DocumentCreator", round));
+            this.collector.emit(new Values(dates, blockEnd, "DocumentCreator", round, source));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("dates", "blockEnd", "inputBolt", "round"));
+        declarer.declare(new Fields("dates", "blockEnd", "inputBolt", "round", "source"));
     }
 
     public void writeToFile(String fileName, String tweet)
     {
         try {
             PrintWriter writer = new PrintWriter(new FileOutputStream(
-                    new File(fileNum + "/" + fileName),
+                    new File(fileLocation + "/" + fileName),
                     true /* append = true */));
 
             write(writer, tweet);

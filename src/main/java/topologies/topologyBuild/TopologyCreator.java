@@ -32,6 +32,18 @@ public class TopologyCreator {
         config = topologyHelper.copyPropertiesToStormConfig(properties);
     }
 
+    public void submitTwitterStreamTopology()
+    {
+        try
+        {
+            loadTopologyPropertiesAndSubmit( properties, config, BoltBuilder.prepareBoltsForTwitter(properties) );
+        }
+        catch ( TTransportException | InvalidTopologyException | AuthorizationException | AlreadyAliveException | InterruptedException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
     public void submitTopology()
     {
         try

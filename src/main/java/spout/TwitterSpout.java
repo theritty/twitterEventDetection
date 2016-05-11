@@ -161,16 +161,16 @@ public class TwitterSpout  extends BaseRichSpout {
 
                     System.out.println("Spout::: current " + currentDate + " dates " + dates);
                     if(dates.size() > compareSize) {
-                        _collector.emit(new Values(ret, dates, currentDate, true, round++));
+                        _collector.emit(new Values(ret, dates, currentDate, true, round++, "twitter"));
                     }
                     else
                     {
-                        _collector.emit(new Values(ret, dates, currentDate, false, round));
+                        _collector.emit(new Values(ret, dates, currentDate, false, round, "twitter"));
                     }
                 }
                 else
                 {
-                    _collector.emit(new Values(ret, dates, currentDate, false, round));
+                    _collector.emit(new Values(ret, dates, currentDate, false, round, "twitter"));
                 }
             }
 
@@ -203,7 +203,7 @@ public class TwitterSpout  extends BaseRichSpout {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round"));
+        declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round", "source"));
     }
 
 
