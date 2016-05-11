@@ -17,10 +17,12 @@ public class EventCompareBolt extends BaseRichBolt {
     private OutputCollector collector;
     private String filePath;
     private long currentRound = 0;
+    private double rateForSameEvent;
     ArrayList<HashMap<String, Object>> wordList;
 
-    public EventCompareBolt(String filePath, int fileNum)
+    public EventCompareBolt(String filePath, int fileNum, double rateForSameEvent)
     {
+        this.rateForSameEvent = rateForSameEvent;
         this.filePath = filePath + fileNum;
         wordList = new ArrayList<>();
     }
@@ -38,7 +40,6 @@ public class EventCompareBolt extends BaseRichBolt {
         String key = tuple.getStringByField("key");
         String type = tuple.getStringByField("type");
         long round = tuple.getLongByField("round");
-        String source = (String) tuple.getValueByField( "source" );
 
         ArrayList<ArrayList<HashMap<String, Object>>> compareList = new ArrayList<>();
 
@@ -59,7 +60,7 @@ public class EventCompareBolt extends BaseRichBolt {
                             if (currentTfidfs.get(i) != 0 && tfidfToCompare.get(i) != 0) cnt++;
                         }
 
-                        if ( ( (double) cnt / (double) tfidfToCompare.size()) > 0.5) {
+                        if ( ( (double) cnt / (double) tfidfToCompare.size()) > rateForSameEvent) {
                             added = true;
                             al.add(hm);
                             break;

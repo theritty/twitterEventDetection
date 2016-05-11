@@ -19,9 +19,11 @@ public class EventDetectorBolt extends BaseRichBolt {
 
     private OutputCollector collector;
     private String filePath;
+    private double tfidfEventRate;
 
-    public EventDetectorBolt(String filePath, int fileNum)
+    public EventDetectorBolt(String filePath, int fileNum, double tfidfEventRate)
     {
+        this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;
     }
 
@@ -41,9 +43,6 @@ public class EventDetectorBolt extends BaseRichBolt {
         String source = (String) tuple.getValueByField( "source" );
 
         ArrayList<Double> tfidfs = new ArrayList<>();
-
-
-        System.out.println("detect::: dates " + dates);
 
         for (String date: dates)
         {
@@ -69,11 +68,11 @@ public class EventDetectorBolt extends BaseRichBolt {
         }
         if(!allzero) {
             writeToFile(filePath + "/tfidf-" + Long.toString(round) + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
-            if(tfidfs.get(tfidfs.size()-2) == 0 && tfidfs.get(tfidfs.size()-1)/0.0001>50)
+            if(tfidfs.get(tfidfs.size()-2) == 0 && tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
             {
                 this.collector.emit(new Values(key, tfidfs, type, round, source));
             }
-            else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>1)
+            else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>tfidfEventRate)
             {
                 this.collector.emit(new Values(key, tfidfs, type, round, source));
             }

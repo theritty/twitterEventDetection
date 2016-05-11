@@ -60,7 +60,7 @@ public class FileSpout extends BaseRichSpout {
         {
             try {
                 if(currentDate!=null) dates.add(currentDate);
-                if(dates.size() > trainSize) dates.remove(0);
+                if(dates.size() > compareSize) dates.remove(0);
                 currentDate = fileName;
 
                 String currentFileToRead = "tweets/" + fileName.toString() + ".txt";
@@ -75,7 +75,7 @@ public class FileSpout extends BaseRichSpout {
 
                 }
 //                System.out.println("Spout::: current " + currentDate + " dates " + dates);
-                if(dates.size() > compareSize) {
+                if(dates.size() > trainSize) {
                     System.out.println("Block End " + currentDate + " Dates: ");
                     for(Date d : dates)
                         System.out.println("\t " + d);
