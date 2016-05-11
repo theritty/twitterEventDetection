@@ -104,7 +104,7 @@ public class TFIDFCalculator {
         double tf = tf() ;
         double idf = idf();
         double result = tf * idf;
-//        System.out.println( "Term: " + term + " current doc: " + currentFile + " tf: " + Double.toString(tf) +  " idf: " + Double.toString(idf) +" result " + result );
+        System.out.println( "Term: " + term + " current doc: " + currentFile + " tf: " + Double.toString(tf) +  " idf: " + Double.toString(idf) +" result " + result );
 
 
 //        System.out.println("---------------------------------");

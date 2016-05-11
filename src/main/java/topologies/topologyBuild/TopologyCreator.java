@@ -100,7 +100,7 @@ public class TopologyCreator {
 
             case ( "local" ):
                 if(localCluster==null) localCluster = new LocalCluster();
-                localCluster.submitTopology( topologyName, config, stormTopology );
+                localCluster.submitTopology( topologyName, new Config(), stormTopology );
 
                 long sleep_hour=50;
                 long sleep_minute=50;
