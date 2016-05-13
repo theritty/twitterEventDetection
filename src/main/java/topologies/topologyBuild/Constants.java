@@ -21,5 +21,6 @@ public class Constants {
     public static final String TOPOLOGY_NAME = "word-count-topology";
     public static final String RESULT_FILE_PATH = "/home/ceren/Desktop/CENG/tez/results/";
     public static final String STREAM_FILE_PATH = "/home/ceren/Desktop/CENG/tez/streamData2/";
+    public static final String INPUT_FILE_PATH = "/home/ceren/Desktop/CENG/tez/streamData2/";
 
 }

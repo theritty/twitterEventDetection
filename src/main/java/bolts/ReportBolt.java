@@ -43,14 +43,14 @@ public class ReportBolt extends BaseRichBolt{
         String word = tuple.getStringByField("word");
         Long count = tuple.getLongByField("count");
         long round = tuple.getLongByField("round");
-        this.counts.put(word, count);
-
-        if(this.round < round)
+        if(this.round < round && !this.counts.isEmpty())
         {
 //            System.out.println("New count report: " + filePath + Long.toString(round));
             writeToFile(this.round);
             this.round = round;
+            this.counts.clear();
         }
+        this.counts.put(word, count);
     }
 
     @Override

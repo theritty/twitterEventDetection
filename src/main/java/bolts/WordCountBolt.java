@@ -34,14 +34,17 @@ public class WordCountBolt extends BaseRichBolt {
         if(count == null){
             count = 0L;
         }
-        count++;
-        this.counts.put(word, count);
         this.collector.emit(new Values(word, count, inputBolt, round,source));
+
         if(this.round < round)
         {
             this.counts.clear();
             this.round = round;
         }
+
+        count++;
+        this.counts.put(word, count);
+
     }
 
     @Override

@@ -48,14 +48,14 @@ public class BoltBuilder {
     {
         int COUNT_THRESHOLD = Integer.parseInt(properties.getProperty("topology.count.threshold"));
         int FILENUM = Integer.parseInt(properties.getProperty("topology.file.number"));
-        boolean TWEET_DOC_CREATION = Boolean.parseBoolean(properties.getProperty("topology.tweet.doc.creation"));
         double TFIDF_EVENT_RATE = Double.parseDouble(properties.getProperty("topology.tfidf.event.rate"));
         double RATE_FOR_SAME_EVENT = Double.parseDouble(properties.getProperty("topology.rate.for.same.event"));
 
         TopologyBuilder builder = new TopologyBuilder();
 
         FileSpout fileSpout = new FileSpout(Integer.parseInt(properties.getProperty("topology.train.size")),
-                Integer.parseInt(properties.getProperty("topology.compare.size")));
+                Integer.parseInt(properties.getProperty("topology.compare.size")),
+                Integer.parseInt(properties.getProperty("topology.input.file.number")));
 
 //        PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
         SplitWordBolt splitBolt = new SplitWordBolt();
@@ -65,7 +65,8 @@ public class BoltBuilder {
         ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
         ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
 //        DocumentCreator documentCreator = new DocumentCreator(Constants.RESULT_FILE_PATH, FILENUM, TWEET_DOC_CREATION);
-        EventDetectorBolt eventDetectorBolt = new EventDetectorBolt(Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE);
+        EventDetectorBolt eventDetectorBolt = new EventDetectorBolt(Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE,
+                Integer.parseInt(properties.getProperty("topology.input.file.number")));
         EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(COUNT_THRESHOLD);
         EventCompareBolt eventCompareBolt = new EventCompareBolt(Constants.RESULT_FILE_PATH, FILENUM, RATE_FOR_SAME_EVENT);
 

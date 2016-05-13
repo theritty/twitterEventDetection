@@ -12,6 +12,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import topologies.topologyBuild.Constants;
 
 public class FileSpout extends BaseRichSpout {
 
@@ -24,24 +25,29 @@ public class FileSpout extends BaseRichSpout {
     long round ;
     int trainSize;
     int compareSize;
+    int inputFileNum;
 
-    public FileSpout(int trainSize, int compareSize)
+    public FileSpout(int trainSize, int compareSize, int inputFileNum)
     {
         fileNames = new ArrayList<>();
         round = 0;
         this.trainSize = trainSize;
         this.compareSize = compareSize;
+        this.inputFileNum = inputFileNum;
     }
+    @Override
     public void ack(Object msgId) {}
+    @Override
     public void close() {}
 
-
+    @Override
     public void fail(Object msgId) {}
 
     /**
      * The only thing that the methods will do It is emit each
      * file line
      */
+    @Override
     public void nextTuple() {
         /**
          * The nextuple it is called forever, so if we have been readed the file
@@ -63,7 +69,7 @@ public class FileSpout extends BaseRichSpout {
                 if(dates.size() > compareSize) dates.remove(0);
                 currentDate = fileName;
 
-                String currentFileToRead = "tweets/" + fileName.toString() + ".txt";
+                String currentFileToRead = Constants.INPUT_FILE_PATH + inputFileNum + "/" + fileName.toString() + ".txt";
                 this.fileReader = new FileReader(currentFileToRead);
                 BufferedReader reader = new BufferedReader(fileReader);
                 while((str = reader.readLine()) != null){
@@ -110,10 +116,11 @@ public class FileSpout extends BaseRichSpout {
     /**
      * We will create the file and get the collector object
      */
+    @Override
     public void open(Map conf, TopologyContext context,
                      SpoutOutputCollector collector) {
 
-        File folder = new File("tweets");
+        File folder = new File(Constants.INPUT_FILE_PATH + inputFileNum);
         File[] listOfFiles = folder.listFiles();
 
         for (int i = 0; i < listOfFiles.length; i++) {
@@ -144,6 +151,7 @@ public class FileSpout extends BaseRichSpout {
     /**
      * Declare the output field "word"
      */
+    @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt"));
     }

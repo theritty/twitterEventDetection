@@ -8,6 +8,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import topologies.topologyBuild.Constants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,12 +20,15 @@ public class EventDetectorBolt extends BaseRichBolt {
 
     private OutputCollector collector;
     private String filePath;
+    private int inputFileNum;
     private double tfidfEventRate;
 
-    public EventDetectorBolt(String filePath, int fileNum, double tfidfEventRate)
+
+    public EventDetectorBolt(String filePath, int fileNum, double tfidfEventRate, int inputFileNum)
     {
         this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;
+        this.inputFileNum = inputFileNum;
     }
 
     @Override
@@ -49,11 +53,11 @@ public class EventDetectorBolt extends BaseRichBolt {
             TFIDFCalculator calculator = new TFIDFCalculator();
             if(source.equals("twitter"))
             {
-                tfidfs.add(calculator.tfIdf(filePath, dates,key,date));
+                tfidfs.add(calculator.tfIdf(Constants.INPUT_FILE_PATH + inputFileNum, dates,key,date));
             }
             else
             {
-                tfidfs.add(calculator.tfIdf("tweets", dates,key,date));
+                tfidfs.add(calculator.tfIdf(Constants.INPUT_FILE_PATH + inputFileNum, dates,key,date));
             }
         }
 
