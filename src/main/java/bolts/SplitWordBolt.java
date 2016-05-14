@@ -8,9 +8,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SplitWordBolt extends BaseRichBolt {
 
@@ -27,6 +25,7 @@ public class SplitWordBolt extends BaseRichBolt {
         List<String> tweets;
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
+        Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
         if(source.equals("twitter"))
         {
@@ -39,17 +38,22 @@ public class SplitWordBolt extends BaseRichBolt {
 
         for(String tweet: tweets)
         {
-            if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>4
-                    && !tweet.equals("hiring") && !tweet.equals("careerarc"))
+            if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>2
+                    && !tweet.equals("hiring") && !tweet.equals("careerarc") && !tweet.equals("BLOCKEND"))
             {
-                this.collector.emit(new Values(tweet, "WordCount", round, source));
+                this.collector.emit(new Values(tweet, "WordCount", round, source, false, null));
             }
+        }
+        if(blockEnd)
+        {
+            ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
+            this.collector.emit(new Values("BLOCKEND", "WordCount", round, source, true, dates));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word", "inputBolt", "round", "source"));
+        declarer.declare(new Fields("word", "inputBolt", "round", "source", "blockEnd", "dates"));
     }
 }

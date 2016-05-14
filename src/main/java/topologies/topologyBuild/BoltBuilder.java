@@ -60,14 +60,14 @@ public class BoltBuilder {
 //        PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
         SplitWordBolt splitBolt = new SplitWordBolt();
         SplitHashtagsBolt splitHashtagsBolt = new SplitHashtagsBolt();
-        WordCountBolt countBolt = new WordCountBolt();
-        WordCountBolt countHashtagBolt = new WordCountBolt();
+        WordCountBolt countBolt = new WordCountBolt(COUNT_THRESHOLD);
+        WordCountBolt countHashtagBolt = new WordCountBolt(COUNT_THRESHOLD);
         ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
         ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
 //        DocumentCreator documentCreator = new DocumentCreator(Constants.RESULT_FILE_PATH, FILENUM, TWEET_DOC_CREATION);
         EventDetectorBolt eventDetectorBolt = new EventDetectorBolt(Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE,
                 Integer.parseInt(properties.getProperty("topology.input.file.number")));
-        EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt(COUNT_THRESHOLD);
+        EventDetectorManagerBolt eventDetectorManagerBolt = new EventDetectorManagerBolt();
         EventCompareBolt eventCompareBolt = new EventCompareBolt(Constants.RESULT_FILE_PATH, FILENUM, RATE_FOR_SAME_EVENT);
 
         System.out.println("Count threshold " + COUNT_THRESHOLD);
@@ -95,7 +95,7 @@ public class BoltBuilder {
 //        builder.setBolt( Constants.DOCUMENT_CREATOR, documentCreator).
 //                shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
         builder.setBolt( Constants.EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).
-                globalGrouping(Constants.FILE_SPOUT_ID).
+//                globalGrouping(Constants.FILE_SPOUT_ID).
                 globalGrouping(Constants.COUNT_BOLT_ID).
                 globalGrouping(Constants.COUNT_HASHTAG_BOLT_ID);
         builder.setBolt( Constants.EVENT_DETECTOR_BOLT, eventDetectorBolt,5).

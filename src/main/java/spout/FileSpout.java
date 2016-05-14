@@ -65,9 +65,9 @@ public class FileSpout extends BaseRichSpout {
         for(Date fileName: fileNames)
         {
             try {
+                currentDate = fileName;
                 if(currentDate!=null) dates.add(currentDate);
                 if(dates.size() > compareSize) dates.remove(0);
-                currentDate = fileName;
 
                 String currentFileToRead = Constants.INPUT_FILE_PATH + inputFileNum + "/" + fileName.toString() + ".txt";
                 this.fileReader = new FileReader(currentFileToRead);
@@ -82,20 +82,20 @@ public class FileSpout extends BaseRichSpout {
                 }
 //                System.out.println("Spout::: current " + currentDate + " dates " + dates);
                 if(dates.size() > trainSize) {
-                    System.out.println("Block End " + currentDate + " Dates: ");
-                    for(Date d : dates)
-                        System.out.println("\t " + d);
+//                    System.out.println("Block End " + currentDate + " Dates: ");
+//                    for(Date d : dates)
+//                        System.out.println("\t " + d);
 
-                    collector.emit(new Values("XXXXXXXXXXXXX----------END----------XXXXXXXXXXXXX",
+                    collector.emit(new Values("BLOCKEND",
                             dates, currentDate, true, round++, "file", "fileSpout"));
                 }
                 else
                 {
-                    System.out.println("First three " + currentDate + " Dates: " );
-                    for(Date d : dates)
-                        System.out.println("\t " + d);
-                    collector.emit(new Values("XXXXXXXXXXXXX----------END----------XXXXXXXXXXXXX",
-                            dates, currentDate, false, round, "file", "fileSpout"));
+//                    System.out.println("First three " + currentDate + " Dates: " );
+//                    for(Date d : dates)
+//                        System.out.println("\t " + d);
+                    collector.emit(new Values("BLOCKEND",
+                            dates, currentDate, false, round++, "file", "fileSpout"));
                 }
 
             } catch (FileNotFoundException e) {
@@ -124,7 +124,7 @@ public class FileSpout extends BaseRichSpout {
         File[] listOfFiles = folder.listFiles();
 
         for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
+            if (listOfFiles[i].isFile() && !listOfFiles[i].getName().contains("~") ) {
                 //Wed May 04 02:13:29 EEST 2016
 
                 try {
@@ -144,7 +144,7 @@ public class FileSpout extends BaseRichSpout {
             }
         });
 
-        System.out.println(fileNames.toString());
+//        System.out.println(fileNames.toString());
         this.collector = collector;
     }
 

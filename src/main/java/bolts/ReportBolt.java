@@ -11,25 +11,13 @@ import java.io.*;
 import java.util.*;
 
 public class ReportBolt extends BaseRichBolt{
-
-    private HashMap<String, Long> counts = new HashMap<>();
+    private HashMap<Long, RoundInfo> roundInfoList;
     private String filePath;
-    private Date lastTime;
-    private long round;
-    private int threshold;
-
-    @Override
-    public String toString() {
-        return counts.toString();
-    }
-
 
     public ReportBolt(String fileName, int threshold, String filePath, int fileNum)
     {
         this.filePath = filePath + fileNum + "/" + fileName;
-        this.lastTime = new Date();
-        this.threshold = threshold;
-        this.round = 0;
+        roundInfoList = new HashMap<>();
     }
 
     @Override
@@ -40,17 +28,45 @@ public class ReportBolt extends BaseRichBolt{
 
     @Override
     public void execute(Tuple tuple) {
+        String inputBolt = tuple.getStringByField( "inputBolt" );
+        long round = tuple.getLongByField("round");
         String word = tuple.getStringByField("word");
         Long count = tuple.getLongByField("count");
-        long round = tuple.getLongByField("round");
-        if(this.round < round && !this.counts.isEmpty())
+        Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
+
+        RoundInfo roundInfo;
+        if(roundInfoList.get(round) != null)
         {
-//            System.out.println("New count report: " + filePath + Long.toString(round));
-            writeToFile(this.round);
-            this.round = round;
-            this.counts.clear();
+            roundInfo = roundInfoList.get(round);
         }
-        this.counts.put(word, count);
+        else
+        {
+            roundInfo = new RoundInfo();
+            roundInfoList.put(round, roundInfo);
+        }
+
+        if(inputBolt.equals("WordCount"))
+        {
+            if(blockEnd && roundInfo.getWordCounts().size()>0)
+            {
+                writeToFile(round, roundInfo.getWordCounts());
+            }
+            else
+            {
+                roundInfo.putWord(word, count);
+            }
+        }
+        else if(inputBolt.equals("HashtagCount"))
+        {
+            if(blockEnd && roundInfo.getWordCounts().size()>0)
+            {
+                writeToFile(round, roundInfo.getHashtagCounts());
+            }
+            else
+            {
+                roundInfo.putHashtag(word, count);
+            }
+        }
     }
 
     @Override
@@ -58,7 +74,7 @@ public class ReportBolt extends BaseRichBolt{
         // this bolt does not emit anything
     }
 
-    public void writeToFile(long round)
+    public void writeToFile(long round, HashMap<String, Long> countList)
     {
         try {
             PrintWriter writer;
@@ -66,7 +82,7 @@ public class ReportBolt extends BaseRichBolt{
             write(writer, "----- FINAL COUNTS -----");
 
             List<Map.Entry<String,Long>> entries = new ArrayList<>(
-                    counts.entrySet()
+                    countList.entrySet()
             );
             Collections.sort(
                     entries
