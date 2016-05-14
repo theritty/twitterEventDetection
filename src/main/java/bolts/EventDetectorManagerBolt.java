@@ -82,7 +82,8 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
         if(roundInfo.isEndOfRound())
         {
             ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
-            System.out.println("MNG - Blockend:: Round " + round + ", dates " + dates+
+            System.out.println("MNG - Blockend:: Round " + round + " word " + word
+                    + " count " + count + ", dates " + dates+
                     " roundtrack " + roundInfo.getRoundCheckInBits() );
             ArrayList<String> dateList = new ArrayList<>();
 

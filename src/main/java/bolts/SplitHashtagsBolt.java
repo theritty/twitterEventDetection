@@ -27,6 +27,7 @@ public class SplitHashtagsBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
+        ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
 
         if(source.equals("twitter"))
         {
@@ -42,12 +43,12 @@ public class SplitHashtagsBolt extends BaseRichBolt {
             if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>2
                     && !tweet.equals("#hiring") && !tweet.equals("#careerarc") && !tweet.equals("BLOCKEND"))
             {
-                this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round, source, false, null));
+                this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round,
+                        source, false, dates));
             }
         }
         if(blockEnd)
         {
-            ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
             this.collector.emit(new Values("BLOCKEND", "HashtagCount", round, source, true, dates));
         }
     }
