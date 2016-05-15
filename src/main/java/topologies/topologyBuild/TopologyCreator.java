@@ -102,11 +102,13 @@ public class TopologyCreator {
                 if(localCluster==null) localCluster = new LocalCluster();
                 localCluster.submitTopology( topologyName, new Config(), stormTopology );
 
+                long sleep_day=10;
                 long sleep_hour=50;
                 long sleep_minute=50;
                 long sleep_seconds=0;
-                Utils.sleep(sleep_hour*60*60*1000 + sleep_minute*60*1000 + sleep_seconds*1000);
+                Utils.sleep(sleep_day*24*60*60*1000 + sleep_hour*60*60*1000 + sleep_minute*60*1000 + sleep_seconds*1000);
 
+                System.out.println("Shutting down");
                 localCluster.killTopology(topologyName);
                 localCluster.shutdown();
 
