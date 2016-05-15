@@ -60,8 +60,8 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
                 roundInfo.putWord(word, count);
             }
 
-            System.out.println("MNG - WordCount:: Round " + round + ", word " + word+ ", count " + count +
-                    " roundtrack " + roundInfo.getRoundCheckInBits() + " blockend: " + blockEnd);
+//            System.out.println("MNG - WordCount:: Round " + round + ", word " + word+ ", count " + count +
+//                    " roundtrack " + roundInfo.getRoundCheckInBits() + " blockend: " + blockEnd);
         }
         else if(inputBolt.equals("HashtagCount"))
         {
@@ -74,17 +74,17 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
                 roundInfo.putHashtag(word, count);
             }
 
-            System.out.println("MNG - HashtagCount:: Round " + round + ", word " + word+ ", count " + count +
-                    " roundtrack " + roundInfo.getRoundCheckInBits() + " blockend: " + blockEnd );
+//            System.out.println("MNG - HashtagCount:: Round " + round + ", word " + word+ ", count " + count +
+//                    " roundtrack " + roundInfo.getRoundCheckInBits() + " blockend: " + blockEnd );
         }
 
 
         if(roundInfo.isEndOfRound())
         {
             ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
-            System.out.println("MNG - Blockend:: Round " + round + " word " + word
-                    + " count " + count + ", dates " + dates+
-                    " roundtrack " + roundInfo.getRoundCheckInBits() );
+//            System.out.println("MNG - Blockend:: Round " + round + " word " + word
+//                    + " count " + count + ", dates " + dates+
+//                    " roundtrack " + roundInfo.getRoundCheckInBits() );
             ArrayList<String> dateList = new ArrayList<>();
 
             for (Date date : dates)
@@ -98,9 +98,9 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
             prepareLists(roundInfo, words, hashtags, round);
 
 
-            System.out.println("Lists are from manager Word:  " + words.toString());
-            System.out.println("Lists are from manager Hash:  " + hashtags.toString());
-            System.out.println("manager::: dates " + dates + " datelist " + dateList);
+//            System.out.println("Lists are from manager Word:  " + words.toString());
+//            System.out.println("Lists are from manager Hash:  " + hashtags.toString());
+//            System.out.println("manager::: dates " + dates + " datelist " + dateList);
 
             for(String w : words)
             {

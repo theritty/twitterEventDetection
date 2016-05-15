@@ -77,6 +77,7 @@ public class FileSpout extends BaseRichSpout {
                      * By each line emmit a new value with the line as a their
                      */
 //                    Thread.sleep(5);
+                  System.out.println("Spout::: tweet " + str + " round " + round + " dates " + dates);
                     collector.emit(new Values(str, dates, currentDate, false, round, "file", "fileSpout"));
 
                 }
@@ -86,17 +87,18 @@ public class FileSpout extends BaseRichSpout {
 //                    for(Date d : dates)
 //                        System.out.println("\t " + d);
 
+                  ArrayList<Date> tmp_dates = new ArrayList<>(dates);
                     collector.emit(new Values("BLOCKEND",
-                            dates, currentDate, true, round++, "file", "fileSpout"));
+                            tmp_dates, currentDate, true, round++, "file", "fileSpout"));
                 }
-                else
-                {
-//                    System.out.println("First three " + currentDate + " Dates: " );
-//                    for(Date d : dates)
-//                        System.out.println("\t " + d);
-                    collector.emit(new Values("BLOCKEND",
-                            dates, currentDate, false, round++, "file", "fileSpout"));
-                }
+//                else
+//                {
+////                    System.out.println("First three " + currentDate + " Dates: " );
+////                    for(Date d : dates)
+////                        System.out.println("\t " + d);
+//                    collector.emit(new Values("BLOCKEND",
+//                            dates, currentDate, false, round, "file", "fileSpout"));
+//                }
 
             } catch (FileNotFoundException e) {
                 throw new RuntimeException("Error reading file ["+fileName.toString() + ".txt"+"]");
