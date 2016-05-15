@@ -46,6 +46,7 @@ public class EventDetectorBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
 
+      System.out.println(round + " " + key + " here1");
         ArrayList<Double> tfidfs = new ArrayList<>();
 
         for (String date: dates)
@@ -74,15 +75,29 @@ public class EventDetectorBolt extends BaseRichBolt {
             writeToFile(filePath + "/tfidf-" + Long.toString(round) + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
             if(tfidfs.get(tfidfs.size()-2) == 0 && tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
             {
-                this.collector.emit(new Values(key, tfidfs, type, round, source));
+              System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
+                      + tfidfs.get(tfidfs.size()-1)/0.0001);
+              this.collector.emit(new Values(key, tfidfs, type, round, source));
             }
             else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>tfidfEventRate)
             {
-                this.collector.emit(new Values(key, tfidfs, type, round, source));
+              System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
+                      + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
+              this.collector.emit(new Values(key, tfidfs, type, round, source));
+            }
+          else
+            {
+              if(tfidfs.get(tfidfs.size()-2) == 0)
+                System.out.println("Round " + round + " Not Event " + key+ " rate: "
+                      + tfidfs.get(tfidfs.size()-1)/0.0001);
+              else
+                System.out.println("Round " + round + " Not Event " + key+ " rate: "
+                        + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
             }
         }
         else
             writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero.txt", "Key: " + key );
+      System.out.println(round + " " + key + " here2 " );
     }
 
     public void writeToFile(String fileName, String tweet)

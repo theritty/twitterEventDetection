@@ -13,6 +13,7 @@ public class RoundInfo{
 
     ArrayList<Date> dates;
     int roundCheckInBits = 0;
+    public boolean emittedBefore = false;
     RoundInfo()
     {
         wordCounts = new HashMap<>();
@@ -31,6 +32,14 @@ public class RoundInfo{
     public void setWordBlockEnd()
     {
         roundCheckInBits = roundCheckInBits | 1;
+    }
+    public void setEmittedBefore()
+    {
+        emittedBefore = true;
+    }
+    public boolean getEmittedBefore()
+    {
+        return emittedBefore;
     }
     public void putHashtag(String word, Long count)
     {

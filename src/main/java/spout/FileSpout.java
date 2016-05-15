@@ -69,6 +69,8 @@ public class FileSpout extends BaseRichSpout {
                 if(currentDate!=null) dates.add(currentDate);
                 if(dates.size() > compareSize) dates.remove(0);
 
+              if(dates.size() <= trainSize) continue;
+
                 String currentFileToRead = Constants.INPUT_FILE_PATH + inputFileNum + "/" + fileName.toString() + ".txt";
                 this.fileReader = new FileReader(currentFileToRead);
                 BufferedReader reader = new BufferedReader(fileReader);
@@ -77,7 +79,7 @@ public class FileSpout extends BaseRichSpout {
                      * By each line emmit a new value with the line as a their
                      */
 //                    Thread.sleep(5);
-                  System.out.println("Spout::: tweet " + str + " round " + round + " dates " + dates);
+//                  System.out.println("Spout::: tweet " + str + " round " + round + " dates " + dates);
                     collector.emit(new Values(str, dates, currentDate, false, round, "file", "fileSpout"));
 
                 }
@@ -107,11 +109,11 @@ public class FileSpout extends BaseRichSpout {
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();
             } finally{
-               System.out.println("Reading " + fileName + " finished.");
             }
 
         }
         readed = true;
+      System.out.println("Reading finished.");
 
     }
 

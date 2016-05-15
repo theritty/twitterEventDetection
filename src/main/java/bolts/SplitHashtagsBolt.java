@@ -40,7 +40,7 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
         for(String tweet: tweets)
         {
-            if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>2
+            if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
                     && !tweet.equals("#hiring") && !tweet.equals("#careerarc") && !tweet.equals("BLOCKEND"))
             {
                 this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round,
