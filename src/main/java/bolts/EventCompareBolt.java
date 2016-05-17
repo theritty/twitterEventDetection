@@ -95,6 +95,9 @@ public class EventCompareBolt extends BaseRichBolt {
 
   public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
   {
+    File filePath = new File(fileName);
+    filePath.delete();
+
     try {
       PrintWriter writer = new PrintWriter(new FileOutputStream(
               new File(fileName),
