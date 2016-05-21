@@ -1,3 +1,14 @@
 target/
 *.txt
 .idea/*
+*.classpath
+*.project
+.settings/
+*.txt
+!stopWords.txt
+!abbreviations.txt
+!specialPrefixes.txt
+*.iml
+.idea/
+tweets/
+src/main/resources/config.properties
