@@ -33,6 +33,7 @@ public class WordCountBolt extends BaseRichBolt {
   public void execute(Tuple tuple) {
     String inputBolt = tuple.getStringByField( "inputBolt" );
     String source = (String) tuple.getValueByField( "source" );
+    String country = (String) tuple.getValueByField( "country" );
     String word = tuple.getStringByField("word");
     long round = tuple.getLongByField("round");
     Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
@@ -40,7 +41,7 @@ public class WordCountBolt extends BaseRichBolt {
     if(blockEnd || word.equals("BLOCKEND"))
     {
       ArrayList<Date> dates = (ArrayList<Date>) tuple.getValueByField("dates");
-      this.collector.emit(new Values("BLOCKEND", 1L, inputBolt, round, source, true, dates));
+      this.collector.emit(new Values("BLOCKEND", 1L, inputBolt, round, source, true, dates, country));
       countsWithRounds.remove(round);
       return;
     }
@@ -55,7 +56,7 @@ public class WordCountBolt extends BaseRichBolt {
 
       if (count > threshold) {
         ArrayList<Date> dates = (ArrayList<Date>) tuple.getValueByField("dates");
-        this.collector.emit(new Values(word, count, inputBolt, round, source, false, dates));
+        this.collector.emit(new Values(word, count, inputBolt, round, source, false, dates, country));
 //        System.out.println("WordCount:: round " + round + " word " + word + " count " + count + " blockend " + blockEnd + " dates " + dates);
 
       }
@@ -67,7 +68,7 @@ public class WordCountBolt extends BaseRichBolt {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("word", "count", "inputBolt", "round", "source", "blockEnd", "dates"));
+    declarer.declare(new Fields("word", "count", "inputBolt", "round", "source", "blockEnd", "dates", "country"));
   }
 
 }

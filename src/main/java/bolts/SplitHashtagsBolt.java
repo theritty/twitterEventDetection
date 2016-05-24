@@ -14,6 +14,12 @@ import java.util.*;
 public class SplitHashtagsBolt extends BaseRichBolt {
 
     private OutputCollector collector;
+    private String country;
+
+    public SplitHashtagsBolt(String country)
+    {
+        this.country = country;
+    }
 
     @Override
     public void prepare(Map config, TopologyContext context,
@@ -23,6 +29,9 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
+        String countryX = (String) tuple.getValueByField( "country" );
+        if(!countryX.equals(country)) return ;
+
         List<String> tweets;
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
@@ -44,18 +53,18 @@ public class SplitHashtagsBolt extends BaseRichBolt {
                     && !tweet.equals("#hiring") && !tweet.equals("#careerarc") && !tweet.equals("BLOCKEND"))
             {
                 this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round,
-                        source, false, dates));
+                        source, false, dates, country));
             }
         }
         if(blockEnd)
         {
-            this.collector.emit(new Values("BLOCKEND", "HashtagCount", round, source, true, dates));
+            this.collector.emit(new Values("BLOCKEND", "HashtagCount", round, source, true, dates, country));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word", "inputBolt", "round", "source", "blockEnd", "dates"));
+        declarer.declare(new Fields("word", "inputBolt", "round", "source", "blockEnd", "dates", "country"));
     }
 }

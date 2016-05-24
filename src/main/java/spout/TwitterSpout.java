@@ -121,7 +121,7 @@ public class TwitterSpout  extends BaseRichSpout {
 
 //        double [][]location ={{27,34},{40,38}};
 //        double [][]location ={{-124,31},{-66,49}};
-        double [][]location ={{-124,31},{-115,41}};
+        double [][]location ={{-124,31},{-78,70}};
 
 
         TwitterStream twitterStream = new TwitterStreamFactory(

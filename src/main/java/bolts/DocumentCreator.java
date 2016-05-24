@@ -8,6 +8,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import twitter4j.GeoLocation;
 
 import java.io.*;
 import java.util.*;
@@ -39,9 +40,11 @@ public class DocumentCreator extends BaseRichBolt{
         List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
+        GeoLocation[][] loc = (GeoLocation[][]) tuple.getValueByField("location");
 
         String tweet = "";
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
+        if(loc == null) return;
 
         if(active) {
             for (String twee : tweets) {
@@ -53,7 +56,12 @@ public class DocumentCreator extends BaseRichBolt{
                 System.out.println("new Tweet Doc created: " + fileName);
                 oldFile = fileName;
             }
-            writeToFile(fileName, tweet);
+
+          double latitude = loc[0][0].getLatitude();
+          if(latitude>31 && latitude<45)
+            writeToFile(fileName.substring(0,fileName.length()-4) + "-USA.txt", tweet);
+          else
+            writeToFile(fileName.substring(0,fileName.length()-4) + "-CAN.txt", tweet);
         }
 
         if(blockEnd){
