@@ -12,7 +12,7 @@ import java.util.List;
 public class CassandraConnection {
 
     private static String CASS_CONTACT_POINT = "127.0.0.1";
-    private static String CASS_KEYSPACE = "twitstore";
+    private static String CASS_KEYSPACE = "tweetcollection";
 
     public Session connect(  )
     {

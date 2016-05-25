@@ -16,8 +16,8 @@ public class CassandraDao
     private BatchStatement batch = new BatchStatement();
 
     private static String CASS_TABLE_NAME = "tweets";
-    private static String CASS_FIELDS = "(tweetid, tweet, userid, date, retweetcount)";
-    private static String CASS_VALUES = "(?, ?, ?, ?, ?)";
+    private static String CASS_FIELDS = "(id, tweet, userid, tweettime, retweetcount, round, country)";
+    private static String CASS_VALUES = "(?, ?, ?, ?, ?, ?, ?)";
 
 
 

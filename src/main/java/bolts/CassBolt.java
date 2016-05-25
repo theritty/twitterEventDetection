@@ -10,6 +10,7 @@ import backtype.storm.tuple.Values;
 import cass.CassandraConnection;
 import cass.CassandraDao;
 import com.datastax.driver.core.Session;
+import twitter4j.GeoLocation;
 import twitter4j.Status;
 import twitter4j.User;
 
@@ -21,73 +22,104 @@ import java.util.Map;
 
 public class CassBolt extends BaseRichBolt
 {
-    private OutputCollector _collector;
-    List<Object> values = new ArrayList<>();
+  private OutputCollector _collector;
+  List<Object> values = new ArrayList<>();
 
-    private Session session;
-    private CassandraDao cassandraDao;
+  private Session session;
+  private CassandraDao cassandraDao;
+  private Date currentDate;
+  private double blockTimeInterval;
+  private int round;
 
-    public CassBolt(){
+  public CassBolt(double blockTimeInterval)
+  {
+    this.blockTimeInterval = blockTimeInterval*60*60;
+    round = 1;
+    currentDate = null;
+  }
 
+  @Override
+  public void prepare( final Map map, final TopologyContext topologyContext, final OutputCollector outputCollector )
+  {
+    try {
+      _collector = outputCollector;
+      CassandraConnection cassandraConnection = new CassandraConnection();
+      session = cassandraConnection.connect();
+      cassandraDao = new CassandraDao(session);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+
+  @Override
+  public void execute( final Tuple tuple )
+  {
+
+    Status tweet = (Status) tuple.getValueByField( "tweetOriginal" );
+    List<String> tweets = (List<String>) tuple.getValueByField( "tweet" );
+    if(tweet == null) return;
+
+    User user = tweet.getUser();
+    Date date = tweet.getCreatedAt();
+    long id = tweet.getId();
+    long retweetCount = tweet.getRetweetCount();
+    GeoLocation[][] loc = (GeoLocation[][]) tuple.getValueByField("location");
+
+    String country ;
+    String sentence = "";
+    if(loc == null) return;
+    for (String twee : tweets) {
+      sentence += twee + " ";
     }
 
-    @Override
-    public void prepare( final Map map, final TopologyContext topologyContext, final OutputCollector outputCollector )
+    double latitude = loc[0][0].getLatitude();
+    if(latitude>31 && latitude<45)
+      country = "USA";
+    else
+      country = "CAN";
+
+    //(id, tweet, userid, tweettime, retweetcount, round, country)
+
+    values = new ArrayList<>();
+    values.add(id);
+    values.add(sentence);
+    values.add(user.getId());
+    values.add(date);
+    values.add(retweetCount);
+    values.add(round);
+    values.add(country);
+
+    if(currentDate == null)
     {
-        try {
-            _collector = outputCollector;
-            CassandraConnection cassandraConnection = new CassandraConnection();
-            session = cassandraConnection.connect();
-            cassandraDao = new CassandraDao(session);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+      currentDate = date;
+    }
+    long seconds = (date.getTime()-currentDate.getTime())/1000;
+    if(seconds>blockTimeInterval ) {
+      round++;
+      currentDate = null;
     }
 
-
-    @Override
-    public void execute( final Tuple tuple )
-    {
-
-        Status tweet = (Status) tuple.getValueByField( "tweet" );
-        String sentence = tweet.getText();
-        User user = tweet.getUser();
-        Date date = tweet.getCreatedAt();
-        long id = tweet.getId();
-        long retweetCount = tweet.getRetweetCount();
-
-        if(sentence.startsWith("I'm at ")) return;
-//        String sentence_preprocessed = sentence.replaceAll("[^A-Za-z0-9 _.,;:@^#+*=?&%£é\\{\\}\\(\\)\\[\\]<>|\\-$!\\\"'\\/$ığüşöçİÜĞÇÖŞ]*", "");
-
-        values = new ArrayList<>();
-        values.add(id);
-        values.add(sentence);
-        values.add(user.getId());
-        values.add(date);
-        values.add(retweetCount);
-
-
-
-        try {
-            cassandraDao.insert(session,values.toArray());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try{
-            _collector.emit(
-                    new Values(  ));
-
-            _collector.ack( tuple );
-        }catch (Exception e){
-            System.out.println( "CassandraBolt Execute Error!" );
-            e.printStackTrace();
-        }
+    try {
+      cassandraDao.insert(session,values.toArray());
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
-    @Override
-    public void declareOutputFields( final OutputFieldsDeclarer outputFieldsDeclarer )
-    {
-        outputFieldsDeclarer.declare( new Fields( ) );
+    try{
+      _collector.emit(
+              new Values(  ));
+
+      _collector.ack( tuple );
+    }catch (Exception e){
+      System.out.println( "CassandraBolt Execute Error!" );
+      e.printStackTrace();
     }
+  }
+
+  @Override
+  public void declareOutputFields( final OutputFieldsDeclarer outputFieldsDeclarer )
+  {
+    outputFieldsDeclarer.declare( new Fields( ) );
+  }
 }

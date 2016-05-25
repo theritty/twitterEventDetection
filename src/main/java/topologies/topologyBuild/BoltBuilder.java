@@ -37,7 +37,9 @@ public class BoltBuilder {
     builder.setSpout(Constants.TWITTER_SPOUT_ID, spout);
     builder.setBolt(Constants.PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(Constants.TWITTER_SPOUT_ID);
 
-//        builder.setBolt( CASS_BOLT_ID, new CassBolt() ).shuffleGrouping( TWITTER_SPOUT_ID);
+
+    builder.setBolt( Constants.CASS_BOLT_ID, new CassBolt(TIME_INTERVAL_IN_HOURS) ).
+            shuffleGrouping( Constants.PREPROCESS_SPOUT_ID);
     builder.setBolt( Constants.DOCUMENT_CREATOR, documentCreator).
             shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
     return builder.createTopology();
