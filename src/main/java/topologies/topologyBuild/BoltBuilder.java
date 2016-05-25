@@ -75,6 +75,7 @@ public class BoltBuilder {
     System.out.println("Count threshold " + COUNT_THRESHOLD);
 
     TopologyHelper.createFolder(Constants.RESULT_FILE_PATH + Integer.toString(FILENUM));
+    TopologyHelper.createFolder(Constants.IMAGES_FILE_PATH + Integer.toString(FILENUM));
 
     builder.setSpout(Constants.FILE_SPOUT_ID, fileSpout);
 

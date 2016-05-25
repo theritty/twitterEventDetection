@@ -41,9 +41,13 @@ package drawing;
 
 
 import java.awt.Color;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
@@ -73,10 +77,27 @@ public class Draw2 extends ApplicationFrame {
 
     final XYDataset dataset = createDataset();
     final JFreeChart chart = createChart(dataset);
+
     final ChartPanel chartPanel = new ChartPanel(chart);
     chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
     setContentPane(chartPanel);
+    savePNG(chart, 500, 270);
 
+  }
+
+  public void savePNG(JFreeChart chart, int width, int height)
+  {
+    try {
+
+      OutputStream out = new FileOutputStream("deneme.png");
+      ChartUtilities.writeChartAsPNG(out,
+              chart,
+              width,
+              height);
+
+    } catch (IOException ex) {
+      System.out.println(ex);
+    }
   }
 
   /**
@@ -87,14 +108,14 @@ public class Draw2 extends ApplicationFrame {
   private XYDataset createDataset() {
 
     final XYSeries series1 = new XYSeries("First");
-    series1.add(1.0, 1.0);
-    series1.add(2.0, 4.0);
-    series1.add(3.0, 3.0);
-    series1.add(4.0, 5.0);
-    series1.add(5.0, 5.0);
-    series1.add(6.0, 7.0);
-    series1.add(7.0, 7.0);
-    series1.add(8.0, 8.0);
+//    series1.add(1.0, 1.0);
+//    series1.add(2.0, 4.0);
+//    series1.add(3.0, 3.0);
+//    series1.add(4.0, 5.0);
+//    series1.add(5.0, 5.0);
+//    series1.add(6.0, 7.0);
+//    series1.add(7.0, 7.0);
+//    series1.add(8.0, 8.0);
 
     final XYSeries series2 = new XYSeries("Second");
     series2.add(1.0, 5.0);
@@ -119,7 +140,7 @@ public class Draw2 extends ApplicationFrame {
     final XYSeriesCollection dataset = new XYSeriesCollection();
     dataset.addSeries(series1);
     dataset.addSeries(series2);
-    dataset.addSeries(series3);
+//    dataset.addSeries(series3);
 
     return dataset;
 
