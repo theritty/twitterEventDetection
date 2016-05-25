@@ -73,7 +73,7 @@ public class EventDetectorBolt extends BaseRichBolt {
             }
         }
         if(!allzero) {
-            writeToFile(filePath + "/tfidf-" + Long.toString(round) + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+            writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
             if(tfidfs.get(tfidfs.size()-2) == 0 && tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
             {
               System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
@@ -97,7 +97,7 @@ public class EventDetectorBolt extends BaseRichBolt {
             }
         }
         else
-            writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero.txt", "Key: " + key );
+            writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt", "Key: " + key );
 //      System.out.println(round + " " + key + " here2 " );
     }
 
