@@ -15,7 +15,7 @@ public class TFIDFCalculator {
     private UUID id = UUID.randomUUID();
 
 
-    public void readFiles(String fileNum, ArrayList<String> fileList, String currentFile) {
+    public void readFiles(String fileNum, ArrayList<String> fileList, String currentFile, String country) {
         if (docs == null)
         {
             docs = new ArrayList<>();
@@ -26,7 +26,7 @@ public class TFIDFCalculator {
             List<String> new_list;
             try {
 
-                new_list = readFile( fileNum + "/" + file);
+                new_list = readFile( fileNum + "/" + file.substring(0,file.length()-4) + "-" + country + ".txt");
                 if(file.equals(currentFile))
                 {
                     doc = new_list;
@@ -93,10 +93,10 @@ public class TFIDFCalculator {
     /**
      * @return the TF-IDF of term
      */
-    public double tfIdf(String fileNum, ArrayList<String> files, String term, String currentFile) {
+    public double tfIdf(String fileNum, ArrayList<String> files, String term, String currentFile, String country) {
 
 //        System.out.println("---------------------------------");
-        readFiles(fileNum, files, currentFile);
+        readFiles(fileNum, files, currentFile, country);
 //        System.out.println("Files: " + files.toString());
 //        System.out.println("File: " + currentFile);
         this.term = term;

@@ -13,6 +13,12 @@ import java.util.*;
 public class SplitWordBolt extends BaseRichBolt {
 
     private OutputCollector collector;
+    private String country;
+
+    public SplitWordBolt(String country)
+    {
+        this.country = country;
+    }
 
     @Override
     public void prepare(Map config, TopologyContext context,
@@ -22,6 +28,9 @@ public class SplitWordBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
+        String countryX = (String) tuple.getValueByField( "country" );
+        if(!countryX.equals(country)) return ;
+
         List<String> tweets;
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
@@ -42,18 +51,18 @@ public class SplitWordBolt extends BaseRichBolt {
             if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
                     && !tweet.equals("hiring") && !tweet.equals("careerarc") && !tweet.equals("BLOCKEND"))
             {
-                this.collector.emit(new Values(tweet, "WordCount", round, source, false, dates));
+                this.collector.emit(new Values(tweet, "WordCount", round, source, false, dates, country));
             }
         }
         if(blockEnd)
         {
-            this.collector.emit(new Values("BLOCKEND", "WordCount", round, source, true, dates));
+            this.collector.emit(new Values("BLOCKEND", "WordCount", round, source, true, dates, country));
         }
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("word", "inputBolt", "round", "source", "blockEnd", "dates"));
+        declarer.declare(new Fields("word", "inputBolt", "round", "source", "blockEnd", "dates", "country"));
     }
 }

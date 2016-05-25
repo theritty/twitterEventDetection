@@ -31,6 +31,7 @@ public class ReportBolt extends BaseRichBolt{
         String inputBolt = tuple.getStringByField( "inputBolt" );
         long round = tuple.getLongByField("round");
         String word = tuple.getStringByField("word");
+        String country = tuple.getStringByField("country");
         Long count = tuple.getLongByField("count");
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
@@ -49,7 +50,7 @@ public class ReportBolt extends BaseRichBolt{
         {
             if(blockEnd && roundInfo.getWordCounts().size()>0)
             {
-                writeToFile(round, roundInfo.getWordCounts());
+                writeToFile(country, round, roundInfo.getWordCounts());
             }
             else
             {
@@ -60,7 +61,7 @@ public class ReportBolt extends BaseRichBolt{
         {
             if(blockEnd && roundInfo.getWordCounts().size()>0)
             {
-                writeToFile(round, roundInfo.getHashtagCounts());
+                writeToFile(country, round, roundInfo.getHashtagCounts());
             }
             else
             {
@@ -74,11 +75,11 @@ public class ReportBolt extends BaseRichBolt{
         // this bolt does not emit anything
     }
 
-    public void writeToFile(long round, HashMap<String, Long> countList)
+    public void writeToFile(String country, long round, HashMap<String, Long> countList)
     {
         try {
             PrintWriter writer;
-            writer = new PrintWriter(filePath + Long.toString(round) + ".txt");
+            writer = new PrintWriter(filePath + Long.toString(round) + "-" + country + ".txt");
             write(writer, "----- FINAL COUNTS -----");
 
             List<Map.Entry<String,Long>> entries = new ArrayList<>(

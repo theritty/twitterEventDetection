@@ -8,6 +8,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import nlp.TextAnalyzer;
+import twitter4j.GeoLocation;
 import twitter4j.Status;
 
 import java.util.List;
@@ -29,10 +30,14 @@ public class PreprocessTweetBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String tweet;
+        GeoLocation[][] loc = null;
         String source = (String) tuple.getValueByField( "source" );
         if(source.equals("twitter"))
         {
             tweet = ((Status) tuple.getValueByField( "tweet" )).getText();
+            Status x = (Status) tuple.getValueByField( "tweet" );
+            if(x.getPlace() == null) return;
+            loc = x.getPlace().getBoundingBoxCoordinates();
         }
         else
         {
@@ -45,12 +50,13 @@ public class PreprocessTweetBolt extends BaseRichBolt {
                 tuple.getValueByField( "currentDate" ),
                 tuple.getValueByField( "blockEnd" ),
                 tuple.getLongByField("round"),
-                source));
+                source,
+                loc));
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields("tweet","dates","currentDate","blockEnd", "round", "source"));
+        declarer.declare(new Fields("tweet","dates","currentDate","blockEnd", "round", "source", "location"));
     }
 }

@@ -39,6 +39,7 @@ public class EventCompareBolt extends BaseRichBolt {
     String key = tuple.getStringByField("key");
     String type = tuple.getStringByField("type");
     long round = tuple.getLongByField("round");
+    String country = tuple.getStringByField("country");
 
     ArrayList<ArrayList<HashMap<String, Object>>> compareList = new ArrayList<>();
     RoundInfo roundInfo;
@@ -86,7 +87,7 @@ public class EventCompareBolt extends BaseRichBolt {
 //    }
     compareList.add(wordList.get(round));
     if(compareList.size()>0)
-      writeToFile(filePath + "/events-" + round, compareList);
+      writeToFile(filePath + "/events-" + country + "-" + round, compareList);
 //    wordList.clear();
 //    currentRound = round;
 //        }
@@ -95,6 +96,9 @@ public class EventCompareBolt extends BaseRichBolt {
 
   public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
   {
+    File filePath = new File(fileName);
+    filePath.delete();
+
     try {
       PrintWriter writer = new PrintWriter(new FileOutputStream(
               new File(fileName),

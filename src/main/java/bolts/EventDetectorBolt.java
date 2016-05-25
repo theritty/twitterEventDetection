@@ -45,8 +45,9 @@ public class EventDetectorBolt extends BaseRichBolt {
         String type = tuple.getStringByField("type");
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
+        String country = (String) tuple.getValueByField( "country" );
 
-      System.out.println(round + " " + key + " here1");
+//      System.out.println(round + " " + key + " here1");
         ArrayList<Double> tfidfs = new ArrayList<>();
 
         for (String date: dates)
@@ -54,11 +55,11 @@ public class EventDetectorBolt extends BaseRichBolt {
             TFIDFCalculator calculator = new TFIDFCalculator();
             if(source.equals("twitter"))
             {
-                tfidfs.add(calculator.tfIdf(Constants.INPUT_FILE_PATH + inputFileNum, dates,key,date));
+                tfidfs.add(calculator.tfIdf(Constants.INPUT_FILE_PATH + inputFileNum, dates,key,date,country));
             }
             else
             {
-                tfidfs.add(calculator.tfIdf(Constants.INPUT_FILE_PATH + inputFileNum, dates,key,date));
+                tfidfs.add(calculator.tfIdf(Constants.INPUT_FILE_PATH + inputFileNum, dates,key,date,country));
             }
         }
 
@@ -77,13 +78,13 @@ public class EventDetectorBolt extends BaseRichBolt {
             {
               System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
                       + tfidfs.get(tfidfs.size()-1)/0.0001);
-              this.collector.emit(new Values(key, tfidfs, type, round, source));
+              this.collector.emit(new Values(key, tfidfs, type, round, source, country));
             }
             else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>tfidfEventRate)
             {
               System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
                       + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
-              this.collector.emit(new Values(key, tfidfs, type, round, source));
+              this.collector.emit(new Values(key, tfidfs, type, round, source, country));
             }
           else
             {
@@ -97,7 +98,7 @@ public class EventDetectorBolt extends BaseRichBolt {
         }
         else
             writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero.txt", "Key: " + key );
-      System.out.println(round + " " + key + " here2 " );
+//      System.out.println(round + " " + key + " here2 " );
     }
 
     public void writeToFile(String fileName, String tweet)
@@ -123,6 +124,6 @@ public class EventDetectorBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields( "key", "tfidfs", "type", "round", "source"));
+        declarer.declare(new Fields( "key", "tfidfs", "type", "round", "source", "country"));
     }
 }

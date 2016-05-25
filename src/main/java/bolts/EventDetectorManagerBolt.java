@@ -34,6 +34,7 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
   public void execute(Tuple tuple) {
     String inputBolt = tuple.getStringByField( "inputBolt" );
     String source = (String) tuple.getValueByField( "source" );
+    String country = (String) tuple.getValueByField( "country" );
     long round = tuple.getLongByField("round");
     String word = tuple.getStringByField("word");
     Long count = tuple.getLongByField("count");
@@ -110,14 +111,14 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
       for(Map.Entry<String,Long> w : roundInfo.getWordCounts().entrySet())
       {
         if(w != null) {
-          this.collector.emit(new Values(dateList, w.getKey(), "word", round, source));
+          this.collector.emit(new Values(dateList, w.getKey(), "word", round, source, country));
         }
       }
 
       for(Map.Entry<String,Long> h : roundInfo.getHashtagCounts().entrySet())
       {
         if(h != null) {
-          this.collector.emit(new Values(dateList, h.getKey(), "hashtag", round, source));
+          this.collector.emit(new Values(dateList, h.getKey(), "hashtag", round, source, country));
         }
       }
     }
@@ -160,7 +161,7 @@ public class EventDetectorManagerBolt extends BaseRichBolt {
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer)
   {
-    declarer.declare(new Fields("dates", "key", "type", "round", "source"));
+    declarer.declare(new Fields("dates", "key", "type", "round", "source", "country"));
   }
 
 }
