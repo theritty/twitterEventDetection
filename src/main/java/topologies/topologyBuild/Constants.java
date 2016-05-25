@@ -30,6 +30,7 @@ public class Constants {
     public static final String COUNTRY2_EVENT_COMPARE_BOLT = "event-compare-bolt2";
     public static final String COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT = "event-detector-manager-bolt2";
 
+    public static final String IMAGES_FILE_PATH = "/home/ceren/Desktop/thesis/results/charts/";
     public static final String RESULT_FILE_PATH = "/home/ceren/Desktop/thesis/results/";
     public static final String STREAM_FILE_PATH = "/home/ceren/Desktop/thesis/streamData2/";
     public static final String INPUT_FILE_PATH = "/home/ceren/Desktop/thesis/streamData/";

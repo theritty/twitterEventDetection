@@ -5,24 +5,25 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
+import drawing.LineChart;
+import topologies.topologyBuild.Constants;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 public class EventCompareBolt extends BaseRichBolt {
 
   private OutputCollector collector;
   private String filePath;
+  private String drawFilePath;
   private double rateForSameEvent;
   HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
   public EventCompareBolt(String filePath, int fileNum, double rateForSameEvent)
   {
     this.rateForSameEvent = rateForSameEvent;
-    this.filePath = filePath + fileNum;
+    this.filePath = filePath + fileNum + "/";
+    this.drawFilePath = Constants.IMAGES_FILE_PATH + fileNum +"/";
     wordList = new HashMap<>();
   }
 
@@ -86,8 +87,15 @@ public class EventCompareBolt extends BaseRichBolt {
 //      }
 //    }
     compareList.add(wordList.get(round));
-    if(compareList.size()>0)
-      writeToFile(filePath + "/events-" + country + "-" + round, compareList);
+    if(compareList.size()>0) {
+      writeToFile(filePath + "events-" + country + "-" + round, compareList);
+      try {
+        LineChart.drawLineChart(tfidfs,key,round,country, drawFilePath);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+
 //    wordList.clear();
 //    currentRound = round;
 //        }
