@@ -1,4 +1,6 @@
 target/
+*.txt
+.idea/*
 *.classpath
 *.project
 .settings/
