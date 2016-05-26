@@ -1,4 +1,4 @@
-package bolts;
+package bolts.CommonBolts;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -43,6 +43,7 @@ public class SplitWordBolt extends BaseRichBolt {
         else
         {
             tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
+//            System.out.println("split word " + tweets);
         }
 
         for(String tweet: tweets)

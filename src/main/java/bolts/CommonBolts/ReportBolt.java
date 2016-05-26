@@ -1,4 +1,4 @@
-package bolts;
+package bolts.CommonBolts;
 
 
 import backtype.storm.task.OutputCollector;
@@ -35,6 +35,7 @@ public class ReportBolt extends BaseRichBolt{
         Long count = tuple.getLongByField("count");
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
+//        System.out.println("Report BOLT");
         RoundInfo roundInfo;
         if(roundInfoList.get(round) != null)
         {

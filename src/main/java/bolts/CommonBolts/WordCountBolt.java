@@ -1,4 +1,4 @@
-package bolts;
+package bolts.CommonBolts;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -53,6 +53,7 @@ public class WordCountBolt extends BaseRichBolt {
       count++;
 
       if (count > threshold) {
+//        System.out.println("Word count " + word + " " + count);
         this.collector.emit(new Values(word, count, inputBolt, round, source, false, tuple.getValueByField("dates"), country));
       }
 

@@ -2,10 +2,12 @@ package cass;
 
 import com.datastax.driver.core.*;
 
-public class CassandraDao
+import java.io.Serializable;
+
+public class CassandraDao implements Serializable
 {
-    private PreparedStatement statement;
-    private BoundStatement boundStatement;
+    private transient PreparedStatement statement;
+    private transient BoundStatement boundStatement;
 
     private static String CASS_TABLE_NAME = "tweets3";
     private static String CASS_FIELDS = "(id, tweet, userid, tweettime, retweetcount, round, country)";

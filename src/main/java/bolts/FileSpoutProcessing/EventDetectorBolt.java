@@ -1,4 +1,4 @@
-package bolts;
+package bolts.FileSpoutProcessing;
 
 import algorithms.TFIDFCalculator;
 import backtype.storm.task.OutputCollector;

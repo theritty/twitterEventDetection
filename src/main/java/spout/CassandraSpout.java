@@ -72,11 +72,14 @@ public class CassandraSpout extends BaseRichSpout {
         String tweet = row.getString("tweet");
         String country = row.getString("country");
 
+        if(tweet == null || tweet.length() == 0) continue;
         ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
-        collector.emit(new Values(tweet, tmp_roundlist, round, false, round, "cassandra", "cassandraSpout", country));
+//        System.out.println("Tweet: " + tweet);
+        if(iterator.hasNext())
+          collector.emit(new Values(tweet, tmp_roundlist, round, false, round, "cassandra", "cassandraSpout", country));
+        else
+          collector.emit(new Values(tweet, tmp_roundlist, round, true, round, "cassandra", "cassandraSpout", country));
       }
-      ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
-      collector.emit(new Values("BLOCKEND",tmp_roundlist, round, true, round++, "cassandra", "cassandraSpout", "NONE"));
     }
 
     readed = true;
@@ -92,7 +95,7 @@ public class CassandraSpout extends BaseRichSpout {
     while(iterator.hasNext())
     {
       Row row = iterator.next();
-      roundlist.add(Long.parseLong(row.getString("round")));
+      roundlist.add(row.getLong("round"));
     }
     Collections.sort(roundlist, new Comparator<Long>() {
       public int compare(Long m1, Long m2) {

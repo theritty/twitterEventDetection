@@ -1,4 +1,4 @@
-package bolts;
+package bolts.TweetCollection;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -45,7 +45,7 @@ public class CassBolt extends BaseRichBolt
       _collector = outputCollector;
       CassandraConnection cassandraConnection = new CassandraConnection();
       session = cassandraConnection.connect();
-      cassandraDao = new CassandraDao(session);
+      cassandraDao = new CassandraDao();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -102,7 +102,7 @@ public class CassBolt extends BaseRichBolt
     }
 
     try {
-      cassandraDao.insert(session,values.toArray());
+      cassandraDao.insert(values.toArray());
     } catch (Exception e) {
       e.printStackTrace();
     }

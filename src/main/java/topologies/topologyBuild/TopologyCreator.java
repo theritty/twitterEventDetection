@@ -56,6 +56,20 @@ public class TopologyCreator {
         }
     }
 
+    public void submitTopologyWithCassandra()
+    {
+        try
+        {
+            loadTopologyPropertiesAndSubmit( properties, config, BoltBuilder.prepareBoltsForCassandraSpout(properties) );
+        }
+        catch ( TTransportException | InvalidTopologyException | AuthorizationException | AlreadyAliveException | InterruptedException e )
+        {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
     protected synchronized void loadTopologyPropertiesAndSubmit(Properties properties, Config config, StormTopology stormTopology )
