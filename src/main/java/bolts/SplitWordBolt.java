@@ -35,7 +35,6 @@ public class SplitWordBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
-        ArrayList<Date> dates = (ArrayList<Date>)tuple.getValueByField("dates");
 
         if(source.equals("twitter"))
         {
@@ -51,12 +50,14 @@ public class SplitWordBolt extends BaseRichBolt {
             if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
                     && !tweet.equals("hiring") && !tweet.equals("careerarc") && !tweet.equals("BLOCKEND"))
             {
-                this.collector.emit(new Values(tweet, "WordCount", round, source, false, dates, country));
+                this.collector.emit(new Values(tweet, "WordCount", round, source,
+                        false, tuple.getValueByField("dates"), country));
             }
         }
         if(blockEnd)
         {
-            this.collector.emit(new Values("BLOCKEND", "WordCount", round, source, true, dates, country));
+            this.collector.emit(new Values("BLOCKEND", "WordCount", round, source,
+                    true, tuple.getValueByField("dates"), country));
         }
     }
 

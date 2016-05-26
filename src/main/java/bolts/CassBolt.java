@@ -29,12 +29,12 @@ public class CassBolt extends BaseRichBolt
   private CassandraDao cassandraDao;
   private Date currentDate;
   private double blockTimeInterval;
-  private int round;
+  private long round;
 
   public CassBolt(double blockTimeInterval)
   {
     this.blockTimeInterval = blockTimeInterval*60*60;
-    round = 1;
+    round = -1;
     currentDate = null;
   }
 
@@ -79,6 +79,7 @@ public class CassBolt extends BaseRichBolt
     else
       country = "CAN";
 
+    round = date.getTime() / (12*60*1000);
     //(id, tweet, userid, tweettime, retweetcount, round, country)
 
     values = new ArrayList<>();
@@ -96,7 +97,7 @@ public class CassBolt extends BaseRichBolt
     }
     long seconds = (date.getTime()-currentDate.getTime())/1000;
     if(seconds>blockTimeInterval ) {
-      round++;
+//      round++;
       currentDate = null;
     }
 

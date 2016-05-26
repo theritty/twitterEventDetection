@@ -40,14 +40,12 @@ public class WordCountBolt extends BaseRichBolt {
 
     if(blockEnd || word.equals("BLOCKEND"))
     {
-      ArrayList<Date> dates = (ArrayList<Date>) tuple.getValueByField("dates");
-      this.collector.emit(new Values("BLOCKEND", 1L, inputBolt, round, source, true, dates, country));
+      this.collector.emit(new Values("BLOCKEND", 1L, inputBolt, round, source, true, tuple.getValueByField("dates"), country));
       countsWithRounds.remove(round);
       return;
     }
     else {
-      if(countsWithRounds.get(round) == null)
-        countsWithRounds.put(round, new HashMap<>());
+      countsWithRounds.putIfAbsent(round, new HashMap<>());
       Long count = this.countsWithRounds.get(round).get(word);
       if (count == null) {
         count = 0L;
@@ -55,10 +53,7 @@ public class WordCountBolt extends BaseRichBolt {
       count++;
 
       if (count > threshold) {
-        ArrayList<Date> dates = (ArrayList<Date>) tuple.getValueByField("dates");
-        this.collector.emit(new Values(word, count, inputBolt, round, source, false, dates, country));
-//        System.out.println("WordCount:: round " + round + " word " + word + " count " + count + " blockend " + blockEnd + " dates " + dates);
-
+        this.collector.emit(new Values(word, count, inputBolt, round, source, false, tuple.getValueByField("dates"), country));
       }
 
       this.countsWithRounds.get(round).put(word, count);

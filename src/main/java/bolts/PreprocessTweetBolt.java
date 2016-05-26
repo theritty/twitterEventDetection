@@ -59,6 +59,7 @@ public class PreprocessTweetBolt extends BaseRichBolt {
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer)
   {
-    declarer.declare(new Fields("tweet","dates","currentDate","blockEnd", "round", "source", "location", "tweetOriginal"));
+    declarer.declare(new Fields("tweet","dates","currentDate","blockEnd", "round",
+            "source", "location", "tweetOriginal"));
   }
 }

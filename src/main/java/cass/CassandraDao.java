@@ -1,47 +1,37 @@
 package cass;
 
-
-import com.datastax.driver.core.BatchStatement;
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.datastax.driver.core.*;
 
 public class CassandraDao
 {
     private PreparedStatement statement;
     private BoundStatement boundStatement;
-    private BatchStatement batch = new BatchStatement();
 
-    private static String CASS_TABLE_NAME = "tweets";
+    private static String CASS_TABLE_NAME = "tweets3";
     private static String CASS_FIELDS = "(id, tweet, userid, tweettime, retweetcount, round, country)";
     private static String CASS_VALUES = "(?, ?, ?, ?, ?, ?, ?)";
 
 
 
-    public CassandraDao(Session session) throws Exception {
+    public CassandraDao() throws Exception {
         // Insert one record into the users table
-        statement = session.prepare(
+        statement = CassandraConnection.connect().prepare(
                 "INSERT INTO " + CASS_TABLE_NAME + " " + CASS_FIELDS
                         + " VALUES " + CASS_VALUES + ";");
 
         boundStatement = new BoundStatement(statement);
 
     }
-    public void insert( Session session, Object[] values ) throws Exception
+    public void insert( Object[] values ) throws Exception
     {
-        session.executeAsync(boundStatement.bind(values));
-//        if(batch.size() > 50) {
-//            session.execute(batch);
-//            batch.clear();
-//        }
-//        else
-//        {
-//            batch.add(boundStatement.bind(values));
-//        }
+        CassandraConnection.connect().executeAsync(boundStatement.bind(values));
+    }
 
+    public ResultSet readRules(String query) {
+//        String query = "SELECT ruleDetails FROM rules";
+        ResultSet result = CassandraConnection.connect().execute(query);
+
+        return result;
     }
 
 
