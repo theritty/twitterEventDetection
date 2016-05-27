@@ -8,6 +8,8 @@ target/
 !stopWords.txt
 !abbreviations.txt
 !specialPrefixes.txt
+!tweetcategory.txt
+!tweetcategorytest.txt
 *.iml
 .idea/
 tweets/
