@@ -124,17 +124,22 @@ public class TextAnalyzer {
         String tweet9 = "I liked a @YouTube video http://youtu.be/Vi1tkUNpohM?a  Cologne Shop Roleplay (ASMR) #test";
         String tweet10 = "I'm at @AstirBeach in Vouliagmeni, Athens https://www.swarmapp.com/c/7lwQrizYC06 #test";
        
+        String randomTweet = "HDP leaders speaking after being stripped of their parliamentary immunity. Not one major Turkish news channel will broadcast it.";
+        
       TextAnalyzer ta = new TextAnalyzer();
-      System.out.println(ta.extractWordList(text));
-      System.out.println(ta.extractWordList(tweet1));
-      System.out.println(ta.extractWordList(tweet2));
-      System.out.println(ta.extractWordList(tweet3));
-      System.out.println(ta.extractWordList(tweet4));
-      System.out.println(ta.extractWordList(tweet5));
-      System.out.println(ta.extractWordList(tweet6));
-      System.out.println(ta.extractWordList(tweet7));
-      System.out.println(ta.extractWordList(tweet8));
-      System.out.println(ta.extractWordList(tweet9));
-      System.out.println(ta.extractWordList(tweet10));
+//      System.out.println(String.join(" ", ta.extractWordList(text)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet1)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet2)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet3)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet4)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet5)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet6)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet7)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet8)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet9)));
+//      System.out.println(String.join(" ", ta.extractWordList(tweet10)));
+      
+      System.out.println(String.join(" ", ta.extractWordList(randomTweet)));
+      
     }
 }
