@@ -14,7 +14,7 @@ public class RoundInfo{
     ArrayList<Date> dates;
     int roundCheckInBits = 0;
     public boolean emittedBefore = false;
-    RoundInfo()
+    public RoundInfo()
     {
         wordCounts = new HashMap<>();
         hashtagCounts = new HashMap<>();
