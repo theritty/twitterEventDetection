@@ -47,23 +47,25 @@ public class CassandraSpout extends BaseRichSpout {
      * The nextuple it is called forever, so if we have been readed the file
      * we will wait and then return
      */
-    if(readed){
-      try {
-        Thread.sleep(10000);
-      } catch (InterruptedException e) {
-        //Do nothing
-      }
-      return;
-    }
-    while(roundlist.size() > 120)
-      roundlist.remove(roundlist.size()-1);
+//    if(readed){
+//      try {
+//        Thread.sleep(10000);
+//      } catch (InterruptedException e) {
+//        //Do nothing
+//      }
+//      return;
+//    }
+//    while(roundlist.size() > 120)
+//      roundlist.remove(roundlist.size()-1);
 
     System.out.println("Number of rounds " + roundlist.size());
-    for(long round : roundlist) {
+    if(roundlist.size()==0) return;
+    long round = roundlist.remove(0);
+//    for(long round : roundlist) {
       readRoundlist.add(round);
 
       if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
-      if (readRoundlist.size() <= trainSize) continue;
+//      if (readRoundlist.size() <= trainSize) continue;
 
 
 
@@ -83,9 +85,9 @@ public class CassandraSpout extends BaseRichSpout {
         else
           collector.emit(new Values(tweet, tmp_roundlist, round, true, round, "cassandra", "cassandraSpout", country));
       }
-    }
+//    }
 
-    readed = true;
+//    readed = true;
     System.out.println("Reading finished.");
 
   }
@@ -106,6 +108,11 @@ public class CassandraSpout extends BaseRichSpout {
       }
     });
 
+
+    roundlist.remove(roundlist.size()-1);
+    readRoundlist.add(roundlist.remove(0));
+    readRoundlist.add(roundlist.remove(0));
+    readRoundlist.add(roundlist.remove(0));
   }
 
 

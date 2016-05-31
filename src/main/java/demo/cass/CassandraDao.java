@@ -3,6 +3,10 @@ package demo.cass;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import java.io.Serializable;
 
@@ -46,13 +50,15 @@ public class CassandraDao implements Serializable
     public void insertIntoTweets( Object[] values ) throws Exception
     {
         boundStatement_tweets = new BoundStatement(statement_tweets);
-        CassandraConnection.connect().executeAsync(boundStatement_tweets.bind(values));
+        ResultSetFuture rsf = CassandraConnection.connect().executeAsync(boundStatement_tweets.bind(values));
+        checkError(rsf);
     }
 
     public void insertIntoCounts( Object[] values ) throws Exception
     {
         boundStatement_counts = new BoundStatement(statement_counts);
-        CassandraConnection.connect().executeAsync(boundStatement_counts.bind(values));
+        ResultSetFuture rsf = CassandraConnection.connect().executeAsync(boundStatement_counts.bind(values));
+        checkError(rsf);
     }
 
     public ResultSet getFromCounts( Object... values ) throws Exception
@@ -69,6 +75,19 @@ public class CassandraDao implements Serializable
         return result;
     }
 
+    static FutureCallback<ResultSet> callback =  new FutureCallback<ResultSet>() {
+        @Override public void onSuccess(ResultSet result) {
+        }
+
+        @Override public void onFailure(Throwable t) {
+            System.err.println("Error while reading Cassandra version: " + t.getMessage());
+        }
+    };
+
+    public void checkError(ResultSetFuture future)
+    {
+        Futures.addCallback(future, callback, MoreExecutors.directExecutor());
+    }
 
 }
 
