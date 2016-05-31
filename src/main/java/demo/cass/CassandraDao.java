@@ -18,8 +18,8 @@ public class CassandraDao implements Serializable
     private static String TWEETS_VALUES = "(?, ?, ?, ?, ?, ?, ?)";
 
     private static String COUNTS_TABLE_NAME = "counts";
-    private static String COUNTS_FIELDS = "(round, word, country, count)";
-    private static String COUNTS_VALUES = "(?, ?, ?, ?)";
+    private static String COUNTS_FIELDS = "(round, word, country, count, totalnumofwords)";
+    private static String COUNTS_VALUES = "(?, ?, ?, ?, ?)";
 
 
     public CassandraDao() throws Exception {
