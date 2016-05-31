@@ -55,7 +55,7 @@ public class CassandraSpout extends BaseRichSpout {
       }
       return;
     }
-    while(roundlist.size() > 10)
+    while(roundlist.size() > 120)
       roundlist.remove(roundlist.size()-1);
 
     System.out.println("Number of rounds " + roundlist.size());

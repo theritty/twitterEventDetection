@@ -36,41 +36,41 @@ public class CountCalculator {
     }
     counts.put("count", count);
     counts.put("allcount", allcount);
-    insertValuesToCass(round, word, country, count, allcount);
+    insertValuesToCass(cassandraDao, round, word, country, count, allcount);
     return counts;
   }
-  public HashMap<String, Long> getCountOfWord(String word, long round, String country) {
+  public HashMap<String, Long> getCountOfWord(CassandraDao cassandraDao,String word, long round, String country) {
     long count=0L, allcount=0L;
     HashMap<String, Long> hm = null;
     try {
-      CassandraDao cassandraDao = new CassandraDao();
+      if(word.contains("'"))
+        word.replace("'","\\\'");
 
-    ResultSet resultSet = cassandraDao.readRules("SELECT count FROM counts WHERE round=" + round +
-            " AND word='" + word + "' AND country='" + country + "';");
+      ResultSet resultSet =cassandraDao.getFromCounts(round, word, country);
 
-    Iterator<Row> iterator = resultSet.iterator();
-    if (!iterator.hasNext()) {
-      HashMap<String, Long> tmp = addNewEntryToCassCounts(cassandraDao, round, word, country);
-      count = tmp.get("count");
-      allcount = tmp.get("allcount");
-    }
-    else{
-      Row row = iterator.next();
-      if(row.getLong("count")<0 || row.getLong("totalnumofwords")<0 )
-      {
+      Iterator<Row> iterator = resultSet.iterator();
+      if (!iterator.hasNext()) {
         HashMap<String, Long> tmp = addNewEntryToCassCounts(cassandraDao, round, word, country);
         count = tmp.get("count");
         allcount = tmp.get("allcount");
       }
-      else {
-        count = row.getLong("count");
-        allcount = row.getLong("totalnumofwords");
+      else{
+        Row row = iterator.next();
+        if(row.getLong("count")<0 || row.getLong("totalnumofwords")<0 )
+        {
+          HashMap<String, Long> tmp = addNewEntryToCassCounts(cassandraDao, round, word, country);
+          count = tmp.get("count");
+          allcount = tmp.get("allcount");
+        }
+        else {
+          count = row.getLong("count");
+          allcount = row.getLong("totalnumofwords");
+        }
       }
-    }
 
-    hm = new HashMap<>();
-    hm.put("count", count);
-    hm.put("totalnumofwords", allcount);
+      hm = new HashMap<>();
+      hm.put("count", count);
+      hm.put("totalnumofwords", allcount);
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -78,10 +78,9 @@ public class CountCalculator {
     return hm;
   }
 
-  private void insertValuesToCass(long round, String word, String country, long count, long allcount)
+  private void insertValuesToCass(CassandraDao cassandraDao, long round, String word, String country, long count, long allcount)
   {
     try {
-      CassandraDao cassandraDao = new CassandraDao();
       List<Object> values = new ArrayList<>();
       values.add(round);
       values.add(word);

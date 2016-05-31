@@ -10,8 +10,10 @@ public class CassandraDao implements Serializable
 {
     private transient PreparedStatement statement_tweets;
     private transient PreparedStatement statement_counts;
+    private transient PreparedStatement statement_where;
     private transient BoundStatement boundStatement_tweets;
     private transient BoundStatement boundStatement_counts;
+    private transient BoundStatement boundStatement_where;
 
     private static String TWEETS_TABLE_NAME = "tweets3";
     private static String TWEETS_FIELDS = "(id, tweet, userid, tweettime, retweetcount, round, country)";
@@ -28,24 +30,37 @@ public class CassandraDao implements Serializable
                 "INSERT INTO " + TWEETS_TABLE_NAME + " " + TWEETS_FIELDS
                         + " VALUES " + TWEETS_VALUES + ";");
 
-        boundStatement_tweets = new BoundStatement(statement_tweets);
+//        boundStatement_tweets = new BoundStatement(statement_tweets);
 
 
         statement_counts = CassandraConnection.connect().prepare(
                 "INSERT INTO " + COUNTS_TABLE_NAME + " " + COUNTS_FIELDS
                         + " VALUES " + COUNTS_VALUES + ";");
 
-        boundStatement_counts = new BoundStatement(statement_counts);
+        statement_where = CassandraConnection.connect().prepare(
+                "SELECT * FROM " + COUNTS_TABLE_NAME + " WHERE round=? AND word=? AND country=?;");
+
+//        boundStatement_counts = new BoundStatement(statement_counts);
 
     }
     public void insertIntoTweets( Object[] values ) throws Exception
     {
+        boundStatement_tweets = new BoundStatement(statement_tweets);
         CassandraConnection.connect().executeAsync(boundStatement_tweets.bind(values));
     }
 
     public void insertIntoCounts( Object[] values ) throws Exception
     {
+        boundStatement_counts = new BoundStatement(statement_counts);
         CassandraConnection.connect().executeAsync(boundStatement_counts.bind(values));
+    }
+
+    public ResultSet getFromCounts( Object... values ) throws Exception
+    {
+        boundStatement_where = new BoundStatement(statement_where);
+        ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_where.bind(values));
+
+        return resultSet;
     }
 
     public ResultSet readRules(String query) {

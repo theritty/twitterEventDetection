@@ -62,11 +62,11 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
             TFIDFCalculatorWithCassandra calculator = new TFIDFCalculatorWithCassandra();
             if(source.equals("twitter"))
             {
-                tfidfs.add(calculator.tfIdf( rounds,key,roundNum,country));
+                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country));
             }
             else
             {
-                tfidfs.add(calculator.tfIdf(rounds,key,roundNum,country));
+                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country));
             }
         }
 
@@ -75,30 +75,34 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         {
             if(tfidf != 0.0)
             {
-               allzero=false;
+                allzero=false;
                 break;
             }
         }
         if(!allzero) {
             writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
-            if(tfidfs.get(tfidfs.size()-2) == 0 && tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
+            if(tfidfs.get(tfidfs.size()-2) == 0)
             {
-              System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
-                      + tfidfs.get(tfidfs.size()-1)/0.0001);
-              this.collector.emit(new Values(key, tfidfs, type, round, source, country));
+                if(tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
+                {
+                    System.out.println("Round " + round + " Event candidate: " + key + " rate: "
+                            + tfidfs.get(tfidfs.size() - 1) / 0.0001);
+                    this.collector.emit(new Values(key, tfidfs, type, round, source, country));
+                }
+                else
+                {
+                    System.out.println("Round " + round + " Not Event " + key+ " rate: "
+                            + tfidfs.get(tfidfs.size()-1)/0.0001);
+                }
             }
             else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>tfidfEventRate)
             {
-              System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
-                      + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
-              this.collector.emit(new Values(key, tfidfs, type, round, source, country));
+                System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
+                        + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
+                this.collector.emit(new Values(key, tfidfs, type, round, source, country));
             }
-          else
+            else
             {
-              if(tfidfs.get(tfidfs.size()-2) == 0)
-                System.out.println("Round " + round + " Not Event " + key+ " rate: "
-                      + tfidfs.get(tfidfs.size()-1)/0.0001);
-              else
                 System.out.println("Round " + round + " Not Event " + key+ " rate: "
                         + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
             }
