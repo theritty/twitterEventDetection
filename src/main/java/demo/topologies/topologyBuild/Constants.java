@@ -6,6 +6,7 @@ package demo.topologies.topologyBuild;
 public class Constants {
     public static final String TWITTER_SPOUT_ID = "twitter-spout";
     public static final String FILE_SPOUT_ID = "file-spout";
+    public static final String CASS_SPOUT_ID = "cass-spout";
     public static final String PREPROCESS_SPOUT_ID = "preprocess-spout";
     public static final String DOCUMENT_CREATOR = "document-creator";
 

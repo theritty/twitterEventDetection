@@ -7,6 +7,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +18,7 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
     private OutputCollector collector;
     private String country;
+    static Logger log = LoggerFactory.getLogger(SplitHashtagsBolt.class);
 
     public SplitHashtagsBolt(String country)
     {
@@ -51,15 +54,17 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
         for(String tweet: tweets)
         {
+            log.debug("Word: " + tweet + " round: " + round + " country: " + country);
             if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
                     && !tweet.equals("#hiring") && !tweet.equals("#careerarc") && !tweet.equals("BLOCKEND"))
             {
-                this.collector.emit(new Values(tweet.replace("#", ""), "HashtagCount", round,
+                this.collector.emit(new Values(tweet/*.replace("#", "")*/, "HashtagCount", round,
                         source, false, tuple.getValueByField("dates"), country));
             }
         }
         if(blockEnd)
         {
+            log.debug("Blockend for round: " + round + " country: " + country);
             this.collector.emit(new Values("BLOCKEND", "HashtagCount", round, source, true,
                     tuple.getValueByField("dates"), country));
         }

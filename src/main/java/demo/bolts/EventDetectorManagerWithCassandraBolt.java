@@ -22,18 +22,14 @@ public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
   private UUID id = UUID.randomUUID();
 
 
-  public EventDetectorManagerWithCassandraBolt()
+  public EventDetectorManagerWithCassandraBolt(CassandraDao cassandraDao)
   {
+    this.cassandraDao = cassandraDao;
   }
 
   @Override
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
-    try {
-      this.cassandraDao = new CassandraDao();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
     this.collector = collector;
     documents = new ArrayList<>();
     roundInfoList = new HashMap<>();

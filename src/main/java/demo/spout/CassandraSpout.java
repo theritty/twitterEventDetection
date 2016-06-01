@@ -22,8 +22,8 @@ public class CassandraSpout extends BaseRichSpout {
   int compareSize;
   int trainSize;
 
-  public CassandraSpout( int trainSize, int compareSize) throws Exception {
-    this.cassandraDao = new CassandraDao();
+  public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize) throws Exception {
+    this.cassandraDao = cassandraDao;
     this.compareSize = compareSize;
     this.trainSize = trainSize;
     roundlist = new ArrayList<>();
@@ -58,7 +58,7 @@ public class CassandraSpout extends BaseRichSpout {
 //    while(roundlist.size() > 120)
 //      roundlist.remove(roundlist.size()-1);
 
-    System.out.println("Number of rounds " + roundlist.size());
+    if(roundlist.size()>0) System.out.println("Number of rounds " + roundlist.size());
     if(roundlist.size()==0) return;
     long round = roundlist.remove(0);
 //    for(long round : roundlist) {
@@ -93,31 +93,41 @@ public class CassandraSpout extends BaseRichSpout {
   }
 
   public void getRoundListFromCassandra(){
-    ResultSet resultSet = cassandraDao.readRules("SELECT DISTINCT round FROM tweets3;");
-    roundlist = new ArrayList<>();
+    ResultSet resultSet = null;
+    try {
+      resultSet = cassandraDao.getRounds();
+      roundlist = new ArrayList<>();
 
-    Iterator<Row> iterator = resultSet.iterator();
-    while(iterator.hasNext())
-    {
-      Row row = iterator.next();
-      roundlist.add(row.getLong("round"));
-    }
-    Collections.sort(roundlist, new Comparator<Long>() {
-      public int compare(Long m1, Long m2) {
-        return m1.compareTo(m2);
+      Iterator<Row> iterator = resultSet.iterator();
+      while(iterator.hasNext())
+      {
+        Row row = iterator.next();
+        roundlist.add(row.getLong("round"));
       }
-    });
+      Collections.sort(roundlist, new Comparator<Long>() {
+        public int compare(Long m1, Long m2) {
+          return m1.compareTo(m2);
+        }
+      });
 
 
-    roundlist.remove(roundlist.size()-1);
-    readRoundlist.add(roundlist.remove(0));
-    readRoundlist.add(roundlist.remove(0));
-    readRoundlist.add(roundlist.remove(0));
+      roundlist.remove(roundlist.size()-1);
+      readRoundlist.add(roundlist.remove(0));
+      readRoundlist.add(roundlist.remove(0));
+      readRoundlist.add(roundlist.remove(0));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
 
   public ResultSet getDataFromCassandra(long round) {
-    ResultSet resultSet = cassandraDao.readRules("SELECT tweet,country FROM tweets3 WHERE round=" + round + ";");
+    ResultSet resultSet = null;
+    try {
+      resultSet = cassandraDao.getTweetsByRound(round);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
     return resultSet;
   }

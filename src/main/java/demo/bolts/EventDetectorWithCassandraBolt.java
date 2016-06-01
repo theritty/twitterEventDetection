@@ -24,23 +24,21 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private int inputFileNum;
     private double tfidfEventRate;
     private CassandraDao cassandraDao;
+    private String tweetTable;
 
-    public EventDetectorWithCassandraBolt(String filePath, int fileNum, double tfidfEventRate, int inputFileNum )
+    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, int fileNum, double tfidfEventRate, int inputFileNum, String tweetTable )
     {
         this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;
         this.inputFileNum = inputFileNum;
+        this.cassandraDao = cassandraDao;
+        this.tweetTable = tweetTable;
     }
 
     @Override
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
         this.collector = collector;
-        try {
-            this.cassandraDao = new CassandraDao();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -62,11 +60,11 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
             TFIDFCalculatorWithCassandra calculator = new TFIDFCalculatorWithCassandra();
             if(source.equals("twitter"))
             {
-                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country));
+                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country, tweetTable));
             }
             else
             {
-                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country));
+                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country, tweetTable));
             }
         }
 

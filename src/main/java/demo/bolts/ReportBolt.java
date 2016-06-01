@@ -6,6 +6,8 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -14,6 +16,7 @@ import java.util.*;
 public class ReportBolt extends BaseRichBolt{
     private HashMap<Long, RoundInfo> roundInfoList;
     private String filePath;
+    static Logger log = LoggerFactory.getLogger(ReportBolt.class);
 
     public ReportBolt(String fileName, int threshold, String filePath, int fileNum)
     {
@@ -36,6 +39,7 @@ public class ReportBolt extends BaseRichBolt{
         Long count = tuple.getLongByField("count");
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
+        log.debug("Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
 //        System.out.println("Report BOLT");
         RoundInfo roundInfo;
         if(roundInfoList.get(round) != null)
@@ -50,6 +54,7 @@ public class ReportBolt extends BaseRichBolt{
 
         if(inputBolt.equals("WordCount"))
         {
+            log.debug("Set as sentence:: Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
             if(blockEnd && roundInfo.getWordCounts().size()>0)
             {
                 writeToFile(country, round, roundInfo.getWordCounts());
@@ -61,7 +66,8 @@ public class ReportBolt extends BaseRichBolt{
         }
         else if(inputBolt.equals("HashtagCount"))
         {
-            if(blockEnd && roundInfo.getWordCounts().size()>0)
+            log.debug("Set as hashtag:: Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
+            if(blockEnd && roundInfo.getHashtagCounts().size()>0)
             {
                 writeToFile(country, round, roundInfo.getHashtagCounts());
             }
@@ -69,6 +75,10 @@ public class ReportBolt extends BaseRichBolt{
             {
                 roundInfo.putHashtag(word, count);
             }
+        }
+        else
+        {
+            log.debug("Cannot set:: Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
         }
     }
 
