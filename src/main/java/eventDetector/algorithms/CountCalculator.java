@@ -9,16 +9,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by ceren on 29.05.2016.
- */
 public class CountCalculator {
 
   public HashMap<String, Long> addNewEntryToCassCounts(CassandraDao cassandraDao, String tweetTable, long round, String word, String country)
   {
     long count=0L, allcount=0L;
     HashMap<String, Long> counts = new HashMap<>();
-    ResultSet resultSet2 = null;//.readRules("SELECT tweet FROM " + tweetTable + " WHERE round=" + round + ";");
+    ResultSet resultSet2 ;
     try {
       resultSet2 = cassandraDao.getTweetsByRound(round);
       Iterator<Row> iterator2 = resultSet2.iterator();
@@ -44,8 +41,9 @@ public class CountCalculator {
     }
     return counts;
   }
+
   public HashMap<String, Double> getCountOfWord(CassandraDao cassandraDao, String tweetTable, String word, long round, String country) {
-    double count=0L, allcount=0L;
+    double count, allcount;
     HashMap<String, Double> hm = null;
     try {
       ResultSet resultSet =cassandraDao.getFromCounts(round, word, country);

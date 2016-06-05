@@ -5,12 +5,16 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
+import cassandraConnector.CassandraDao;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import eventDetector.drawing.LineChart;
 import topologyBuilder.Constants;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class EventCompareBolt extends BaseRichBolt {
@@ -19,14 +23,17 @@ public class EventCompareBolt extends BaseRichBolt {
   private String filePath;
   private String drawFilePath;
   private double rateForSameEvent;
+  private CassandraDao cassandraDao;
+
   HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
-  public EventCompareBolt(String filePath, int fileNum, double rateForSameEvent)
+  public EventCompareBolt(CassandraDao cassandraDao, String filePath, int fileNum, double rateForSameEvent)
   {
     this.rateForSameEvent = rateForSameEvent;
     this.filePath = filePath + fileNum + "/";
     this.drawFilePath = Constants.IMAGES_FILE_PATH + fileNum +"/";
     wordList = new HashMap<>();
+    this.cassandraDao = cassandraDao;
   }
 
   @Override
@@ -45,7 +52,6 @@ public class EventCompareBolt extends BaseRichBolt {
     String country = tuple.getStringByField("country");
 
     ArrayList<ArrayList<HashMap<String, Object>>> compareList = new ArrayList<>();
-    RoundInfo roundInfo;
     if(wordList.get(round) == null)
     {
       wordList.put(round, new ArrayList<>());
@@ -57,53 +63,36 @@ public class EventCompareBolt extends BaseRichBolt {
 
     wordList.get(round).add(xx);
 
-//        if (round > currentRound ) {
-//    for (HashMap<String, Object> hm : wordList.get(round)) {
-//      String currentKey = (String) hm.get("word");
-//      ArrayList<Double> currentTfidfs = (ArrayList<Double>) hm.get("tfidfs");
-//      boolean added = false;
-//
-//
-//      for (ArrayList<HashMap<String, Object>> al : compareList) {
-//        for (HashMap<String, Object> chm : al) {
-//          String keyToCompare = (String) chm.get("word");
-//          ArrayList<Double> tfidfToCompare = (ArrayList<Double>) chm.get("tfidfs");
-//          int cnt = 0;
-//
-//          for (int i = 0; i < tfidfToCompare.size(); i++) {
-//            if (currentTfidfs.get(i) != 0 && tfidfToCompare.get(i) != 0) cnt++;
-//          }
-//
-//          if ( ( (double) cnt / (double) tfidfToCompare.size()) > rateForSameEvent) {
-//            added = true;
-//            al.add(hm);
-//            break;
-//          }
-//        }
-//        if (added) break;
-//      }
-//      if (!added) {
-//        ArrayList<HashMap<String, Object>> tmp = new ArrayList<>();
-//        tmp.add(hm);
-//        compareList.add(tmp);
-//      }
-//    }
     compareList.add(wordList.get(round));
     if(compareList.size()>0) {
       writeToFile(filePath + "events-" + country + "-" + round, compareList);
       try {
-        LineChart.drawLineChart(tfidfs,key,round,country, drawFilePath);
+        ArrayList<Long> countsList = getCountListFromCass(round, key, country);
+        LineChart.drawLineChart(countsList,key,round,country, drawFilePath);
       } catch (IOException e) {
+        e.printStackTrace();
+      } catch (Exception e) {
         e.printStackTrace();
       }
     }
-
-//    wordList.clear();
-//    currentRound = round;
-//        }
-
   }
 
+  protected ArrayList<Long> getCountListFromCass(long round, String key, String country) throws Exception {
+    long roundPast = round-10;
+    ArrayList<Long> countsList = new ArrayList<>();
+    while(roundPast<=round) {
+      ResultSet resultSet = cassandraDao.getFromCounts(roundPast, key, country);
+      Iterator<Row> iterator = resultSet.iterator();
+      if (iterator.hasNext()) {
+        Row row = iterator.next();
+        countsList.add(row.getLong("count"));
+      }
+      else
+        countsList.add(0L);
+      roundPast++;
+    }
+    return countsList;
+  }
   public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
   {
     File filePath = new File(fileName);
@@ -120,13 +109,12 @@ public class EventCompareBolt extends BaseRichBolt {
         for (HashMap<String, Object> chm : al) {
           if(chm.get("type").equals("hashtag"))
           {
-            write(writer, "\t#" + chm.get("word") + " " + ((ArrayList<Double>) chm.get("tfidfs")).toString());
+            write(writer, "\t#" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
           }
           else
           {
-            write(writer, "\t" + chm.get("word") + " " + ((ArrayList<Double>) chm.get("tfidfs")).toString());
+            write(writer, "\t" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
           }
-
         }
         cnt++;
       }
@@ -146,6 +134,5 @@ public class EventCompareBolt extends BaseRichBolt {
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer)
   {
-    //declarer.declare(new Fields("word"));
   }
 }

@@ -112,6 +112,10 @@ public class CassandraSpout extends BaseRichSpout {
 
 
       roundlist.remove(roundlist.size()-1);
+
+//      while(roundlist.size()>10)
+//        roundlist.remove(roundlist.size()-1);
+
       readRoundlist.add(roundlist.remove(0));
       readRoundlist.add(roundlist.remove(0));
       readRoundlist.add(roundlist.remove(0));

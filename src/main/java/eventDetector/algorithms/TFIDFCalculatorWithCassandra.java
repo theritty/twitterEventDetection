@@ -39,16 +39,10 @@ public class TFIDFCalculatorWithCassandra {
      */
     public double tfIdf(CassandraDao cassandraDao, ArrayList<Long> rounds, String term, long roundNum, String country, String tweetTable) {
         double tf = tf(cassandraDao, roundNum, country, term, tweetTable) ;
-        if(tf == 0)
-        {
-            System.out.println("UUUUUUUUU: " + term + " " + roundNum + " " + country + " " + tf);
-            return 0;
-        }
+        if(tf == 0)  return 0;
         double idf = idf(cassandraDao, rounds, country,term, tweetTable);
         double result = tf * idf;
-        System.out.println("UUUUUUUUU: " + term + " " + roundNum + " " + country + " " + result);
         return result;
-
     }
 
 

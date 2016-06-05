@@ -3,6 +3,8 @@ package eventDetector.drawing;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import topologyBuilder.Constants;
@@ -13,11 +15,11 @@ import java.util.ArrayList;
 
 public class LineChart
 {
-  public static void drawLineChart(ArrayList<Double> tfidfs, String word, long round,
+  public static void drawLineChart(ArrayList<Long> tfidfs, String word, long round,
                                    String country, String drawFilePath ) throws IOException {
     DefaultCategoryDataset line_chart_dataset = new DefaultCategoryDataset();
     for(int i=0; i<tfidfs.size();i++)
-      line_chart_dataset.addValue((Number) (tfidfs.get(i) * 1000), "tfidfs", i);
+      line_chart_dataset.addValue((Number) (tfidfs.get(i)), "tfidfs", i);
 
     JFreeChart lineChartObject = ChartFactory.createLineChart(
             "Tf-idf graph for \"" + word + "\" at round " + round + " in " + country,
@@ -33,22 +35,22 @@ public class LineChart
   }
   public static void main( String[ ] args )
   {
-    ArrayList<Double> vals_test = new ArrayList<>();
-    vals_test.add(0.0);
-    vals_test.add(2.152566785074336E-4);
-    vals_test.add(2.0602791956360036E-5);
-    vals_test.add(3.158834297930437E-4);
-    vals_test.add(0.0);
-    vals_test.add(0.0);
-    vals_test.add(4.1343986383876874E-5);
-    vals_test.add(1.7418468643986954E-4);
-    vals_test.add(0.0);
-    vals_test.add(1.3877360058842453E-4);
-    vals_test.add(5.770302249032202E-5);
-    vals_test.add(0.0);
-    vals_test.add(0.0);
-    vals_test.add(1.5113743075290971E-4);
-    vals_test.add(0.001896515850769457);
+    ArrayList<Long> vals_test = new ArrayList<>();
+    vals_test.add(0L);
+    vals_test.add(2L);
+    vals_test.add(5L);
+    vals_test.add(3L);
+    vals_test.add(0L);
+    vals_test.add(0L);
+    vals_test.add(4L);
+    vals_test.add(7L);
+    vals_test.add(5L);
+    vals_test.add(1L);
+    vals_test.add(5L);
+    vals_test.add(0L);
+    vals_test.add(0L);
+    vals_test.add(1L);
+    vals_test.add(0L);
 
     try {
       drawLineChart(vals_test,"test",5,"USA", Constants.IMAGES_FILE_PATH);
