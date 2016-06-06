@@ -4,13 +4,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Random;
 
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.evaluation.Evaluation;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.core.Instances;
 import weka.filters.unsupervised.attribute.StringToWordVector;
 
-public class TweetClassifier {
+public class NaiveBayesClassifier {
 	static File resourcesDirectory = new File("src/main/resources");
 	private static String inputTrainingFileName = "tweetcategory.txt";
 	private static String inputTestFileName = "tweetcategorytest.txt";
@@ -29,8 +31,7 @@ public class TweetClassifier {
 	}
 	
 
-	public static void main(String[] args) throws Exception {
-		
+	public static void main(String[] args) throws Exception {	
 		// TRAINING PHASE
 		
 		// Read train data
@@ -49,7 +50,6 @@ public class TweetClassifier {
 		classifier.setClassifier(new NaiveBayes());
 		classifier.buildClassifier(trainData);
 				
-		
 		// TESTING PHASE
 		// Read test data
 		BufferedReader testFile = readDataFile(inputTestFileName);
@@ -58,10 +58,22 @@ public class TweetClassifier {
 		testData.setClassIndex(testData.numAttributes() - 1);
 		
 		// Predict each case
+		/*
 		for (int i = 0; i < testData.size(); i++) {
 			double prediction = classifier.classifyInstance(testData.instance(i)); 
 			System.out.println("Tweet: " + testData.instance(i).stringValue(0) + " | Prediction: " + testData.classAttribute().value((int) prediction));
 		}
+		*/
+
+		// EVALUATION
+		Evaluation eval = new Evaluation(trainData);
+		Random rand = new Random(1);  // using seed = 1
+		int folds = 10;
+		eval.crossValidateModel(classifier, trainData, folds, rand);
+		
+		System.out.println(eval.toSummaryString());
+		System.out.println(eval.toClassDetailsString());
+		System.out.println(eval.toMatrixString());
 	}
 
 }
