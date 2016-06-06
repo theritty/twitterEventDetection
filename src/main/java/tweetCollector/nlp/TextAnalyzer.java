@@ -56,6 +56,11 @@ public class TextAnalyzer {
                 if(StringUtils.isNumeric(word)) {
                 	continue;
                 }
+                
+                // Eliminate Twitter mentions, e.g. @username
+                else if(word.startsWith("@")) {
+                	continue;
+                }
 
                 // If the word is nothing but a punctuation, ignore it
                 else if(Punctuation.removePunctuation(word).equalsIgnoreCase("")){
