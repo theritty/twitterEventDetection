@@ -7,6 +7,7 @@ import eventDetector.bolts.*;
 import cassandraConnector.CassandraDao;
 import eventDetector.spout.CassandraSpout;
 import tweetCollector.bolts.CassBolt;
+import tweetCollector.bolts.CassCategoriesBolt;
 import tweetCollector.bolts.PreprocessTweetBolt;
 import tweetCollector.spout.TwitterSpout;
 
@@ -44,6 +45,33 @@ public class BoltBuilder {
 
     builder.setBolt(Constants.CASS_BOLT_ID, new CassBolt(TIME_INTERVAL_IN_HOURS, TWEETS_TABLE, COUNTS_TABLE)).
             shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
+    return builder.createTopology();
+  }
+
+  public static StormTopology prepareBoltsForPreprocess(Properties properties) throws Exception {
+    String TWEETS_TABLE = properties.getProperty("tweets.table");
+    String COUNTS_TABLE = properties.getProperty("counts.table");
+
+    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE);
+    System.out.println("Preparing Bolts...");
+    TopologyBuilder builder = new TopologyBuilder();
+
+    CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
+            Integer.parseInt(properties.getProperty("topology.compare.size")));
+
+    PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
+    TweetCategoryPredictionBolt tweetCategoryPredictionBolt = new TweetCategoryPredictionBolt();
+    CassCategoriesBolt cassCategoriesBolt = new CassCategoriesBolt("tweets", "counts");
+
+    builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout);
+
+    builder.setBolt(Constants.PREPROCESS_SPOUT_ID, preprocessor).
+            shuffleGrouping(Constants.CASS_SPOUT_ID);
+    builder.setBolt(Constants.CLASSIFIER_BOLT_ID, tweetCategoryPredictionBolt).
+            shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
+    builder.setBolt(Constants.CASS_BOLT_ID, cassCategoriesBolt).
+            shuffleGrouping(Constants.CLASSIFIER_BOLT_ID);
+
     return builder.createTopology();
   }
 

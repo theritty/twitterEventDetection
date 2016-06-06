@@ -76,14 +76,20 @@ public class CassandraSpout extends BaseRichSpout {
         Row row = iterator.next();
         String tweet = row.getString("tweet");
         String country = row.getString("country");
+        Date tweetTime = row.getTimestamp("tweettime");
+        long id = row.getLong("id");
+        long retweetcount = row.getLong("retweetcount");
+        long userid = row.getLong("userid");
+
 
         if(tweet == null || tweet.length() == 0) continue;
         ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
-//        System.out.println("Tweet: " + tweet);
+
+        // round | tweettime | id | country | retweetcount | tweet | userid
         if(iterator.hasNext())
-          collector.emit(new Values(tweet, tmp_roundlist, round, false, round, "cassandra", "cassandraSpout", country));
+          collector.emit(new Values(tweet, tmp_roundlist, round, false, round, "cassandra", "cassandraSpout", country, tweetTime, id, retweetcount, userid));
         else
-          collector.emit(new Values(tweet, tmp_roundlist, round, true, round, "cassandra", "cassandraSpout", country));
+          collector.emit(new Values(tweet, tmp_roundlist, round, true, round, "cassandra", "cassandraSpout", country, tweetTime, id, retweetcount, userid));
       }
 //    }
 
@@ -151,7 +157,7 @@ public class CassandraSpout extends BaseRichSpout {
    */
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt", "country"));
+    declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt", "country", "tweetTime", "id", "retweetcount", "userid"));
   }
 
 }

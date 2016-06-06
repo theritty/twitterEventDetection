@@ -19,6 +19,7 @@ public class Constants {
     public static final String COUNTRY1_EVENT_DETECTOR_BOLT = "event-detector-bolt1";
     public static final String COUNTRY1_EVENT_COMPARE_BOLT = "event-compare-bolt1";
     public static final String COUNTRY1_EVENT_DETECTOR_MANAGER_BOLT = "event-detector-manager-bolt1";
+    public static final String CLASSIFIER_BOLT_ID = "classifier-bolt";
 
     public static final String COUNTRY2_SPLIT_BOLT_ID = "split-bolt2";
     public static final String COUNTRY2_SPLIT_HASHTAG_BOLT_ID = "split-hashtag-bolt2";

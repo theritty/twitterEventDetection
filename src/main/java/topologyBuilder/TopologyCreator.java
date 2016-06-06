@@ -42,6 +42,20 @@ public class TopologyCreator {
         }
     }
 
+    public void submitPreprocessTopology()
+    {
+        try
+        {
+            loadTopologyPropertiesAndSubmit( properties, config, BoltBuilder.prepareBoltsForPreprocess(properties) );
+        }
+        catch ( TTransportException | InvalidTopologyException | AuthorizationException | AlreadyAliveException | InterruptedException e )
+        {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void submitTopologyWithCassandra()
     {
         try

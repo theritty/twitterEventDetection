@@ -23,8 +23,12 @@ public class CassandraDao implements Serializable
     private transient BoundStatement boundStatement_counts;
     private transient BoundStatement boundStatement_where;
 
-    private static String TWEETS_FIELDS = "(id, tweet, userid, tweettime, retweetcount, round, country)";
-    private static String TWEETS_VALUES = "(?, ?, ?, ?, ?, ?, ?)";
+    private static String TWEETS_FIELDS =   "(id, tweet, userid, tweettime, retweetcount, round, country, " +
+                                            "class_politics, class_music,class_sports)";
+    private static String TWEETS_VALUES = "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    private static String TWEETS3_FIELDS = "(id, tweet, userid, tweettime, retweetcount, round, country)";
+    private static String TWEETS3_VALUES = "(?, ?, ?, ?, ?, ?, ?)";
 
     private static String COUNTS_FIELDS = "(round, word, country, count, totalnumofwords)";
     private static String COUNTS_VALUES = "(?, ?, ?, ?, ?)";
@@ -39,10 +43,23 @@ public class CassandraDao implements Serializable
 
     private void prepareAll()
     {
+        String tweetFields, tweetValues;
+
+        if(tweetsTable.equals("tweets"))
+        {
+            tweetFields = TWEETS_FIELDS;
+            tweetValues = TWEETS_VALUES;
+        }
+        else
+        {
+            tweetFields = TWEETS3_FIELDS;
+            tweetValues = TWEETS3_VALUES;
+        }
+
         if(statement_tweets==null) {
             statement_tweets = CassandraConnection.connect().prepare(
-                    "INSERT INTO " + tweetsTable + " " + TWEETS_FIELDS
-                            + " VALUES " + TWEETS_VALUES + ";");
+                    "INSERT INTO " + tweetsTable + " " + tweetFields
+                            + " VALUES " + tweetValues + ";");
         }
         if(statement_counts==null) {
             statement_counts = CassandraConnection.connect().prepare(
