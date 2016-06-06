@@ -35,15 +35,8 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 
 	static File resourcesDirectory = new File("src/main/resources");
 	private static String politicsTrainingFileName = "politicsTweets.txt";
-<<<<<<< HEAD
-	private static String musicTrainingFileName = "musicTweets.txt";
-	private static String sportsTrainingFileName = "sportsTweets.txt";
-
-=======
 	private static String musicTrainingFileName = "politicsTweets.txt";
 	private static String sportsTrainingFileName = "politicsTweets.txt";
-	
->>>>>>> 17235abe2b3218a98f8a94e7d6e0c4211e2aeaa1
 	// Define attributes
 	private Attribute tweetAttribute;
 	private Attribute politicsAttribute;
@@ -158,7 +151,6 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple tuple) {
 		// Create a dataset for each classifer, using the attributes
-<<<<<<< HEAD
 		List<String> tweet_words = (List<String>) tuple.getValueByField( "tweet" );
 		String tweet = "";
 		List<String> predictedCategories = new ArrayList<>();
@@ -189,52 +181,6 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 			double[] sportsTestValues = new double[sportsData.numAttributes()];
 			sportsTestValues[0] = sportsData.attribute(0).addStringValue(tweet);
 			sportsTestValues[1] = Utils.missingValue();
-=======
-		Instances politicsData = new Instances("category", politicsClassifierFv, 0);
-		politicsData.setClassIndex(politicsData.numAttributes() - 1);
-		
-		Instances musicData = new Instances("category", musicClassifierFv, 0);
-		musicData.setClassIndex(musicData.numAttributes() - 1);
-		
-		Instances sportsData = new Instances("category", sportsClassifierFv, 0);
-		sportsData.setClassIndex(sportsData.numAttributes() - 1);
-		
-		// Create an instance for each classifier, using the given arguments
-		double[] politicsTestValues = new double[politicsData.numAttributes()];
-		politicsTestValues[0] = politicsData.attribute(0).addStringValue(tweet);
-		politicsTestValues[1] = Utils.missingValue();
-		
-		double[] musicTestValues = new double[musicData.numAttributes()];
-		musicTestValues[0] = musicData.attribute(0).addStringValue(tweet);
-		musicTestValues[1] = Utils.missingValue();
-		
-		double[] sportsTestValues = new double[sportsData.numAttributes()];
-		sportsTestValues[0] = sportsData.attribute(0).addStringValue(tweet);
-		sportsTestValues[1] = Utils.missingValue();
-
-		// Add instances to dataset
-		politicsData.add(new DenseInstance(1.0, politicsTestValues));
-		musicData.add(new DenseInstance(1.0, musicTestValues));
-		sportsData.add(new DenseInstance(1.0, sportsTestValues));
-		
-		// Classify the instance
-		double politicsValue = politicsClassifier.classifyInstance(politicsData.instance(0));
-		String politicsPrediction = politicsData.classAttribute().value((int) politicsValue);
-		
-		double musicValue = musicClassifier.classifyInstance(musicData.instance(0));
-		String musicPrediction = musicData.classAttribute().value((int) musicValue);
-		
-		double sportsValue = sportsClassifier.classifyInstance(sportsData.instance(0));
-		String sportsPrediction = sportsData.classAttribute().value((int) sportsValue);
-		
-		//System.out.println("Predictions (Politics-Music-Sports): "+ politicsPrediction + "|" + musicPrediction + "|" + sportsPrediction);
-		
-		List<String> predictedCategories = new ArrayList<String>();
-		
-		if(politicsPrediction.equalsIgnoreCase("yes")) {
-			predictedCategories.add("politics");	
-		}
->>>>>>> 17235abe2b3218a98f8a94e7d6e0c4211e2aeaa1
 
 			// Add instances to dataset
 			politicsData.add(new DenseInstance(1.0, politicsTestValues));
@@ -284,18 +230,6 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 					predictedCategories));
 
 		}
-<<<<<<< HEAD
-=======
-		
-		return predictedCategories;
-	}
-	
-	public static void main(String[] args) throws Exception {
-		TweetCategoryPredictionBolt e = new TweetCategoryPredictionBolt();
-		e.prepare();
-		List<String> predictedCategories = e.execute("opposition leader bill shorten comfort senator nova peris speak departure politics");
-		//System.out.println("Predicted Categories: " + predictedCategories);
->>>>>>> 17235abe2b3218a98f8a94e7d6e0c4211e2aeaa1
 	}
 
 //	public static void main(String[] args) throws Exception {
