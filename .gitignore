@@ -10,6 +10,9 @@ target/
 !specialPrefixes.txt
 !tweetcategory.txt
 !tweetcategorytest.txt
+!musicTweets.txt
+!politicsTweets.txt
+!sportsTweets.txt
 *.iml
 .idea/
 tweets/

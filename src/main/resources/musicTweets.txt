@@ -1,0 +1,60 @@
+% Tweet data
+% This example was copied from Witten and Frank's data mining book
+
+@relation category
+
+@attribute tweet string
+@attribute music {yes, no}
+
+@data
+love friend michigan well one worth share love anyway buy stuff iggy
+pat can please provide list legislative voting do regard veteran
+want color #mycoffeetable #andywarhol #art #clearmind
+sit lawn jaguar dealership watch erin question existentialism amazing thing ever witness
+suppose start unpack move everything room remember titans just start
+begin run be outta shape block lung now know be dead
+old man drunk crash hummer torrance pd give ride home #whiteprivilege
+shane patel name south pacific premier ambassador second year row
+surprise take disneyland last minute love mom disneyland
+way midwest bronyfest will please know now tornado just lot rain
+always boss whether like can see trouble year follow direction
+feel like heart rip chest stomp feel empty not know say really
+thing help talk nice able get thing brain sometimes
+rn orthopedic unit glendale adventist -lrb- #glendale ca -rrb- #nursing #job #jobs #hiring #careerarc
+ready long weekend anyone anything fun will just relax soak
+laptop decide make executive decision upgrade windows lovely
+baby come world onto teenager hope never go type bully ugh
+happy birthday baby boiii miss hit whip extra hard today
+long weekend use code md30 get sum summer rockin goods
+another collection #artdeco fan design see else new #artworkoftheday
+dad always hand phone speak family member have never meet
+life pretty damn good right now life good nothing else really matter
+game not even start be already cry boyfriend last game
+turn face time camera face ally just straight start laugh
+racist chinese detergent commercial will leave speechless -lsb- video -rsb- via #china #playofffinal #justwrong
+hate share secret y' go starbucks ralph rise theres never line take seconds make drink
+pee wee herman child house have wonder twenty year
+hope get helm x man movie rights can show do dont even need read comic watch t.v. show tf
+add coffee hazelnut creamer smoothie be literally heaven best thing have ever make
+professor say three point choose intense study really mean none result make sense
+procter gamble #sales #job senior mechanical warewash technician training -lrb- #losangeles ca -rrb- #veterans #jobs
+ha racist left call not leg stand benign overused word-salad top
+good thing often hard long feel best deep inside unseen
+spend memorial day weekend # 801hillsaturday guestlist table reservations
+be going go see alice xmen god bless geeky disney fanatic family
+dream little interesting lately get ta take less melatonin bed
+newcomer fear factor just throw stuff friend way thank
+jake bronder sexiest white man alive rn jake see sorry sleep many year gim call ever la
+ah handmade means sew whole thing hand homemade mean usually use machine be get term
+ask mom take somewhere says cousin ask say yes like actual fuck
+people need bring other self validation like super insecure weird
+not forget america go broke year ago one person get credit clear loan completely foregiven ford
+friend get yell shoulder show westlake guy allow wear shirt naked girl
+trump fraud now presume nominee ppl say promise just suggestion
+stepdad say room smell like shitty weed not even smoke
+happy get favorite treat today best bakery best customer service #vegan #vegantreats
+writer read comment get go allow comment inc rude comment
+five year since diagnosis 3.5 since dialysis be still go strong
+mother lose quadruplet brother think doom blessing horizon universe something else
+due traffic convention center trump rally port san diego shuttle may delay possibly stop closure
+day people ask highlighter be use usually day be just super sweaty
