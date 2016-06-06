@@ -24,8 +24,8 @@ public class TweetCategoryPredictionBolt {
 	
 	static File resourcesDirectory = new File("src/main/resources");
 	private static String politicsTrainingFileName = "politicsTweets.txt";
-	private static String musicTrainingFileName = "musicTweets.txt";
-	private static String sportsTrainingFileName = "sportsTweets.txt";
+	private static String musicTrainingFileName = "politicsTweets.txt";
+	private static String sportsTrainingFileName = "politicsTweets.txt";
 	
 	// Define attributes
 	private Attribute tweetAttribute;
@@ -159,10 +159,10 @@ public class TweetCategoryPredictionBolt {
 		double politicsValue = politicsClassifier.classifyInstance(politicsData.instance(0));
 		String politicsPrediction = politicsData.classAttribute().value((int) politicsValue);
 		
-		double musicValue = politicsClassifier.classifyInstance(musicData.instance(0));
+		double musicValue = musicClassifier.classifyInstance(musicData.instance(0));
 		String musicPrediction = musicData.classAttribute().value((int) musicValue);
 		
-		double sportsValue = politicsClassifier.classifyInstance(sportsData.instance(0));
+		double sportsValue = sportsClassifier.classifyInstance(sportsData.instance(0));
 		String sportsPrediction = sportsData.classAttribute().value((int) sportsValue);
 		
 		//System.out.println("Predictions (Politics-Music-Sports): "+ politicsPrediction + "|" + musicPrediction + "|" + sportsPrediction);
@@ -187,7 +187,7 @@ public class TweetCategoryPredictionBolt {
 	public static void main(String[] args) throws Exception {
 		TweetCategoryPredictionBolt e = new TweetCategoryPredictionBolt();
 		e.prepare();
-		List<String> predictedCategories = e.execute("breaking find trump reach number delegate need clinch republican nomination president");
+		List<String> predictedCategories = e.execute("opposition leader bill shorten comfort senator nova peris speak departure politics");
 		//System.out.println("Predicted Categories: " + predictedCategories);
 	}
 
