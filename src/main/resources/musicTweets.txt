@@ -7,10 +7,58 @@
 @attribute music {yes, no}
 
 @data
-'successful set enthusiastic crowd simi cajun blues festival', no
+'skateboard video game soundtrack easily identifiable always weird mix heavy metal alternative music old school hip-hop', yes
+'spotify reportedly talk hire lady gaga former manager take apple music', yes
+'nick jonas release music video song bacon exclusively tidal', yes
+'memorable moment music-july 1937-gene krupa record legendary sing sing sing', yes
+'just like fire also become p!nk 15th top hit billboard hot congratulation', yes
+'ariana grande climb three spot # hot week reach new peak', yes
+'can imagine release folk infuse pop music', yes
+'voting song summer end tomorrow make sure vote use hashtag #mplikeiwould', yes
+'can tell we member 5sos sing lyric promise be', yes
+'iron maiden release energetic live music video death glory maiden glory', yes
+'ferocious live set last night finish amazing festival #primaverasound', yes
+'freddie gibbs 9:20 tonight performance cancel due unforeseen circumstance beyond festival control #primaverasound', yes
+'big news new song new album help crush goal gang #intothegreatunknown', yes
+'#labicicleta latin song us radio stations week keep request local station', yes
+'june 6th record first song ever abbey road studio thanks revolution', yes
+'neptones chapter still hold strong itunes let see can reach # top electronic album', yes
+'experience music #tuckeverlasting release original broadway cast recording', yes
+'minimal promo campaign video not even yet broccoli number itunes hip-hop/rap chart', yes
+'pre-order new single 4th july right itunes folk put 79p cent good use tonight', yes
+'get ready tonight performance best hit watch tonight 7pm et #ihearttinashe', yes
+'check favorite song video right now stroke paul simon', yes
+'see iggy pop american valhalla video feature boxing match footage model ruth bell', yes
+'pandora partners music reports give music makers greater transparency', yes
+'legendary music group abba reunite perform together first time year', yes
+'curtain call hit eminem longest chart hip-hop album billboard total week', yes
+'year ago today christina aguilera release grammy award win single ai not man', yes
+'lemonade beyoncé now spend day atop itunes worldwide album solo act since', yes
+'bear die lana del rey longest chart alternative album billboard history', yes
+'justin bieber turn back industry norm sake happiness', yes
+'photo video last night rumor surprise kanye show nyc give anxiety', yes
+'lighting lagos star 1970s nigerian rock music picture', yes
+'success drake view adele show music industry divide technology past future', yes
+'apple music finally decide explain product work', yes
+'interview dumbfoundead explain lyric hilarious anti-whitewashing music video', yes
+'galantis reveal simple step find success dance music world', yes
+'roster established heavyweight newcomer label remix dancehall music', yes
+'turn david bowie specifically request music use #peakyblinders season emotional', yes
+'prince break beatle billboard record month death prince change face music', yes
+'british force use bollywood music new psychological warfare weapon isis', yes
+'love music like will excite know day ambassador #bbcmusicday tomorrow', yes
+'first time four decade metropolitan opera new music director', yes
+'law-enforcement official tell ap test show music superstar prince die opioid overdose', yes
+'artist need check new york biggest music festival', yes
+'meet dj turn career wall street make music', yes
+'video us performing #bbcmusicday cover bangle manic monday record james skelly', yes
+'new #kinkyboots music video weigh transgender bathroom rights', yes
+'lightning strike rock music fan freak thunderstorm hit german festival', yes
+'five-year project focus chamber music budget 1.5 million fund part carnegie hall', yes
+'biggest nyc music festival cancelled weather people seriously bummed', yes
+'margaret cho new music video celebrate asian womanhood', yes
 'love friend michigan well one worth share love anyway buy stuff iggy', no
 'pat can please provide list legislative voting do regard veteran', no
-'want color #mycoffeetable #andywarhol #art #clearmind', no
 'sit lawn jaguar dealership watch erin question existentialism amazing thing ever witness', no
 'suppose start unpack move everything room remember titans just start', no
 'begin run be outta shape block lung now know be dead', no

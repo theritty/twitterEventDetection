@@ -7,6 +7,16 @@
 @attribute sports {yes, no}
 
 @data
+'salesian baseball win quarterfinal game today win championship', yes
+'walk steal base ground wild pitch bring home first st. michael prep run game tie 1-1 go bottom three', yes
+'two day two match two defeat holder gloucestershire struggle one-day cup', yes
+'team sport like #basketball every time help somebody else help pete carril', yes
+'invent #basketball final get underway learn origin game', yes
+'olympics will not grace nba mvp.steph curry need focus body', yes
+'injure skiing snowboard #ttot #victoria #australia #snow #winter #ski #travel', yes
+'#sport activity may help restore self-esteem rehabilitate vulnerable #trauma', yes
+'like sport book can recommend dirtiest race history richard moore 100m olympic final #sport', yes
+'want play #sport high-level mental demand go beyond talent #plan 2play', yes
 'honestly think have do better atletico keeper madrid go way everytime', yes
 'whatever happen dodger way play baseball play solid fundamental defense', yes
 'cristiano nothing entire game will crown best world', yes
@@ -15,6 +25,38 @@
 'absolute worst way lose match yet alone final rival #uclfinal', yes
 'inter milan not make champions league least stadium make final #forzainter', yes
 'mls commercial right now like run single baseball commercial world series be good', yes
+'official pool #rio man #volleyball tournament', yes
+'canadian men #volleyball team member coach father insist play multitude sport young', yes
+'star bear world react first grand slam title read #rg', yes
+'novak djokovic french open victory mark end machine age tennis', yes
+'dangelo russell coach team lakers timeout shanghai sports university past weekend #golakers', yes
+'legendary coach explain mentality world-class distance runner vice world sports wednesday 11pm', yes
+'sick tired stereotype woman sport watch pelt heckler tennis ball', yes
+'sacramento new stadium will technologically advanced sport arena ever build', yes
+'future star world rugby kick #worldrugbyu 20s today live sky sports', yes
+'video ea sports reveal brand new fifa teaser trailer will must play', yes
+'spin move eerily similar escape tactic nc state baseball coach', yes
+'cubs first team win least first game since mariners', yes
+'di maria put argentina board goal give la albiceleste 1-0 lead chile #copaamerica', yes
+'pen not trail actual game time 16 stanley cup finalsj not lead end game', yes
+'pittsburgh win game eric fehr score late 3rd period help penguin take 3-1 series lead', yes
+'highlight wales woman euro qualify hope end 2-0 defeat norway #walnor', yes
+'chris smalling return england 2nd training session today knee strap iced', yes
+'former player say sport teach confident humble #wcws', yes
+'star jim kelly 30th annual celebrity golf classic see', yes
+'#hct call home support inspire historic first hockey champions trophy title', yes
+'four national teamers find success final night competition #arenaproswim #indy', yes
+'wave like problem surf deal it.bringing sf kid sea', yes
+'f1 gossip lewis hamilton water skiing justin bieber present romain grosjean', yes
+'winter sport aquatic archery common sport youth physical disability #nassm', yes
+'thing sound promise go ahead facility change face australian winter sport', yes
+'monaco ayrton senna sweep past niki lauda mclaren en route famous second place finish #onthisday', yes
+'jolyon palmer renault will new chassis #canadiangp monaco crash', yes
+'boxing inspire much finest sport write', yes
+'mixed martial art fighter kimbo slice die age bellator mma president confirm yahoo sports', yes
+'nike sue unknown distance runner inside self-described mafioso sport marketing machine', yes
+'sports update isaiah thomas say will everything can recruit kevin durant', yes
+'muhammad ali culture worship sport violence well culture idolize black', yes
 'want work #longbeach california view latest opening #pharmaceutical #job #jobs #hiring #careerarc', no
 'interest #sales #job near #santafesprings ca great fit #veterans #hiring #careerarc', no
 'debate sanders easy plan destroy america open border bring wages tax kill growth', no
