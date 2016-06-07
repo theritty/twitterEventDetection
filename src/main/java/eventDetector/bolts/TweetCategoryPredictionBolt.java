@@ -24,8 +24,8 @@ public class TweetCategoryPredictionBolt {
 	
 	static File resourcesDirectory = new File("src/main/resources");
 	private static String politicsTrainingFileName = "politicsTweets.txt";
-	private static String musicTrainingFileName = "politicsTweets.txt";
-	private static String sportsTrainingFileName = "politicsTweets.txt";
+	private static String musicTrainingFileName = "musicTweets.txt";
+	private static String sportsTrainingFileName = "sportsTweets.txt";
 	
 	// Define attributes
 	private Attribute tweetAttribute;
@@ -161,11 +161,13 @@ public class TweetCategoryPredictionBolt {
 		
 		double musicValue = musicClassifier.classifyInstance(musicData.instance(0));
 		String musicPrediction = musicData.classAttribute().value((int) musicValue);
+		//String musicPrediction = "nope";
 		
 		double sportsValue = sportsClassifier.classifyInstance(sportsData.instance(0));
 		String sportsPrediction = sportsData.classAttribute().value((int) sportsValue);
+		//String sportsPrediction = "nope";
 		
-		//System.out.println("Predictions (Politics-Music-Sports): "+ politicsPrediction + "|" + musicPrediction + "|" + sportsPrediction);
+		System.out.println("Predictions (Politics-Music-Sports): "+ politicsPrediction + "|" + musicPrediction + "|" + sportsPrediction);
 		
 		List<String> predictedCategories = new ArrayList<String>();
 		
@@ -187,8 +189,8 @@ public class TweetCategoryPredictionBolt {
 	public static void main(String[] args) throws Exception {
 		TweetCategoryPredictionBolt e = new TweetCategoryPredictionBolt();
 		e.prepare();
-		List<String> predictedCategories = e.execute("opposition leader bill shorten comfort senator nova peris speak departure politics");
-		//System.out.println("Predicted Categories: " + predictedCategories);
+		List<String> predictedCategories = e.execute("dj khaled introduce naomi campbell ray liotta apple music new ad");
+		System.out.println("Predicted Categories: " + predictedCategories);
 	}
 
 }
