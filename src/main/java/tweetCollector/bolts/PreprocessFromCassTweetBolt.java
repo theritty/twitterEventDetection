@@ -20,6 +20,10 @@ public class PreprocessFromCassTweetBolt extends BaseRichBolt {
   private TextAnalyzer textAnalyzer;
   private OutputCollector collector;
 
+  public PreprocessFromCassTweetBolt()
+  {
+    System.out.println("Initializing preprocess bolt !!!!!!!!!!!!!!!!!!!!!!!!!");
+  }
   @Override
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
@@ -31,17 +35,18 @@ public class PreprocessFromCassTweetBolt extends BaseRichBolt {
   public void execute(Tuple tuple) {
     // "tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt", "country", "tweetTime", "id", "retweetcount", "userid"
     String tweet = tuple.getStringByField( "tweet" );
-
     List<String> preprocessText = textAnalyzer.extractWordList(tweet);
+
+    if(preprocessText == null || preprocessText.size()==0) return;
 
     // round | tweettime | id | country | retweetcount | tweet | userid
     this.collector.emit(new Values(preprocessText,
             tuple.getLongByField("round"),
-            tuple.getLongByField("tweetTime"),
+            tuple.getValueByField("tweetTime"),
             tuple.getLongByField("id"),
             tuple.getLongByField("retweetcount"),
-            tuple.getStringByField("country"),
-            tuple.getLongByField("userid")
+            tuple.getLongByField("userid"),
+            tuple.getStringByField("country")
     ));
   }
 

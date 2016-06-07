@@ -28,10 +28,10 @@ public class CassCategoriesBolt extends BaseRichBolt
   private Session session;
   private CassandraDao cassandraDao;
 
-  public CassCategoriesBolt( String tweets_table, String counts_table)
+  public CassCategoriesBolt( String tweets_table, String counts_table, String events_table)
   {
     try {
-      this.cassandraDao = new CassandraDao(tweets_table, counts_table);
+      this.cassandraDao = new CassandraDao(tweets_table, counts_table, events_table);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -53,27 +53,48 @@ public class CassCategoriesBolt extends BaseRichBolt
   @Override
   public void execute( final Tuple tuple )
   {
-    //   "tweet", "round", "tweettime", "id", "retweetcount", "userid", "categories"));
+    //   "tweet", "round", "tweettime", "id", "retweetcount", "userid", "country", "categories"
+//    System.out.println("cassandra save: " + values.add(tuple.getStringByField("tweet")));
     values = new ArrayList<>();
     values.add(tuple.getLongByField("id"));
     values.add(tuple.getStringByField("tweet"));
     values.add(tuple.getLongByField("userid"));
-    values.add(tuple.getLongByField("tweetTime"));
+    values.add(tuple.getValueByField("tweettime"));
     values.add(tuple.getLongByField("retweetcount"));
     values.add(tuple.getLongByField("round"));
     values.add(tuple.getStringByField("country"));
-    if(tuple.getStringByField("categories").contains("politics"))
-      values.add(true);
-    else
-      values.add(false);
-    if(tuple.getStringByField("categories").contains("music"))
-      values.add(true);
-    else
-      values.add(false);
-    if(tuple.getStringByField("categories").contains("sports"))
-      values.add(true);
-    else
-      values.add(false);
+
+    ArrayList<String> categories = (ArrayList<String>)tuple.getValueByField("categories");
+
+    boolean set = false;
+    for(String s:categories){
+      if(s.equals("politics"))
+      {
+        set = true;
+        break;
+      }
+    }
+    values.add(set);
+
+    set = false;
+    for(String s:categories){
+      if(s.equals("music"))
+      {
+        set = true;
+        break;
+      }
+    }
+    values.add(set);
+
+    set = false;
+    for(String s:categories){
+      if(s.equals("sports"))
+      {
+        set = true;
+        break;
+      }
+    }
+    values.add(set);
 
     try {
       cassandraDao.insertIntoTweets(values.toArray());

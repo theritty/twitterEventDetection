@@ -8,6 +8,7 @@ import cassandraConnector.CassandraDao;
 import eventDetector.spout.CassandraSpout;
 import tweetCollector.bolts.CassBolt;
 import tweetCollector.bolts.CassCategoriesBolt;
+import tweetCollector.bolts.PreprocessFromCassTweetBolt;
 import tweetCollector.bolts.PreprocessTweetBolt;
 import tweetCollector.spout.TwitterSpout;
 
@@ -21,6 +22,7 @@ public class BoltBuilder {
     int FILENUM = Integer.parseInt(properties.getProperty("topology.file.number"));
     String TWEETS_TABLE = properties.getProperty("tweets.table");
     String COUNTS_TABLE = properties.getProperty("counts.table");
+    String EVENTS_TABLE = properties.getProperty("events.table");
 
     String CONSUMER_KEY = properties.getProperty("consumer.key");
     String CONSUMER_SECRET = properties.getProperty("consumer.secret");
@@ -43,7 +45,7 @@ public class BoltBuilder {
     builder.setBolt(Constants.PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(Constants.TWITTER_SPOUT_ID);
 
 
-    builder.setBolt(Constants.CASS_BOLT_ID, new CassBolt(TIME_INTERVAL_IN_HOURS, TWEETS_TABLE, COUNTS_TABLE)).
+    builder.setBolt(Constants.CASS_BOLT_ID, new CassBolt(TIME_INTERVAL_IN_HOURS, TWEETS_TABLE, COUNTS_TABLE, EVENTS_TABLE)).
             shuffleGrouping(Constants.PREPROCESS_SPOUT_ID);
     return builder.createTopology();
   }
@@ -51,17 +53,18 @@ public class BoltBuilder {
   public static StormTopology prepareBoltsForPreprocess(Properties properties) throws Exception {
     String TWEETS_TABLE = properties.getProperty("tweets.table");
     String COUNTS_TABLE = properties.getProperty("counts.table");
+    String EVENTS_TABLE = properties.getProperty("events.table");
 
-    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE);
+    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE, EVENTS_TABLE);
     System.out.println("Preparing Bolts...");
     TopologyBuilder builder = new TopologyBuilder();
 
-    CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
-            Integer.parseInt(properties.getProperty("topology.compare.size")));
+    CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, 0,
+            Integer.parseInt(properties.getProperty("topology.compare.size")),Integer.MAX_VALUE, 1);
 
-    PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
+    PreprocessFromCassTweetBolt preprocessor = new PreprocessFromCassTweetBolt();
     TweetCategoryPredictionBolt tweetCategoryPredictionBolt = new TweetCategoryPredictionBolt();
-    CassCategoriesBolt cassCategoriesBolt = new CassCategoriesBolt("tweets", "counts");
+    CassCategoriesBolt cassCategoriesBolt = new CassCategoriesBolt("tweets", "counts", "events");
 
     builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout);
 
@@ -82,13 +85,14 @@ public class BoltBuilder {
     double RATE_FOR_SAME_EVENT = Double.parseDouble(properties.getProperty("topology.rate.for.same.event"));
     String TWEETS_TABLE = properties.getProperty("tweets.table");
     String COUNTS_TABLE = properties.getProperty("counts.table");
+    String EVENTS_TABLE = properties.getProperty("events.table");
 
-    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE);
+    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE, EVENTS_TABLE);
     System.out.println("Preparing Bolts...");
     TopologyBuilder builder = new TopologyBuilder();
 
     CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
-            Integer.parseInt(properties.getProperty("topology.compare.size")));
+            Integer.parseInt(properties.getProperty("topology.compare.size")), Integer.MAX_VALUE, 1);
 
 //        PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
     SplitWordBolt splitBolt1 = new SplitWordBolt("USA");

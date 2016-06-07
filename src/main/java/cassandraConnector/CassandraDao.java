@@ -14,9 +14,13 @@ public class CassandraDao implements Serializable
 {
     private transient PreparedStatement statement_tweets;
     private transient PreparedStatement statement_counts;
+    private transient PreparedStatement statement_events;
     private transient PreparedStatement statement_where;
     private transient PreparedStatement statement_tweet_get;
     private transient PreparedStatement statement_round_get;
+    private transient PreparedStatement statement_events_get;
+    private transient BoundStatement boundStatement_events;
+    private transient BoundStatement boundStatement_events_get;
     private transient BoundStatement boundStatement_tweets;
     private transient BoundStatement boundStatement_tweets_get;
     private transient BoundStatement boundStatement_rounds_get;
@@ -30,14 +34,19 @@ public class CassandraDao implements Serializable
     private static String TWEETS3_FIELDS = "(id, tweet, userid, tweettime, retweetcount, round, country)";
     private static String TWEETS3_VALUES = "(?, ?, ?, ?, ?, ?, ?)";
 
+    private static String EVENTS_FIELDS = "(round, country, word, incrementpercent)";
+    private static String EVENTS_VALUES = "(?, ?, ?, ?)";
+
     private static String COUNTS_FIELDS = "(round, word, country, count, totalnumofwords)";
     private static String COUNTS_VALUES = "(?, ?, ?, ?, ?)";
     private String tweetsTable;
     private String countsTable;
+    private String eventsTable;
 
-    public CassandraDao(String tweetsTable, String countsTable) throws Exception {
+    public CassandraDao(String tweetsTable, String countsTable, String eventsTable) throws Exception {
         this.tweetsTable = tweetsTable;
         this.countsTable = countsTable;
+        this.eventsTable = eventsTable;
         prepareAll();
     }
 
@@ -66,6 +75,11 @@ public class CassandraDao implements Serializable
                     "INSERT INTO " + countsTable + " " + COUNTS_FIELDS
                             + " VALUES " + COUNTS_VALUES + ";");
         }
+        if(statement_events==null) {
+            statement_events = CassandraConnection.connect().prepare(
+                    "INSERT INTO " + eventsTable + " " + EVENTS_FIELDS
+                            + " VALUES " + EVENTS_VALUES + ";");
+        }
         if(statement_where==null) {
             statement_where = CassandraConnection.connect().prepare(
                     "SELECT * FROM " + countsTable + " WHERE round=? AND word=? AND country=?;");
@@ -78,10 +92,23 @@ public class CassandraDao implements Serializable
             statement_round_get = CassandraConnection.connect().prepare(
                     "SELECT DISTINCT round FROM " + tweetsTable + ";");
         }
+        if(statement_events_get==null) {
+            statement_events_get = CassandraConnection.connect().prepare(
+                    "SELECT * FROM " + eventsTable + " WHERE round=? AND country=?;");
+        }
     }
     public void insertIntoTweets( Object[] values ) throws Exception
     {
+        prepareAll();
+        boundStatement_tweets = new BoundStatement(statement_tweets);
         CassandraConnection.connect().executeAsync(boundStatement_tweets.bind(values));
+    }
+
+    public void insertIntoEvents( Object... values ) throws Exception
+    {
+        prepareAll();
+        boundStatement_events = new BoundStatement(statement_events);
+        CassandraConnection.connect().executeAsync(boundStatement_events.bind(values));
     }
 
     public void insertIntoCounts( Object[] values ) throws Exception
@@ -97,6 +124,15 @@ public class CassandraDao implements Serializable
         prepareAll();
         boundStatement_where = new BoundStatement(statement_where);
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_where.bind(values));
+
+        return resultSet;
+    }
+
+    public ResultSet getFromEvents( Object... values ) throws Exception
+    {
+        prepareAll();
+        boundStatement_events_get = new BoundStatement(statement_events_get);
+        ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_events_get.bind(values));
 
         return resultSet;
     }

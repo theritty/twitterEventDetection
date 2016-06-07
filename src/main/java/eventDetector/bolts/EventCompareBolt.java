@@ -47,33 +47,18 @@ public class EventCompareBolt extends BaseRichBolt {
 
     ArrayList<Double> tfidfs = (ArrayList<Double>) tuple.getValueByField("tfidfs");
     String key = tuple.getStringByField("key");
-    String type = tuple.getStringByField("type");
     long round = tuple.getLongByField("round");
     String country = tuple.getStringByField("country");
 
-    ArrayList<ArrayList<HashMap<String, Object>>> compareList = new ArrayList<>();
-    if(wordList.get(round) == null)
-    {
-      wordList.put(round, new ArrayList<>());
-    }
-    HashMap<String, Object> xx = new HashMap<>();
-    xx.put("word", key);
-    xx.put("type", type);
-    xx.put("tfidfs", tfidfs);
 
-    wordList.get(round).add(xx);
+    if(tfidfs.get(tfidfs.size()-2)==0) tfidfs.set(tfidfs.size()-2, 0.0001);
+    try {
+      cassandraDao.insertIntoEvents(round, country, key, tfidfs.get(tfidfs.size()-1) / tfidfs.get(tfidfs.size()-2));
 
-    compareList.add(wordList.get(round));
-    if(compareList.size()>0) {
-      writeToFile(filePath + "events-" + country + "-" + round, compareList);
-      try {
-        ArrayList<Long> countsList = getCountListFromCass(round, key, country);
-        LineChart.drawLineChart(countsList,key,round,country, drawFilePath);
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      ArrayList<Long> countsList = getCountListFromCass(round, key, country);
+      LineChart.drawLineChart(countsList,key,round,country, drawFilePath);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
@@ -93,43 +78,43 @@ public class EventCompareBolt extends BaseRichBolt {
     }
     return countsList;
   }
-  public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
-  {
-    File filePath = new File(fileName);
-    filePath.delete();
+//  public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
+//  {
+//    File filePath = new File(fileName);
+//    filePath.delete();
+//
+//    try {
+//      PrintWriter writer = new PrintWriter(new FileOutputStream(
+//              new File(fileName),
+//              true /* append = true */));
+//      writer.print("");
+//      int cnt = 1;
+//      for (ArrayList<HashMap<String, Object>> al : compareList) {
+//        write(writer, "Event " + cnt);
+//        for (HashMap<String, Object> chm : al) {
+//          if(chm.get("type").equals("hashtag"))
+//          {
+//            write(writer, "\t#" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
+//          }
+//          else
+//          {
+//            write(writer, "\t" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
+//          }
+//        }
+//        cnt++;
+//      }
+//
+//      writer.close();
+//
+//    } catch (FileNotFoundException e) {
+//      e.printStackTrace();
+//    }
+//  }
 
-    try {
-      PrintWriter writer = new PrintWriter(new FileOutputStream(
-              new File(fileName),
-              true /* append = true */));
-      writer.print("");
-      int cnt = 1;
-      for (ArrayList<HashMap<String, Object>> al : compareList) {
-        write(writer, "Event " + cnt);
-        for (HashMap<String, Object> chm : al) {
-          if(chm.get("type").equals("hashtag"))
-          {
-            write(writer, "\t#" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
-          }
-          else
-          {
-            write(writer, "\t" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
-          }
-        }
-        cnt++;
-      }
-
-      writer.close();
-
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public void write(PrintWriter writer, String line) {
-    writer.println(line);
-//        System.out.println(line);
-  }
+//  public void write(PrintWriter writer, String line) {
+//    writer.println(line);
+////        System.out.println(line);
+//  }
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer)

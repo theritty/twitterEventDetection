@@ -15,17 +15,25 @@ import java.util.*;
 public class CassandraSpout extends BaseRichSpout {
 
   private SpoutOutputCollector collector;
-  CassandraDao cassandraDao;
-  boolean readed=false;
-  ArrayList<Long> roundlist;
-  ArrayList<Long> readRoundlist;
-  int compareSize;
-  int trainSize;
+  private CassandraDao cassandraDao;
+  private ArrayList<Long> roundlist;
+  private ArrayList<Long> readRoundlist;
+  private int compareSize;
+  private int trainSize;
+  private int testSize;
+  private Iterator<Row> iterator = null;
+  private int batch_size;
+  private int remaining_for_batch;
+  private long current_round;
 
-  public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize) throws Exception {
+
+  public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, int batch_size) throws Exception {
     this.cassandraDao = cassandraDao;
     this.compareSize = compareSize;
     this.trainSize = trainSize;
+    this.testSize = testSize;
+    this.batch_size = batch_size;
+    remaining_for_batch = 0;
     roundlist = new ArrayList<>();
     readRoundlist = new ArrayList<>();
   }
@@ -47,54 +55,49 @@ public class CassandraSpout extends BaseRichSpout {
      * The nextuple it is called forever, so if we have been readed the file
      * we will wait and then return
      */
-//    if(readed){
-//      try {
-//        Thread.sleep(10000);
-//      } catch (InterruptedException e) {
-//        //Do nothing
-//      }
-//      return;
-//    }
-//    while(roundlist.size() > 120)
-//      roundlist.remove(roundlist.size()-1);
 
-    if(roundlist.size()>0) System.out.println("Number of rounds " + roundlist.size());
-    if(roundlist.size()==0) return;
-    long round = roundlist.remove(0);
-//    for(long round : roundlist) {
+//    if(roundlist.size()>0) System.out.println("Number of rounds " + roundlist.size());
+
+    if(iterator == null || !iterator.hasNext())
+    {
+      if(roundlist.size()==0) return;
+      long round = roundlist.remove(0);
       readRoundlist.add(round);
+      System.out.println("new round:" + round);
 
       if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
-//      if (readRoundlist.size() <= trainSize) continue;
 
-
+      if(remaining_for_batch==0)
+      {
+        remaining_for_batch=batch_size;
+        current_round=round;
+      }
+      else
+      {
+        remaining_for_batch--;
+      }
 
       ResultSet resultSet = getDataFromCassandra(round);
+      iterator = resultSet.iterator();
+    }
+    Row row = iterator.next();
+    String tweet = row.getString("tweet");
+    String country = row.getString("country");
+    Date tweetTime = row.getTimestamp("tweettime");
+    long id = row.getLong("id");
+    long retweetcount = row.getLong("retweetcount");
+    long userid = row.getLong("userid");
 
-      Iterator<Row> iterator = resultSet.iterator();
-      while (iterator.hasNext()) {
-        Row row = iterator.next();
-        String tweet = row.getString("tweet");
-        String country = row.getString("country");
-        Date tweetTime = row.getTimestamp("tweettime");
-        long id = row.getLong("id");
-        long retweetcount = row.getLong("retweetcount");
-        long userid = row.getLong("userid");
+//        System.out.println("cass spout: " + tweet);
 
+    if(tweet == null || tweet.length() == 0) return;
+    ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
 
-        if(tweet == null || tweet.length() == 0) continue;
-        ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
-
-        // round | tweettime | id | country | retweetcount | tweet | userid
-        if(iterator.hasNext())
-          collector.emit(new Values(tweet, tmp_roundlist, round, false, round, "cassandra", "cassandraSpout", country, tweetTime, id, retweetcount, userid));
-        else
-          collector.emit(new Values(tweet, tmp_roundlist, round, true, round, "cassandra", "cassandraSpout", country, tweetTime, id, retweetcount, userid));
-      }
-//    }
-
-//    readed = true;
-    System.out.println("Reading finished.");
+    // round | tweettime | id | country | retweetcount | tweet | userid
+    if(iterator.hasNext())
+      collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
+    else
+      collector.emit(new Values(tweet, tmp_roundlist, true, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
 
   }
 
@@ -117,14 +120,14 @@ public class CassandraSpout extends BaseRichSpout {
       });
 
 
-      roundlist.remove(roundlist.size()-1);
+      if(testSize!=Integer.MAX_VALUE) {
+        while (roundlist.size() > testSize + trainSize)
+          roundlist.remove(roundlist.size() - 1);
+      }
+      int i = 0;
+      while(trainSize>i++)
+        readRoundlist.add(roundlist.remove(0));
 
-      while(roundlist.size()>5)
-        roundlist.remove(roundlist.size()-1);
-
-      readRoundlist.add(roundlist.remove(0));
-      readRoundlist.add(roundlist.remove(0));
-      readRoundlist.add(roundlist.remove(0));
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -157,7 +160,7 @@ public class CassandraSpout extends BaseRichSpout {
    */
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt", "country", "tweetTime", "id", "retweetcount", "userid"));
+    declarer.declare(new Fields("tweet", "dates","blockEnd", "round", "source", "country", "tweetTime", "id", "retweetcount", "userid"));
   }
 
 }

@@ -31,14 +31,14 @@ public class CassBolt extends BaseRichBolt
   private double blockTimeInterval;
   private long round;
 
-  public CassBolt(double blockTimeInterval, String tweets_table, String counts_table)
+  public CassBolt(double blockTimeInterval, String tweets_table, String counts_table, String events_table)
   {
     this.blockTimeInterval = blockTimeInterval*60*60;
     round = -1;
     currentDate = null;
 
     try {
-      this.cassandraDao = new CassandraDao(tweets_table, counts_table);
+      this.cassandraDao = new CassandraDao(tweets_table, counts_table, events_table);
     } catch (Exception e) {
       e.printStackTrace();
     }
