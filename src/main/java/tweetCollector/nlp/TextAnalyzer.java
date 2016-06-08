@@ -142,7 +142,7 @@ public class TextAnalyzer {
 //      System.out.println(String.join(" ", ta.extractWordList(tweet8)));
 //      System.out.println(String.join(" ", ta.extractWordList(tweet9)));
 //      System.out.println(String.join(" ", ta.extractWordList(tweet10)));
-      
+
       System.out.println(String.join(" ", ta.extractWordList(randomTweet)));
       
     }
