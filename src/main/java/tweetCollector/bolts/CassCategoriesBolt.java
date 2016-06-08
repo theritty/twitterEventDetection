@@ -55,6 +55,7 @@ public class CassCategoriesBolt extends BaseRichBolt
     values.add(set_sports);
 
     try {
+//      System.out.println("yey cass");
       cassandraDao.insertIntoTweets(values.toArray());
     } catch (Exception e) {
       e.printStackTrace();

@@ -44,6 +44,7 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 		for(String twee: tweet_words) tweet= tweet + twee + " ";
 		ArrayList<String> predictedCategories =  naiveBayesClassification.execute(tweet_words);
 
+//		System.out.println("yey predict");
 		this.collector.emit(new Values(
 						tweet,
 						round,

@@ -72,10 +72,7 @@ public class CassandraSpout extends BaseRichSpout {
         remaining_for_batch=batch_size;
         current_round=round;
       }
-      else
-      {
-        remaining_for_batch--;
-      }
+      remaining_for_batch--;
 
       ResultSet resultSet = getDataFromCassandra(round);
       iterator = resultSet.iterator();

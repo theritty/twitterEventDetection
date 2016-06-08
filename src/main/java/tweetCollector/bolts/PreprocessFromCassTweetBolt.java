@@ -32,6 +32,7 @@ public class PreprocessFromCassTweetBolt extends BaseRichBolt {
     List<String> preprocessText = textAnalyzer.extractWordList(tweet);
     if(preprocessText == null || preprocessText.size()==0) return;
 
+//    System.out.println("yey prep");
     this.collector.emit(new Values(preprocessText,
             tuple.getLongByField("round"),
             tuple.getValueByField("tweetTime"),
