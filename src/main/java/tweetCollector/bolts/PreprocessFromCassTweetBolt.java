@@ -8,8 +8,6 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import tweetCollector.nlp.TextAnalyzer;
-import twitter4j.GeoLocation;
-import twitter4j.Status;
 
 import java.util.List;
 import java.util.Map;
@@ -20,10 +18,6 @@ public class PreprocessFromCassTweetBolt extends BaseRichBolt {
   private TextAnalyzer textAnalyzer;
   private OutputCollector collector;
 
-  public PreprocessFromCassTweetBolt()
-  {
-    System.out.println("Initializing preprocess bolt !!!!!!!!!!!!!!!!!!!!!!!!!");
-  }
   @Override
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
@@ -33,13 +27,11 @@ public class PreprocessFromCassTweetBolt extends BaseRichBolt {
 
   @Override
   public void execute(Tuple tuple) {
-    // "tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt", "country", "tweetTime", "id", "retweetcount", "userid"
     String tweet = tuple.getStringByField( "tweet" );
-    List<String> preprocessText = textAnalyzer.extractWordList(tweet);
 
+    List<String> preprocessText = textAnalyzer.extractWordList(tweet);
     if(preprocessText == null || preprocessText.size()==0) return;
 
-    // round | tweettime | id | country | retweetcount | tweet | userid
     this.collector.emit(new Values(preprocessText,
             tuple.getLongByField("round"),
             tuple.getValueByField("tweetTime"),

@@ -15,11 +15,7 @@ public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
 
   private OutputCollector collector;
   private HashMap<Long, RoundInfo> roundInfoList;
-  CassandraDao cassandraDao;
-
-  private ArrayList<String> documents;
-  private UUID id = UUID.randomUUID();
-
+  private CassandraDao cassandraDao;
 
   public EventDetectorManagerWithCassandraBolt(CassandraDao cassandraDao)
   {
@@ -30,7 +26,6 @@ public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
     this.collector = collector;
-    documents = new ArrayList<>();
     roundInfoList = new HashMap<>();
   }
 

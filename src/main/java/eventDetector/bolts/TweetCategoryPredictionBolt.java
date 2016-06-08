@@ -32,11 +32,9 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 
 	@Override
 	public void execute(Tuple tuple) {
-		// Create a dataset for each classifer, using the attributes
 		List<String> tweet_words = (List<String>) tuple.getValueByField( "tweet" );
-//		System.out.println("category predict: " + tweet_words);
-		long round = tuple.getLongByField("round");
 		Date timestamp = (Date) tuple.getValueByField("tweettime");
+		long round = tuple.getLongByField("round");
 		long id =	tuple.getLongByField("id");
 		long rtCount = tuple.getLongByField("retweetcount");
 		long userid =	tuple.getLongByField("userid");
@@ -46,9 +44,6 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 		for(String twee: tweet_words) tweet= tweet + twee + " ";
 		ArrayList<String> predictedCategories =  naiveBayesClassification.execute(tweet_words);
 
-//		System.out.println("emitting from predict: " + tweet);
-		// round | tweettime | id | country | retweetcount | tweet | userid
-		//("tweet", "round", "tweettime", "id", "retweetcount", "userid", "country")
 		this.collector.emit(new Values(
 						tweet,
 						round,
@@ -58,15 +53,6 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 						userid,
 						country,
 						predictedCategories));
-
-//		System.out.println("emitted from predict: " + tweet + " " +
-//						round + " " +
-//						timestamp + " " +
-//						id + " " +
-//						rtCount + " " +
-//						userid + " " +
-//						country + " " +
-//						predictedCategories);
 	}
 
 	@Override

@@ -11,26 +11,19 @@ import com.datastax.driver.core.Row;
 import eventDetector.drawing.LineChart;
 import topologyBuilder.Constants;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 public class EventCompareBolt extends BaseRichBolt {
-
-  private OutputCollector collector;
-  private String filePath;
   private String drawFilePath;
-  private double rateForSameEvent;
   private CassandraDao cassandraDao;
 
   HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
-  public EventCompareBolt(CassandraDao cassandraDao, String filePath, int fileNum, double rateForSameEvent)
+  public EventCompareBolt(CassandraDao cassandraDao, int fileNum, double rateForSameEvent)
   {
-    this.rateForSameEvent = rateForSameEvent;
-    this.filePath = filePath + fileNum + "/";
     this.drawFilePath = Constants.IMAGES_FILE_PATH + fileNum +"/";
     wordList = new HashMap<>();
     this.cassandraDao = cassandraDao;
@@ -39,7 +32,6 @@ public class EventCompareBolt extends BaseRichBolt {
   @Override
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
-    this.collector = collector;
   }
 
   @Override
@@ -78,43 +70,6 @@ public class EventCompareBolt extends BaseRichBolt {
     }
     return countsList;
   }
-//  public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
-//  {
-//    File filePath = new File(fileName);
-//    filePath.delete();
-//
-//    try {
-//      PrintWriter writer = new PrintWriter(new FileOutputStream(
-//              new File(fileName),
-//              true /* append = true */));
-//      writer.print("");
-//      int cnt = 1;
-//      for (ArrayList<HashMap<String, Object>> al : compareList) {
-//        write(writer, "Event " + cnt);
-//        for (HashMap<String, Object> chm : al) {
-//          if(chm.get("type").equals("hashtag"))
-//          {
-//            write(writer, "\t#" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
-//          }
-//          else
-//          {
-//            write(writer, "\t" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
-//          }
-//        }
-//        cnt++;
-//      }
-//
-//      writer.close();
-//
-//    } catch (FileNotFoundException e) {
-//      e.printStackTrace();
-//    }
-//  }
-
-//  public void write(PrintWriter writer, String line) {
-//    writer.println(line);
-////        System.out.println(line);
-//  }
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer)

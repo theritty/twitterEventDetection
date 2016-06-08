@@ -21,16 +21,14 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
     private OutputCollector collector;
     private String filePath;
-    private int inputFileNum;
     private double tfidfEventRate;
     private CassandraDao cassandraDao;
     private String tweetTable;
 
-    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, int fileNum, double tfidfEventRate, int inputFileNum, String tweetTable )
+    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, int fileNum, double tfidfEventRate, String tweetTable )
     {
         this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;
-        this.inputFileNum = inputFileNum;
         this.cassandraDao = cassandraDao;
         this.tweetTable = tweetTable;
     }
@@ -47,12 +45,11 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         ArrayList<Long> rounds = (ArrayList<Long>)tuple.getValueByField("rounds");
         String key = tuple.getStringByField("key");
         String type = tuple.getStringByField("type");
-        long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
         String country = (String) tuple.getValueByField( "country" );
+        long round = tuple.getLongByField("round");
 
         System.out.println("Event Detector Bolt for " + key + " at round " + round);
-//      System.out.println(round + " " + key + " here1");
         ArrayList<Double> tfidfs = new ArrayList<>();
 
         for (long roundNum: rounds)
@@ -107,7 +104,6 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         }
         else
             writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt", "Key: " + key );
-//      System.out.println(round + " " + key + " here2 " );
     }
 
     public void writeToFile(String fileName, String tweet)

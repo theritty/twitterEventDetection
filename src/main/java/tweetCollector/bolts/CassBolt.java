@@ -22,7 +22,6 @@ import java.util.Map;
 
 public class CassBolt extends BaseRichBolt
 {
-  private OutputCollector _collector;
   List<Object> values = new ArrayList<>();
 
   private Session session;
@@ -48,7 +47,6 @@ public class CassBolt extends BaseRichBolt
   public void prepare( final Map map, final TopologyContext topologyContext, final OutputCollector outputCollector )
   {
     try {
-      _collector = outputCollector;
       CassandraConnection cassandraConnection = new CassandraConnection();
       session = cassandraConnection.connect();
     } catch (Exception e) {
@@ -102,7 +100,6 @@ public class CassBolt extends BaseRichBolt
     }
     long seconds = (date.getTime()-currentDate.getTime())/1000;
     if(seconds>blockTimeInterval ) {
-//      round++;
       currentDate = null;
     }
 
@@ -111,21 +108,10 @@ public class CassBolt extends BaseRichBolt
     } catch (Exception e) {
       e.printStackTrace();
     }
-
-    try{
-      _collector.emit(
-              new Values(  ));
-
-      _collector.ack( tuple );
-    }catch (Exception e){
-      System.out.println( "CassandraBolt Execute Error!" );
-      e.printStackTrace();
-    }
   }
 
   @Override
   public void declareOutputFields( final OutputFieldsDeclarer outputFieldsDeclarer )
   {
-    outputFieldsDeclarer.declare( new Fields( ) );
   }
 }

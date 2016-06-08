@@ -48,7 +48,6 @@ public class SplitWordBolt extends BaseRichBolt {
         else
         {
             tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
-//            System.out.println("split word " + tweets);
         }
 
         for(String tweet: tweets)

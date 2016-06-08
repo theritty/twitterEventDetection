@@ -15,7 +15,6 @@ public class WordCountBolt extends BaseRichBolt {
 
   private OutputCollector collector;
   private HashMap<Long, HashMap<String, Long>> countsWithRounds = null;
-  private long round;
   private int threshold;
 
   public WordCountBolt(int threshold)
@@ -53,7 +52,6 @@ public class WordCountBolt extends BaseRichBolt {
       count++;
 
       if (count > threshold) {
-//        System.out.println("Word count " + word + " " + count);
         this.collector.emit(new Values(word, count, inputBolt, round, source, false, tuple.getValueByField("dates"), country));
       }
 

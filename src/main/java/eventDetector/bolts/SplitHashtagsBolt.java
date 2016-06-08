@@ -41,7 +41,6 @@ public class SplitHashtagsBolt extends BaseRichBolt {
         String source = (String) tuple.getValueByField( "source" );
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
-//        System.out.println("Blockend is " + blockEnd);
         if(source.equals("twitter"))
         {
             tweets = (List<String>) tuple.getValueByField( "tweet" );
@@ -49,7 +48,6 @@ public class SplitHashtagsBolt extends BaseRichBolt {
         else
         {
             tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
-//            System.out.println("split hashtag " + tweets);
         }
 
         for(String tweet: tweets)

@@ -4,57 +4,33 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
-import cassandraConnector.CassandraConnection;
 import cassandraConnector.CassandraDao;
-import com.datastax.driver.core.Session;
-import twitter4j.GeoLocation;
-import twitter4j.Status;
-import twitter4j.User;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 
 public class CassCategoriesBolt extends BaseRichBolt
 {
-  private OutputCollector _collector;
   List<Object> values = new ArrayList<>();
 
-  private Session session;
   private CassandraDao cassandraDao;
 
-  public CassCategoriesBolt( String tweets_table, String counts_table, String events_table)
+  public CassCategoriesBolt( CassandraDao cassandraDao)
   {
-    try {
-      this.cassandraDao = new CassandraDao(tweets_table, counts_table, events_table);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+      this.cassandraDao = cassandraDao;
   }
 
   @Override
   public void prepare( final Map map, final TopologyContext topologyContext, final OutputCollector outputCollector )
   {
-    try {
-      _collector = outputCollector;
-      CassandraConnection cassandraConnection = new CassandraConnection();
-      session = cassandraConnection.connect();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
-
 
   @Override
   public void execute( final Tuple tuple )
   {
-    //   "tweet", "round", "tweettime", "id", "retweetcount", "userid", "country", "categories"
-//    System.out.println("cassandra save: " + values.add(tuple.getStringByField("tweet")));
     values = new ArrayList<>();
     values.add(tuple.getLongByField("id"));
     values.add(tuple.getStringByField("tweet"));
@@ -66,49 +42,21 @@ public class CassCategoriesBolt extends BaseRichBolt
 
     ArrayList<String> categories = (ArrayList<String>)tuple.getValueByField("categories");
 
-    boolean set = false;
+    boolean set_politics = false;
+    boolean set_music = false;
+    boolean set_sports = false;
     for(String s:categories){
-      if(s.equals("politics"))
-      {
-        set = true;
-        break;
-      }
+      if(s.equals("politics"))  set_politics = true;
+      if(s.equals("music"))     set_music = true;
+      if(s.equals("sports"))    set_sports = true;
     }
-    values.add(set);
-
-    set = false;
-    for(String s:categories){
-      if(s.equals("music"))
-      {
-        set = true;
-        break;
-      }
-    }
-    values.add(set);
-
-    set = false;
-    for(String s:categories){
-      if(s.equals("sports"))
-      {
-        set = true;
-        break;
-      }
-    }
-    values.add(set);
+    values.add(set_politics);
+    values.add(set_music);
+    values.add(set_sports);
 
     try {
       cassandraDao.insertIntoTweets(values.toArray());
     } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    try{
-      _collector.emit(
-              new Values(  ));
-
-      _collector.ack( tuple );
-    }catch (Exception e){
-      System.out.println( "CassandraBolt Execute Error!" );
       e.printStackTrace();
     }
   }
@@ -116,6 +64,5 @@ public class CassCategoriesBolt extends BaseRichBolt
   @Override
   public void declareOutputFields( final OutputFieldsDeclarer outputFieldsDeclarer )
   {
-    outputFieldsDeclarer.declare( new Fields( ) );
   }
 }

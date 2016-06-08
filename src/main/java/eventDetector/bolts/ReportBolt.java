@@ -33,14 +33,13 @@ public class ReportBolt extends BaseRichBolt{
     @Override
     public void execute(Tuple tuple) {
         String inputBolt = tuple.getStringByField( "inputBolt" );
-        long round = tuple.getLongByField("round");
         String word = tuple.getStringByField("word");
         String country = tuple.getStringByField("country");
-        Long count = tuple.getLongByField("count");
+        long count = tuple.getLongByField("count");
+        long round = tuple.getLongByField("round");
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
         log.debug("Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
-//        System.out.println("Report BOLT");
         RoundInfo roundInfo;
         if(roundInfoList.get(round) != null)
         {
@@ -112,7 +111,6 @@ public class ReportBolt extends BaseRichBolt{
             }
 
             write(writer, "------------------------");
-
             writer.close();
 
         } catch (FileNotFoundException e) {

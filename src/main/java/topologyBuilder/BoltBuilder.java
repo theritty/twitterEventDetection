@@ -36,7 +36,6 @@ public class BoltBuilder {
             Integer.parseInt(properties.getProperty("topology.compare.size")));
 
     PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
-    DocumentCreator documentCreator = new DocumentCreator(Constants.STREAM_FILE_PATH, FILENUM, true);
 
     System.out.println("time interval " + TIME_INTERVAL_IN_HOURS * 60 * 60 + " & threshold " + COUNT_THRESHOLD);
 
@@ -64,7 +63,7 @@ public class BoltBuilder {
 
     PreprocessFromCassTweetBolt preprocessor = new PreprocessFromCassTweetBolt();
     TweetCategoryPredictionBolt tweetCategoryPredictionBolt = new TweetCategoryPredictionBolt();
-    CassCategoriesBolt cassCategoriesBolt = new CassCategoriesBolt("tweets", "counts", "events");
+    CassCategoriesBolt cassCategoriesBolt = new CassCategoriesBolt(cassandraDao);
 
     builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout);
 
@@ -94,7 +93,6 @@ public class BoltBuilder {
     CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
             Integer.parseInt(properties.getProperty("topology.compare.size")), Integer.MAX_VALUE, 1);
 
-//        PreprocessTweetBolt preprocessor = new PreprocessTweetBolt();
     SplitWordBolt splitBolt1 = new SplitWordBolt("USA");
     SplitWordBolt splitBolt2 = new SplitWordBolt("CAN");
     SplitHashtagsBolt splitHashtagsBolt1 = new SplitHashtagsBolt("USA");
@@ -106,10 +104,10 @@ public class BoltBuilder {
     ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
     ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
 
-    EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao, Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE,
-            Integer.parseInt(properties.getProperty("topology.input.file.number")), TWEETS_TABLE);
+    EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao,
+            Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
     EventDetectorManagerWithCassandraBolt eventDetectorManagerBolt = new EventDetectorManagerWithCassandraBolt(cassandraDao);
-    EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, Constants.RESULT_FILE_PATH, FILENUM, RATE_FOR_SAME_EVENT);
+    EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM, RATE_FOR_SAME_EVENT);
 
 
 
