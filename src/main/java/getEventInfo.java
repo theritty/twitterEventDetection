@@ -37,7 +37,7 @@ public class getEventInfo {
       writeInfo(cassandraDao,r,"USA");
       writeInfo(cassandraDao,r,"CAN");
     }
-
+    return ;
   }
 
   private static void writeInfo(CassandraDao cassandraDao, long r, String country) throws Exception {
