@@ -18,9 +18,11 @@ public class CassandraDao implements Serializable
     private transient PreparedStatement statement_where;
     private transient PreparedStatement statement_tweet_get;
     private transient PreparedStatement statement_round_get;
+    private transient PreparedStatement statement_round_get_from_event;
     private transient PreparedStatement statement_events_get;
     private transient BoundStatement boundStatement_events;
     private transient BoundStatement boundStatement_events_get;
+    private transient BoundStatement boundStatement_events_get_from_event;
     private transient BoundStatement boundStatement_tweets;
     private transient BoundStatement boundStatement_tweets_get;
     private transient BoundStatement boundStatement_rounds_get;
@@ -75,6 +77,10 @@ public class CassandraDao implements Serializable
         if(statement_round_get==null) {
             statement_round_get = CassandraConnection.connect().prepare(
                     "SELECT DISTINCT round FROM " + tweetsTable + ";");
+        }
+        if(statement_round_get_from_event==null) {
+            statement_round_get_from_event = CassandraConnection.connect().prepare(
+                    "SELECT DISTINCT round FROM " + eventsTable + ";");
         }
         if(statement_events_get==null) {
             statement_events_get = CassandraConnection.connect().prepare(
@@ -135,6 +141,15 @@ public class CassandraDao implements Serializable
         prepareAll();
         boundStatement_rounds_get = new BoundStatement(statement_round_get);
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_rounds_get.bind());
+
+        return resultSet;
+    }
+
+    public ResultSet getRoundsFromEvents() throws Exception
+    {
+        prepareAll();
+        boundStatement_events_get_from_event = new BoundStatement(statement_round_get_from_event);
+        ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_events_get_from_event.bind());
 
         return resultSet;
     }

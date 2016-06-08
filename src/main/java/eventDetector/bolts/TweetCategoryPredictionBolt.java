@@ -19,7 +19,7 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 
 	private OutputCollector collector;
 	private NaiveBayesClassification naiveBayesClassification;
-
+private long count=0;
 
 	@Override
 	public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
@@ -42,8 +42,9 @@ public class TweetCategoryPredictionBolt extends BaseRichBolt {
 
 		String tweet="";
 		for(String twee: tweet_words) tweet= tweet + twee + " ";
-		ArrayList<String> predictedCategories =  naiveBayesClassification.execute(tweet_words);
 
+		ArrayList<String> predictedCategories =  naiveBayesClassification.execute(tweet_words);
+		if((count+1) % 100 == 0) System.out.println("count " + ++count);
 //		System.out.println("yey predict");
 		this.collector.emit(new Values(
 						tweet,

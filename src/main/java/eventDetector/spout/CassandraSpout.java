@@ -116,7 +116,7 @@ public class CassandraSpout extends BaseRichSpout {
         }
       });
 
-
+      System.out.println("Round list1: " + roundlist);
       if(testSize!=Integer.MAX_VALUE) {
         while (roundlist.size() > testSize + trainSize)
           roundlist.remove(roundlist.size() - 1);
@@ -124,6 +124,8 @@ public class CassandraSpout extends BaseRichSpout {
       int i = 0;
       while(trainSize>i++)
         readRoundlist.add(roundlist.remove(0));
+
+      System.out.println("Round list2: " + roundlist);
 
     } catch (Exception e) {
       e.printStackTrace();
