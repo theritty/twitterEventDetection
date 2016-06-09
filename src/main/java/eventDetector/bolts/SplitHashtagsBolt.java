@@ -18,7 +18,6 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
     private OutputCollector collector;
     private String country;
-    static Logger log = LoggerFactory.getLogger(SplitHashtagsBolt.class);
 
     public SplitHashtagsBolt(String country)
     {
@@ -49,10 +48,10 @@ public class SplitHashtagsBolt extends BaseRichBolt {
         {
             tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
         }
+//        System.out.println("Split Hashtag: " + tweets);
 
         for(String tweet: tweets)
         {
-            log.debug("Word: " + tweet + " round: " + round + " country: " + country);
             if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
                     && !tweet.equals("#hiring") && !tweet.equals("#careerarc") && !tweet.equals("BLOCKEND"))
             {
@@ -62,7 +61,6 @@ public class SplitHashtagsBolt extends BaseRichBolt {
         }
         if(blockEnd)
         {
-            log.debug("Blockend for round: " + round + " country: " + country);
             this.collector.emit(new Values("BLOCKEND", "HashtagCount", round, source, true,
                     tuple.getValueByField("dates"), country));
         }

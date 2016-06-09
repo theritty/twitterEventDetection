@@ -49,7 +49,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         String country = (String) tuple.getValueByField( "country" );
         long round = tuple.getLongByField("round");
 
-        System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
+        if(country.equals("CAN")) System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
         ArrayList<Double> tfidfs = new ArrayList<>();
 
         for (long roundNum: rounds)

@@ -18,7 +18,6 @@ public class SplitWordBolt extends BaseRichBolt {
 
     private OutputCollector collector;
     private String country;
-    static Logger log = LoggerFactory.getLogger(SplitHashtagsBolt.class);
 
     public SplitWordBolt(String country)
     {
@@ -34,9 +33,9 @@ public class SplitWordBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         String countryX = (String) tuple.getValueByField( "country" );
+
         if(!countryX.equals(country)) return ;
 
-//        System.out.println("Canada tweet");
         List<String> tweets;
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
@@ -51,9 +50,9 @@ public class SplitWordBolt extends BaseRichBolt {
             tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
         }
 
+//        System.out.println("Split Word: " + tweets);
         for(String tweet: tweets)
         {
-            log.debug("Word: " + tweet + " round: " + round + " country: " + country);
             if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
                     && !tweet.equals("hiring") && !tweet.equals("careerarc") && !tweet.equals("BLOCKEND"))
             {
@@ -63,7 +62,6 @@ public class SplitWordBolt extends BaseRichBolt {
         }
         if(blockEnd)
         {
-            log.debug("Blockend for round: " + round + " country: " + country);
             this.collector.emit(new Values("BLOCKEND", "WordCount", round, source,
                     true, tuple.getValueByField("dates"), country));
         }

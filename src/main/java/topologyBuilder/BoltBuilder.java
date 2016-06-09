@@ -101,13 +101,14 @@ public class BoltBuilder {
     WordCountBolt countBolt = new WordCountBolt(COUNT_THRESHOLD);
     WordCountBolt countHashtagBolt = new WordCountBolt(COUNT_THRESHOLD);
 
-    ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
-    ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
+//    ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
+//    ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
 
     EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao,
             Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
-    EventDetectorManagerWithCassandraBolt eventDetectorManagerBolt = new EventDetectorManagerWithCassandraBolt(cassandraDao);
+//    EventDetectorManagerWithCassandraBolt eventDetectorManagerBolt = new EventDetectorManagerWithCassandraBolt(cassandraDao);
     EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM, RATE_FOR_SAME_EVENT);
+    EventDetectorManagementBolt eventDetectorManagementBolt = new EventDetectorManagementBolt(cassandraDao,Constants.RESULT_FILE_PATH, FILENUM);
 
 
 
@@ -140,19 +141,22 @@ public class BoltBuilder {
             shuffleGrouping(Constants.CASS_SPOUT_ID);
     builder.setBolt(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID, countHashtagBolt,5).
             fieldsGrouping(Constants.COUNTRY2_SPLIT_HASHTAG_BOLT_ID, new Fields("word"));
-    builder.setBolt(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, reportBolt).
+
+    builder.setBolt(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, eventDetectorManagementBolt).
             globalGrouping(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID).
             globalGrouping(Constants.COUNTRY1_COUNT_BOLT_ID).
             globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID).
             globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID);
 
-    builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).
-            globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID).
-            globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID).
-            globalGrouping(Constants.COUNTRY1_COUNT_BOLT_ID).
-            globalGrouping(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID);
+//    builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).
+//            globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID).
+//            globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID).
+//            globalGrouping(Constants.COUNTRY1_COUNT_BOLT_ID).
+//            globalGrouping(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID);
+//    builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt,8).
+//            fieldsGrouping(Constants.COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT, new Fields("key"));
     builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt,8).
-            fieldsGrouping(Constants.COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT, new Fields("key"));
+            fieldsGrouping(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, new Fields("key"));
     builder.setBolt( Constants.COUNTRY2_EVENT_COMPARE_BOLT, eventCompareBolt).
             globalGrouping(Constants.COUNTRY2_EVENT_DETECTOR_BOLT);
 

@@ -17,13 +17,10 @@ public class CassandraConnection {
     {
         if(session != null) return session;
         Cluster cluster;
+
         cluster = Cluster.builder()
-                .addContactPoint( CASS_CONTACT_POINT )
-                .withRetryPolicy( DefaultRetryPolicy.INSTANCE)
-                         .withLoadBalancingPolicy(
-                                 new TokenAwarePolicy(
-                                         new DCAwareRoundRobinPolicy())
-                         ).build();
+                .addContactPoint(CASS_CONTACT_POINT)
+                .build();
         session = cluster.connect( CASS_KEYSPACE );
 
         return session;
