@@ -2,10 +2,7 @@ import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.*;
 
 public class getEventInfo {
   public static void main(String[] args) throws Exception {
@@ -47,11 +44,8 @@ public class getEventInfo {
     {
       Row row = iteratorCAN.next();
       String word = row.getString("word");
-      Iterator<Row> it = cassandraDao.getTweetsByRound(r).iterator();
-      if(it.hasNext())
-      {
-        System.out.println(it.next().getTimestamp("tweettime") + " " + row.getString("country") + " " + word);
-      }
+        Date d = new Date(12*60*1000*r) ;
+        System.out.println(d + " " + row.getString("country") + " " + word );
     }
   }
 }
