@@ -14,14 +14,16 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class ReportBolt extends BaseRichBolt{
-    private HashMap<Long, RoundInfo> roundInfoList;
+    private HashMap<Long, RoundInfo> roundInfoListUSA;
+    private HashMap<Long, RoundInfo> roundInfoListCAN;
     private String filePath;
     static Logger log = LoggerFactory.getLogger(ReportBolt.class);
 
     public ReportBolt(String fileName, int threshold, String filePath, int fileNum)
     {
-        this.filePath = filePath + fileNum + "/" + fileName;
-        roundInfoList = new HashMap<>();
+        this.filePath = filePath + fileNum + "/" ;
+        roundInfoListUSA = new HashMap<>();
+        roundInfoListCAN = new HashMap<>();
     }
 
     @Override
@@ -40,23 +42,35 @@ public class ReportBolt extends BaseRichBolt{
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
         log.debug("Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
+
+        HashMap<Long, RoundInfo> roundInfoListTmp;
+        if(country.equals("USA")) roundInfoListTmp = roundInfoListUSA;
+        else roundInfoListTmp = roundInfoListCAN;
+
         RoundInfo roundInfo;
-        if(roundInfoList.get(round) != null)
+        if(roundInfoListTmp.get(round) != null)
         {
-            roundInfo = roundInfoList.get(round);
+            roundInfo = roundInfoListTmp.get(round);
         }
         else
         {
             roundInfo = new RoundInfo();
-            roundInfoList.put(round, roundInfo);
+            roundInfoListTmp.put(round, roundInfo);
         }
 
+//        if(country.equals("CAN"))
+//            System.out.println("Round " + round + " word " + word + " for CANADA");
+//        else
+//            System.out.println("hof");
         if(inputBolt.equals("WordCount"))
         {
             log.debug("Set as sentence:: Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
             if(blockEnd && roundInfo.getWordCounts().size()>0)
             {
-                writeToFile(country, round, roundInfo.getWordCounts());
+                if(roundInfoListUSA.get(round)!=null)
+                    writeToFile("USA", round, roundInfoListUSA.get(round).getWordCounts(), "sentences");
+                if(roundInfoListCAN.get(round)!=null)
+                    writeToFile("CAN", round, roundInfoListCAN.get(round).getWordCounts(), "sentences");
             }
             else
             {
@@ -68,7 +82,10 @@ public class ReportBolt extends BaseRichBolt{
             log.debug("Set as hashtag:: Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
             if(blockEnd && roundInfo.getHashtagCounts().size()>0)
             {
-                writeToFile(country, round, roundInfo.getHashtagCounts());
+                if(roundInfoListUSA.get(round)!=null)
+                    writeToFile("USA", round, roundInfoListUSA.get(round).getHashtagCounts(), "hashtags");
+                if(roundInfoListCAN.get(round)!=null)
+                    writeToFile("CAN", round, roundInfoListCAN.get(round).getHashtagCounts(), "hashtags");
             }
             else
             {
@@ -79,6 +96,19 @@ public class ReportBolt extends BaseRichBolt{
         {
             log.debug("Cannot set:: Word: " + word + " round: " + round + "country: "+ country + " inputBolt: " + inputBolt);
         }
+//        System.out.println("Round: " + round + " ----------------------------------------------");
+//        if(roundInfoListCAN.get(round)!=null) {
+//            System.out.println("Canada hashtag: " + roundInfoListCAN.get(round).getHashtagCounts().size());
+//            System.out.println("Canada word: " + roundInfoListCAN.get(round).getWordCounts().size());
+//        }
+//        if(roundInfoListUSA.get(round)!=null) {
+//            System.out.println("USA hashtag: " + roundInfoListUSA.get(round).getHashtagCounts().size());
+//            System.out.println("USA word: " + roundInfoListUSA.get(round).getWordCounts().size());
+//        }
+//        System.out.println("-------------------------------------------------------------");
+
+        if(country.equals("USA")) roundInfoListUSA = roundInfoListTmp;
+        else    roundInfoListCAN=roundInfoListTmp;
     }
 
     @Override
@@ -86,11 +116,11 @@ public class ReportBolt extends BaseRichBolt{
         // this bolt does not emit anything
     }
 
-    public void writeToFile(String country, long round, HashMap<String, Long> countList)
+    public void writeToFile(String country, long round, HashMap<String, Long> countList, String fileName)
     {
         try {
             PrintWriter writer;
-            writer = new PrintWriter(filePath + Long.toString(round) + "-" + country + ".txt");
+            writer = new PrintWriter(filePath + fileName + Long.toString(round) + "-" + country + ".txt");
             write(writer, "----- FINAL COUNTS -----");
 
             List<Map.Entry<String,Long>> entries = new ArrayList<>(

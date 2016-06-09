@@ -36,6 +36,7 @@ public class SplitWordBolt extends BaseRichBolt {
         String countryX = (String) tuple.getValueByField( "country" );
         if(!countryX.equals(country)) return ;
 
+//        System.out.println("Canada tweet");
         List<String> tweets;
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );

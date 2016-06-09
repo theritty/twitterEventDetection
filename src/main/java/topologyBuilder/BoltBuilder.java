@@ -122,29 +122,29 @@ public class BoltBuilder {
             shuffleGrouping(Constants.CASS_SPOUT_ID);
     builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBolt,5).
             fieldsGrouping(Constants.COUNTRY1_SPLIT_BOLT_ID, new Fields("word"));
-    builder.setBolt(Constants.COUNTRY1_REPORT_BOLT_ID, reportBolt).
-            globalGrouping(Constants.COUNTRY1_COUNT_BOLT_ID);
+//    builder.setBolt(Constants.COUNTRY1_REPORT_BOLT_ID, reportBolt).
 
     builder.setBolt(Constants.COUNTRY1_SPLIT_HASHTAG_BOLT_ID, splitHashtagsBolt1).
             shuffleGrouping(Constants.CASS_SPOUT_ID);
     builder.setBolt(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID, countHashtagBolt,5).
             fieldsGrouping(Constants.COUNTRY1_SPLIT_HASHTAG_BOLT_ID, new Fields("word"));
-    builder.setBolt(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, reportHashtagBolt).
-            globalGrouping(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID);
+//    builder.setBolt(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, reportBolt).
 
     builder.setBolt(Constants.COUNTRY2_SPLIT_BOLT_ID, splitBolt2).
             shuffleGrouping(Constants.CASS_SPOUT_ID);
     builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBolt,5).
             fieldsGrouping(Constants.COUNTRY2_SPLIT_BOLT_ID, new Fields("word"));
-    builder.setBolt(Constants.COUNTRY2_REPORT_BOLT_ID, reportBolt).
-            globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID);
+//    builder.setBolt(Constants.COUNTRY2_REPORT_BOLT_ID, reportBolt)
 
     builder.setBolt(Constants.COUNTRY2_SPLIT_HASHTAG_BOLT_ID, splitHashtagsBolt2).
             shuffleGrouping(Constants.CASS_SPOUT_ID);
     builder.setBolt(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID, countHashtagBolt,5).
             fieldsGrouping(Constants.COUNTRY2_SPLIT_HASHTAG_BOLT_ID, new Fields("word"));
-    builder.setBolt(Constants.COUNTRY2_REPORT_HASHTAG_BOLT_ID, reportHashtagBolt).
-            globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID);
+    builder.setBolt(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, reportBolt).
+            globalGrouping(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID).
+            globalGrouping(Constants.COUNTRY1_COUNT_BOLT_ID).
+            globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID).
+            globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID);
 
     builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).
             globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID).

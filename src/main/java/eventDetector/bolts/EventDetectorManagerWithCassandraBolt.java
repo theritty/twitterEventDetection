@@ -14,7 +14,8 @@ import java.util.*;
 public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
 
   private OutputCollector collector;
-  private HashMap<Long, RoundInfo> roundInfoList;
+  private HashMap<Long, RoundInfo> roundInfoListUSA;
+  private HashMap<Long, RoundInfo> roundInfoListCAN;
   private CassandraDao cassandraDao;
 
   public EventDetectorManagerWithCassandraBolt(CassandraDao cassandraDao)
@@ -26,7 +27,8 @@ public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
     this.collector = collector;
-    roundInfoList = new HashMap<>();
+    roundInfoListUSA = new HashMap<>();
+    roundInfoListCAN = new HashMap<>();
   }
 
   @Override
@@ -40,15 +42,21 @@ public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
     Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
     RoundInfo roundInfo;
-    if(roundInfoList.get(round) != null)
+    HashMap<Long, RoundInfo> roundInfoListTmp;
+    if(country.equals("USA"))
+      roundInfoListTmp = roundInfoListUSA;
+    else
+      roundInfoListTmp = roundInfoListCAN;
+
+    if(roundInfoListTmp.get(round) != null)
     {
-      roundInfo = roundInfoList.get(round);
+      roundInfo = roundInfoListTmp.get(round);
     }
     else
     {
       roundInfo = new RoundInfo();
-      roundInfoList.put(round, roundInfo);
     }
+
     if(roundInfo.isEndOfRound()) return;
 
     if(inputBolt.equals("WordCount"))
@@ -61,9 +69,6 @@ public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
       {
         roundInfo.putWord(word, count);
       }
-
-//            System.out.println("MNG - WordCount:: Round " + round + ", word " + word+ ", count " + count +
-//                    " roundtrack " + roundInfo.getRoundCheckInBits() + " blockend: " + blockEnd);
     }
     else if(inputBolt.equals("HashtagCount"))
     {
@@ -75,45 +80,47 @@ public class EventDetectorManagerWithCassandraBolt extends BaseRichBolt {
       {
         roundInfo.putHashtag(word, count);
       }
-
-//            System.out.println("MNG - HashtagCount:: Round " + round + ", word " + word+ ", count " + count +
-//                    " roundtrack " + roundInfo.getRoundCheckInBits() + " blockend: " + blockEnd );
     }
+    roundInfoListTmp.put(round, roundInfo);
 
+    if(country.equals("USA"))
+      roundInfoListUSA = roundInfoListTmp;
+    else
+      roundInfoListCAN = roundInfoListTmp;
 
     if(roundInfo.isEndOfRound())
     {
       ArrayList<Long> rounds = (ArrayList<Long>)tuple.getValueByField("dates");
-//            System.out.println("MNG - Blockend:: Round " + round + " word " + word
-//                    + " count " + count + ", rounds " + rounds+
-//                    " roundtrack " + roundInfo.getRoundCheckInBits() );
 
-//            ArrayList<String> words = new ArrayList<>();
-//            ArrayList<String> hashtags = new ArrayList<>();
-
-//            prepareLists(roundInfo, words, hashtags, round);
-
-
-      System.out.println("Round " + round + " is done. " +
-              "\n Lists are from manager Word:  " +
-              roundInfo.getWordCounts().entrySet().toString() +
-              "\n Lists are from manager Hash:  "  +
-              roundInfo.getHashtagCounts().entrySet().toString() +
-              "\n Rounds are from manager: " + rounds );
-
-      for(Map.Entry<String,Long> w : roundInfo.getWordCounts().entrySet())
+      for(Map.Entry<String,Long> w : roundInfoListUSA.get(round).getWordCounts().entrySet())
       {
         if(w != null) {
-          insertValuesToCass(round, w.getKey(), country, w.getValue());
-          this.collector.emit(new Values(rounds, w.getKey(), "word", round, source, country));
+          insertValuesToCass(round, w.getKey(), "USA", w.getValue());
+          this.collector.emit(new Values(rounds, w.getKey(), "word", round, source, "USA"));
         }
       }
 
-      for(Map.Entry<String,Long> h : roundInfo.getHashtagCounts().entrySet())
+      for(Map.Entry<String,Long> h : roundInfoListUSA.get(round).getHashtagCounts().entrySet())
       {
         if(h != null) {
-          insertValuesToCass(round, h.getKey(), country, h.getValue());
-          this.collector.emit(new Values(rounds, h.getKey(), "hashtag", round, source, country));
+          insertValuesToCass(round, h.getKey(), "USA", h.getValue());
+          this.collector.emit(new Values(rounds, h.getKey(), "hashtag", round, source, "USA"));
+        }
+      }
+
+      for(Map.Entry<String,Long> w : roundInfoListCAN.get(round).getWordCounts().entrySet())
+      {
+        if(w != null) {
+          insertValuesToCass(round, w.getKey(), "CAN", w.getValue());
+          this.collector.emit(new Values(rounds, w.getKey(), "word", round, source, "CAN"));
+        }
+      }
+
+      for(Map.Entry<String,Long> h : roundInfoListCAN.get(round).getHashtagCounts().entrySet())
+      {
+        if(h != null) {
+          insertValuesToCass(round, h.getKey(), "CAN", h.getValue());
+          this.collector.emit(new Values(rounds, h.getKey(), "hashtag", round, source, "CAN"));
         }
       }
     }
