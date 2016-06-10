@@ -60,6 +60,7 @@ public class CassandraSpout extends BaseRichSpout {
 
     if(iterator == null || !iterator.hasNext())
     {
+      System.out.println(roundlist);
       if(roundlist.size()==0) return;
       long round = roundlist.remove(0);
       readRoundlist.add(round);
@@ -90,7 +91,7 @@ public class CassandraSpout extends BaseRichSpout {
     if(tweet == null || tweet.length() == 0) return;
     ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
 
-    System.out.println("Sending tweet from spout: " + tweet +" at round " + readRoundlist.get(readRoundlist.size()-1));
+//    System.out.println("Sending tweet from spout: " + tweet +" at round " + readRoundlist.get(readRoundlist.size()-1));
     // round | tweettime | id | country | retweetcount | tweet | userid
     if(iterator.hasNext())
       collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));

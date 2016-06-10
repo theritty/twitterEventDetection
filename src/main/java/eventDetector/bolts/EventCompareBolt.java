@@ -11,10 +11,7 @@ import com.datastax.driver.core.Row;
 import eventDetector.drawing.LineChart;
 import topologyBuilder.Constants;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class EventCompareBolt extends BaseRichBolt {
   private String drawFilePath;
@@ -43,8 +40,8 @@ public class EventCompareBolt extends BaseRichBolt {
     String country = tuple.getStringByField("country");
 
     if(tfidfs.size()<2) return;
-    System.out.println("Compare: in " + key);
 
+    System.out.println("Event" + key + " at round " + round + " created on " + new Date() + " for " + country + " ");
     if(tfidfs.get(tfidfs.size()-2)==0) tfidfs.set(tfidfs.size()-2, 0.0001);
     try {
       cassandraDao.insertIntoEvents(round, country, key, tfidfs.get(tfidfs.size()-1) / tfidfs.get(tfidfs.size()-2));
@@ -54,9 +51,6 @@ public class EventCompareBolt extends BaseRichBolt {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
-
-    System.out.println("Compare: out " + key);
   }
 
   protected ArrayList<Long> getCountListFromCass(long round, String key, String country) throws Exception {

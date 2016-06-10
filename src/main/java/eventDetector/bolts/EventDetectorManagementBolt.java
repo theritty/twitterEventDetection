@@ -64,11 +64,11 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         if(inputBolt.equals("WordCount"))
         {
 
-            System.out.println("Manager word: " + word + " country: " + country + " round: " + round + " count: " + count );
+//            System.out.println("Manager word: " + word + " country: " + country + " round: " + round + " count: " + count );
 
             if(blockEnd)
             {
-                System.out.println("Manager blockend word round: " + round );
+//                System.out.println("Manager blockend word round: " + round );
                 if( roundInfo.getWordCounts().size()>0) {
                     if (roundInfoList.get(round) != null)
                         writeToFile(country, round, roundInfoList.get(round).getWordCounts(), "sentences");
@@ -83,11 +83,11 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         else if(inputBolt.equals("HashtagCount"))
         {
 
-            System.out.println("Manager hashtag: " + word + " country: " + country + " round: " + round + " count: " + count );
+//            System.out.println("Manager hashtag: " + word + " country: " + country + " round: " + round + " count: " + count );
 
             if(blockEnd )
             {
-                System.out.println("Manager blockend hashtag round: " + round );
+//                System.out.println("Manager blockend hashtag round: " + round );
                 if(roundInfo.getHashtagCounts().size()>0) {
                     if (roundInfoList.get(round) != null)
                         writeToFile(country, round, roundInfoList.get(round).getHashtagCounts(), "hashtags");
@@ -107,7 +107,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
 //        }
         if(roundInfo.isEndOfRound())
         {
-            System.out.println("Manager: End of round " + round + " for country " + country );
+//            System.out.println("Manager: End of round " + round + " for country " + country );
             ArrayList<Long> rounds = (ArrayList<Long>)tuple.getValueByField("dates");
 
             if(roundInfoList.get(round)!=null) {
@@ -116,7 +116,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             }
             else
             {
-                System.out.println("Manager: End of round " + round + " for country " + country + ". No entry for round! " );
+//                System.out.println("Manager: End of round " + round + " for country " + country + ". No entry for round! " );
             }
             roundInfoList.remove(round);
         }

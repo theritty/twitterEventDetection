@@ -50,7 +50,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
 
 
-        System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
+//        System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
         ArrayList<Double> tfidfs = new ArrayList<>();
 
         for (long roundNum: rounds)
@@ -77,7 +77,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         }
 
         if(!allzero) {
-            System.out.println("Tf idf calculated for " + key + " at round " + round+ " country " + country);
+//            System.out.println("Tf idf calculated for " + key + " at round " + round+ " country " + country);
             writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
             if(tfidfs.get(tfidfs.size()-2) == 0)
             {
@@ -93,7 +93,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         }
         else
         {
-            System.out.println("Tf idf all zero for " + key + " at round " + round+ " country " + country);
+//            System.out.println("Tf idf all zero for " + key + " at round " + round+ " country " + country);
             writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt", "Key: " + key );
         }
     }
