@@ -14,8 +14,7 @@ import java.util.Map;
 public class WordCountBolt extends BaseRichBolt {
 
   private OutputCollector collector;
-  private HashMap<Long, HashMap<String, Long>> countsWithRoundsUSA = null;
-  private HashMap<Long, HashMap<String, Long>> countsWithRoundsCAN = null;
+  private HashMap<Long, HashMap<String, Long>> countsWithRounds = null;
   private int threshold;
 
   public WordCountBolt(int threshold)
@@ -26,8 +25,7 @@ public class WordCountBolt extends BaseRichBolt {
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
     this.collector = collector;
-    this.countsWithRoundsUSA = new HashMap<>();
-    this.countsWithRoundsCAN = new HashMap<>();
+    this.countsWithRounds = new HashMap<>();
   }
 
   @Override
@@ -43,20 +41,17 @@ public class WordCountBolt extends BaseRichBolt {
     {
       System.out.println("Sending blockend at word count bolt : " + word +" at round " + round + " country " + country + " inpBolt: " + inputBolt);
       this.collector.emit(new Values("BLOCKEND", 1L, inputBolt, round, source, true, tuple.getValueByField("dates"), country));
-      if(country.equals("USA")) countsWithRoundsUSA.remove(round);
-      else countsWithRoundsCAN.remove(round);
+
+      countsWithRounds.remove(round);
       return;
     }
     else {
+      countsWithRounds.putIfAbsent(round, new HashMap<>());
 
-      HashMap<Long, HashMap<String, Long>> countsWithRoundsTmp;
-      if(country.equals("USA"))
-        countsWithRoundsTmp = countsWithRoundsUSA;
-      else
-        countsWithRoundsTmp = countsWithRoundsCAN;
-      countsWithRoundsTmp.putIfAbsent(round, new HashMap<>());
+      if(word.equals("kanada"))
+        System.out.println("hey");
 
-      Long count = countsWithRoundsTmp.get(round).get(word);
+      Long count = countsWithRounds.get(round).get(word);
       if (count == null) {
         count = 0L;
       }
@@ -69,7 +64,7 @@ public class WordCountBolt extends BaseRichBolt {
         this.collector.emit(new Values(word, count, inputBolt, round, source, false, tuple.getValueByField("dates"), country));
       }
 
-      countsWithRoundsTmp.get(round).put(word, count);
+      countsWithRounds.get(round).put(word, count);
     }
 
   }

@@ -15,8 +15,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class EventDetectorManagementBolt extends BaseRichBolt{
-    private HashMap<Long, RoundInfo> roundInfoListUSA;
-    private HashMap<Long, RoundInfo> roundInfoListCAN;
+    private HashMap<Long, RoundInfo> roundInfoList;
     private OutputCollector collector;
     private CassandraDao cassandraDao;
     private String filePath;
@@ -24,8 +23,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     public EventDetectorManagementBolt(CassandraDao cassandraDao, String filePath, int fileNum)
     {
         this.filePath = filePath + fileNum + "/" ;
-        roundInfoListUSA = new HashMap<>();
-        roundInfoListCAN = new HashMap<>();
+        roundInfoList = new HashMap<>();
         this.cassandraDao = cassandraDao;
     }
 
@@ -46,20 +44,15 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
 //        System.out.println("Manager: word " + word + " country: " + country + " round: " + round + " count: " + count + " inpBolt: " + inputBolt );
-
-        HashMap<Long, RoundInfo> roundInfoListTmp;
-        if(country.equals("USA")) roundInfoListTmp = roundInfoListUSA;
-        else roundInfoListTmp = roundInfoListCAN;
-
         RoundInfo roundInfo;
-        if(roundInfoListTmp.get(round) != null)
+        if(roundInfoList.get(round) != null)
         {
-            roundInfo = roundInfoListTmp.get(round);
+            roundInfo = roundInfoList.get(round);
         }
         else
         {
             roundInfo = new RoundInfo();
-            roundInfoListTmp.put(round, roundInfo);
+            roundInfoList.put(round, roundInfo);
         }
 
 //        if(roundInfo.isEndOfRound()) return;
@@ -77,10 +70,8 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             {
                 System.out.println("Manager blockend word round: " + round );
                 if( roundInfo.getWordCounts().size()>0) {
-                    if (roundInfoListUSA.get(round) != null)
-                        writeToFile("USA", round, roundInfoListUSA.get(round).getWordCounts(), "sentences");
-                    if (roundInfoListCAN.get(round) != null)
-                        writeToFile("CAN", round, roundInfoListCAN.get(round).getWordCounts(), "sentences");
+                    if (roundInfoList.get(round) != null)
+                        writeToFile(country, round, roundInfoList.get(round).getWordCounts(), "sentences");
                 }
                 roundInfo.setWordBlockEnd();
             }
@@ -98,10 +89,8 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             {
                 System.out.println("Manager blockend hashtag round: " + round );
                 if(roundInfo.getHashtagCounts().size()>0) {
-                    if (roundInfoListUSA.get(round) != null)
-                        writeToFile("USA", round, roundInfoListUSA.get(round).getHashtagCounts(), "hashtags");
-                    if (roundInfoListCAN.get(round) != null)
-                        writeToFile("CAN", round, roundInfoListCAN.get(round).getHashtagCounts(), "hashtags");
+                    if (roundInfoList.get(round) != null)
+                        writeToFile(country, round, roundInfoList.get(round).getHashtagCounts(), "hashtags");
                 }
                 roundInfo.setHashtagBlockEnd();
             }
@@ -110,13 +99,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
                 roundInfo.putHashtag(word, count);
             }
         }
-
-        roundInfoListTmp.put(round, roundInfo);
-
-        if(country.equals("USA"))
-            roundInfoListUSA = roundInfoListTmp;
-        else
-            roundInfoListCAN = roundInfoListTmp;
+        roundInfoList.put(round, roundInfo);
 
 
 //        if(word.equals("BLOCKEND") && round==2033805){
@@ -127,24 +110,15 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             System.out.println("Manager: End of round " + round + " for country " + country );
             ArrayList<Long> rounds = (ArrayList<Long>)tuple.getValueByField("dates");
 
-            if(roundInfoListCAN.get(round)!=null) {
-                endOfRoundOperations(roundInfoListCAN.get(round).getWordCounts(), round, "CAN", source, rounds, "word");
-                endOfRoundOperations(roundInfoListCAN.get(round).getHashtagCounts(), round, "CAN", source, rounds, "hashtag");
+            if(roundInfoList.get(round)!=null) {
+                endOfRoundOperations(roundInfoList.get(round).getWordCounts(), round, country, source, rounds, "word");
+                endOfRoundOperations(roundInfoList.get(round).getHashtagCounts(), round, country, source, rounds, "hashtag");
             }
             else
             {
-                System.out.println("Manager: End of round " + round + " for country CAN. No entry for round! " );
+                System.out.println("Manager: End of round " + round + " for country " + country + ". No entry for round! " );
             }
-            if(roundInfoListUSA.get(round)!=null) {
-                endOfRoundOperations(roundInfoListUSA.get(round).getWordCounts(), round, "USA", source, rounds, "word");
-                endOfRoundOperations(roundInfoListUSA.get(round).getHashtagCounts(), round, "USA", source, rounds, "hashtag");
-            }
-            else
-            {
-                System.out.println("Manager: End of round " + round + " for country USA. No entry for round! " );
-            }
-            roundInfoListCAN.remove(round);
-            roundInfoListUSA.remove(round);
+            roundInfoList.remove(round);
         }
     }
 
@@ -174,7 +148,6 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     @Override

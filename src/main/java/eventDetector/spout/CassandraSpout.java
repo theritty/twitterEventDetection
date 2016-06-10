@@ -94,8 +94,11 @@ public class CassandraSpout extends BaseRichSpout {
     // round | tweettime | id | country | retweetcount | tweet | userid
     if(iterator.hasNext())
       collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
-    else
-      collector.emit(new Values(tweet, tmp_roundlist, true, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
+    else {
+      collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
+      collector.emit(new Values("BLOCKEND", tmp_roundlist, true, current_round, "cassandra", "USA", tweetTime, id, retweetcount, userid));
+      collector.emit(new Values("BLOCKEND", tmp_roundlist, true, current_round, "cassandra", "CAN", tweetTime, id, retweetcount, userid));
+    }
 
   }
 

@@ -15,10 +15,11 @@ import java.util.Map;
 public class SplitWordBolt extends BaseRichBolt {
 
     private OutputCollector collector;
+    private String country;
 
     public SplitWordBolt(String country)
     {
-
+        this.country = country;
     }
 
     @Override
@@ -29,7 +30,7 @@ public class SplitWordBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        String country = (String) tuple.getValueByField( "country" );
+        String countryX = (String) tuple.getValueByField( "country" );
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
         String source = (String) tuple.getValueByField( "source" );
         long round = tuple.getLongByField("round");
@@ -42,7 +43,7 @@ public class SplitWordBolt extends BaseRichBolt {
             return;
         }
 
-        else  {
+        if(countryX.equals(country)) {
 
             List<String> tweets;
 

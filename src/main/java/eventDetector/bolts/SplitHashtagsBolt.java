@@ -15,9 +15,11 @@ import java.util.Map;
 public class SplitHashtagsBolt extends BaseRichBolt {
 
     private OutputCollector collector;
+    private String country;
 
     public SplitHashtagsBolt(String country)
     {
+        this.country = country;
 
     }
 
@@ -29,7 +31,7 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        String country = (String) tuple.getValueByField( "country" );
+        String countryX = (String) tuple.getValueByField( "country" );
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
@@ -42,7 +44,7 @@ public class SplitHashtagsBolt extends BaseRichBolt {
             return;
         }
 
-        else{
+        if(countryX.equals(country)){
             List<String> tweets;
             if (source.equals("twitter")) {
                 tweets = (List<String>) tuple.getValueByField("tweet");
