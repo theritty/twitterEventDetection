@@ -39,30 +39,33 @@ public class WordCountBolt extends BaseRichBolt {
     long round = tuple.getLongByField("round");
     Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
-    HashMap<Long, HashMap<String, Long>> countsWithRoundsTmp;
-    if(country.equals("USA"))
-      countsWithRoundsTmp = countsWithRoundsUSA;
-    else
-      countsWithRoundsTmp = countsWithRoundsCAN;
-
     if(blockEnd || word.equals("BLOCKEND"))
     {
+      System.out.println("Sending blockend at word count bolt : " + word +" at round " + round + " country " + country + " inpBolt: " + inputBolt);
       this.collector.emit(new Values("BLOCKEND", 1L, inputBolt, round, source, true, tuple.getValueByField("dates"), country));
-      countsWithRoundsUSA.remove(round);
-      countsWithRoundsCAN.remove(round);
+      if(country.equals("USA")) countsWithRoundsUSA.remove(round);
+      else countsWithRoundsCAN.remove(round);
       return;
     }
     else {
+
+      HashMap<Long, HashMap<String, Long>> countsWithRoundsTmp;
+      if(country.equals("USA"))
+        countsWithRoundsTmp = countsWithRoundsUSA;
+      else
+        countsWithRoundsTmp = countsWithRoundsCAN;
       countsWithRoundsTmp.putIfAbsent(round, new HashMap<>());
+
       Long count = countsWithRoundsTmp.get(round).get(word);
       if (count == null) {
         count = 0L;
       }
       count++;
+      System.out.println("Counting " + source +" at word" + word +" count: " + count + " at round " + round + " country " + country);
 
       if (count > threshold) {
 //        if(country.equals("CAN")) System.out.println("Word count more than threshold: " + word + " " + count);
-        System.out.println("Word Count: " + word + " " + count + " " + round);
+        System.out.println("Sending word " + word + " with count " + count + " at round " + round + " country " + country);
         this.collector.emit(new Values(word, count, inputBolt, round, source, false, tuple.getValueByField("dates"), country));
       }
 

@@ -45,7 +45,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         long round = tuple.getLongByField("round");
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
-        System.out.println("Mng: in " + word + " " + country + " " + round + " " + count + " " + inputBolt );
+//        System.out.println("Manager: word " + word + " country: " + country + " round: " + round + " count: " + count + " inpBolt: " + inputBolt );
 
         HashMap<Long, RoundInfo> roundInfoListTmp;
         if(country.equals("USA")) roundInfoListTmp = roundInfoListUSA;
@@ -71,10 +71,11 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         if(inputBolt.equals("WordCount"))
         {
 
-//            System.out.println("wc Mng: in " + word + " " + country + " " + round + " " + count );
+            System.out.println("Manager word: " + word + " country: " + country + " round: " + round + " count: " + count );
 
             if(blockEnd)
             {
+                System.out.println("Manager blockend word round: " + round );
                 if( roundInfo.getWordCounts().size()>0) {
                     if (roundInfoListUSA.get(round) != null)
                         writeToFile("USA", round, roundInfoListUSA.get(round).getWordCounts(), "sentences");
@@ -91,10 +92,11 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         else if(inputBolt.equals("HashtagCount"))
         {
 
-//            System.out.println("hc Mng: in " + word + " " + country + " " + round + " " + count );
+            System.out.println("Manager hashtag: " + word + " country: " + country + " round: " + round + " count: " + count );
 
             if(blockEnd )
             {
+                System.out.println("Manager blockend hashtag round: " + round );
                 if(roundInfo.getHashtagCounts().size()>0) {
                     if (roundInfoListUSA.get(round) != null)
                         writeToFile("USA", round, roundInfoListUSA.get(round).getHashtagCounts(), "hashtags");
@@ -122,26 +124,28 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
 //        }
         if(roundInfo.isEndOfRound())
         {
-            System.out.println("end of" +
-                    " Mng: in " + word + " " + country + " " + round + " " + count );
+            System.out.println("Manager: End of round " + round + " for country " + country );
             ArrayList<Long> rounds = (ArrayList<Long>)tuple.getValueByField("dates");
 
             if(roundInfoListCAN.get(round)!=null) {
                 endOfRoundOperations(roundInfoListCAN.get(round).getWordCounts(), round, "CAN", source, rounds, "word");
                 endOfRoundOperations(roundInfoListCAN.get(round).getHashtagCounts(), round, "CAN", source, rounds, "hashtag");
             }
+            else
+            {
+                System.out.println("Manager: End of round " + round + " for country CAN. No entry for round! " );
+            }
             if(roundInfoListUSA.get(round)!=null) {
                 endOfRoundOperations(roundInfoListUSA.get(round).getWordCounts(), round, "USA", source, rounds, "word");
                 endOfRoundOperations(roundInfoListUSA.get(round).getHashtagCounts(), round, "USA", source, rounds, "hashtag");
             }
+            else
+            {
+                System.out.println("Manager: End of round " + round + " for country USA. No entry for round! " );
+            }
             roundInfoListCAN.remove(round);
             roundInfoListUSA.remove(round);
-//            System.out.println("zxczxc Mng: in " + word + " " + country + " " + round + " " + count );
         }
-
-        System.out.println("Mng: out " + word + " " + country + " " + round + " " + count );
-//        System.out.println("Mng: out " + word);
-
     }
 
     public void endOfRoundOperations(HashMap<String, Long> countlist, long round, String country, String source, ArrayList<Long> rounds, String type)

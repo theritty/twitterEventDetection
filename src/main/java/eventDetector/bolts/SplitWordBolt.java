@@ -15,11 +15,10 @@ import java.util.Map;
 public class SplitWordBolt extends BaseRichBolt {
 
     private OutputCollector collector;
-    private String country;
 
     public SplitWordBolt(String country)
     {
-        this.country = country;
+
     }
 
     @Override
@@ -30,41 +29,41 @@ public class SplitWordBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        String countryX = (String) tuple.getValueByField( "country" );
-
-        if(!countryX.equals(country)) return ;
-
-        List<String> tweets;
-        long round = tuple.getLongByField("round");
-        String source = (String) tuple.getValueByField( "source" );
+        String country = (String) tuple.getValueByField( "country" );
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
+        String source = (String) tuple.getValueByField( "source" );
+        long round = tuple.getLongByField("round");
 
-        if(source.equals("twitter"))
-        {
-            tweets = (List<String>) tuple.getValueByField( "tweet" );
-        }
-        else
-        {
-            tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
-        }
-
-        System.out.println("Split Word: " + tweets + " " + round);
-        for(String tweet: tweets)
-        {
-
-            if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>2
-                    && !tweet.equals("hiring") && !tweet.equals("careerarc") && !tweet.equals("BLOCKEND"))
-            {
-                System.out.println("Split Word: " + tweet + " round:::::::::::::..." + round);
-                this.collector.emit(new Values(tweet, "WordCount", round, source,
-                        false, tuple.getValueByField("dates"), country));
-            }
-        }
         if(blockEnd)
         {
+            System.out.println("Sending blockend from splitword at round " + round + " country " + country);
             this.collector.emit(new Values("BLOCKEND", "WordCount", round, source,
                     true, tuple.getValueByField("dates"), country));
+            return;
         }
+
+        else  {
+
+            List<String> tweets;
+
+            if (source.equals("twitter")) {
+                tweets = (List<String>) tuple.getValueByField("tweet");
+            } else {
+                tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
+            }
+
+            System.out.println("Splitting Word: " + tweets + " at round " + round + " country " + country);
+            for (String tweet : tweets) {
+
+                if (!tweet.startsWith("#") && !tweet.equals("") && tweet.length() > 2
+                        && !tweet.equals("hiring") && !tweet.equals("careerarc") && !tweet.equals("BLOCKEND")) {
+                    System.out.println("Sending word from splitword: " + tweet + " at round " + round + " country " + country);
+                    this.collector.emit(new Values(tweet, "WordCount", round, source,
+                            false, tuple.getValueByField("dates"), country));
+                }
+            }
+        }
+
     }
 
     @Override

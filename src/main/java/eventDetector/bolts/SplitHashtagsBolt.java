@@ -15,11 +15,10 @@ import java.util.Map;
 public class SplitHashtagsBolt extends BaseRichBolt {
 
     private OutputCollector collector;
-    private String country;
 
     public SplitHashtagsBolt(String country)
     {
-        this.country = country;
+
     }
 
     @Override
@@ -30,37 +29,35 @@ public class SplitHashtagsBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        String countryX = (String) tuple.getValueByField( "country" );
-        if(!countryX.equals(country)) return ;
-
-        List<String> tweets;
+        String country = (String) tuple.getValueByField( "country" );
+        Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
         long round = tuple.getLongByField("round");
         String source = (String) tuple.getValueByField( "source" );
-        Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
-        if(source.equals("twitter"))
-        {
-            tweets = (List<String>) tuple.getValueByField( "tweet" );
-        }
-        else
-        {
-            tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
-        }
-//        System.out.println("Split Hashtag: " + tweets);
-
-        for(String tweet: tweets)
-        {
-            if(tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
-                    && !tweet.equals("#hiring") && !tweet.equals("#careerarc") && !tweet.equals("BLOCKEND"))
-            {
-                this.collector.emit(new Values(tweet/*.replace("#", "")*/, "HashtagCount", round,
-                        source, false, tuple.getValueByField("dates"), country));
-            }
-        }
         if(blockEnd)
         {
+            System.out.println("Sending blockend from splithashtag: at round " + round + " country " + country);
             this.collector.emit(new Values("BLOCKEND", "HashtagCount", round, source, true,
                     tuple.getValueByField("dates"), country));
+            return;
+        }
+
+        else{
+            List<String> tweets;
+            if (source.equals("twitter")) {
+                tweets = (List<String>) tuple.getValueByField("tweet");
+            } else {
+                tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
+            }
+            System.out.println("Splitting Hashtag: " + tweets + " at round " + round + " country " + country);
+            for (String tweet : tweets) {
+                if (tweet.startsWith("#") && !tweet.equals("") && tweet.length() > 3
+                        && !tweet.equals("#hiring") && !tweet.equals("#careerarc") && !tweet.equals("BLOCKEND")) {
+                    System.out.println("Sending hashtag from splithashtag: " + tweet + " at round " + round + " country " + country);
+                    this.collector.emit(new Values(tweet/*.replace("#", "")*/, "HashtagCount", round,
+                            source, false, tuple.getValueByField("dates"), country));
+                }
+            }
         }
     }
 
