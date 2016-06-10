@@ -49,9 +49,12 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         String country = (String) tuple.getValueByField( "country" );
         long round = tuple.getLongByField("round");
 
-        if(country.equals("CAN")) System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
+
+        System.out.println("Detector444: in " + key);
+//        System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
         ArrayList<Double> tfidfs = new ArrayList<>();
 
+        System.out.println("Detector333: in " + key);
         for (long roundNum: rounds)
         {
             TFIDFCalculatorWithCassandra calculator = new TFIDFCalculatorWithCassandra();
@@ -65,6 +68,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
             }
         }
 
+        System.out.println("Detector222: in " + key);
         boolean allzero=true;
         for(double tfidf: tfidfs)
         {
@@ -74,36 +78,47 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
                 break;
             }
         }
+        System.out.println("Detector111: in " + key);
         if(!allzero) {
             writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
             if(tfidfs.get(tfidfs.size()-2) == 0)
             {
                 if(tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
                 {
-                    System.out.println("Round " + round + " Event candidate: " + key + " rate: "
+                    if(country.equals("CAN"))
+                        System.out.println("Round " + round + " Event candidate: " + key + " rate: "
                             + tfidfs.get(tfidfs.size() - 1) / 0.0001);
                     this.collector.emit(new Values(key, tfidfs, type, round, source, country));
                 }
                 else
                 {
-                    System.out.println("Round " + round + " Not Event " + key+ " rate: "
+                    if(country.equals("CAN"))
+                        System.out.println("Round " + round + " Not Event " + key+ " rate: "
                             + tfidfs.get(tfidfs.size()-1)/0.0001);
                 }
             }
             else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>tfidfEventRate)
             {
-                System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
+                if(country.equals("CAN"))
+                    System.out.println("Round " + round + " Event candidate: " + key+ " rate: "
                         + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
                 this.collector.emit(new Values(key, tfidfs, type, round, source, country));
             }
             else
             {
-                System.out.println("Round " + round + " Not Event " + key+ " rate: "
+                if(country.equals("CAN"))
+                    System.out.println("Round " + round + " Not Event " + key+ " rate: "
                         + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2));
             }
         }
         else
-            writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt", "Key: " + key );
+        {
+            if(country.equals("CAN"))
+                System.out.println("Canada writing to file ");
+                writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt", "Key: " + key );
+        }
+
+        System.out.println("Detector: out " + key);
     }
 
     public void writeToFile(String fileName, String tweet)

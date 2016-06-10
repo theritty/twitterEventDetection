@@ -148,6 +148,9 @@ public class BoltBuilder {
             globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID).
             globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID);
 
+
+
+
 //    builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT, eventDetectorManagerBolt).
 //            globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID).
 //            globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID).
@@ -155,6 +158,10 @@ public class BoltBuilder {
 //            globalGrouping(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID);
 //    builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt,8).
 //            fieldsGrouping(Constants.COUNTRY2_EVENT_DETECTOR_MANAGER_BOLT, new Fields("key"));
+
+
+
+
     builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt,8).
             fieldsGrouping(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, new Fields("key"));
     builder.setBolt( Constants.COUNTRY2_EVENT_COMPARE_BOLT, eventCompareBolt).

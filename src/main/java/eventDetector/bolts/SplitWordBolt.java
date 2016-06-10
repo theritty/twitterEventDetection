@@ -7,8 +7,6 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,12 +48,14 @@ public class SplitWordBolt extends BaseRichBolt {
             tweets = Arrays.asList(((String) tuple.getValueByField("tweet")).split(" "));
         }
 
-//        System.out.println("Split Word: " + tweets);
+        System.out.println("Split Word: " + tweets + " " + round);
         for(String tweet: tweets)
         {
-            if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>3
+
+            if(!tweet.startsWith("#") && !tweet.equals("") && tweet.length()>2
                     && !tweet.equals("hiring") && !tweet.equals("careerarc") && !tweet.equals("BLOCKEND"))
             {
+                System.out.println("Split Word: " + tweet + " round:::::::::::::..." + round);
                 this.collector.emit(new Values(tweet, "WordCount", round, source,
                         false, tuple.getValueByField("dates"), country));
             }

@@ -61,8 +61,8 @@ public class WordCountBolt extends BaseRichBolt {
       count++;
 
       if (count > threshold) {
-//        if(country.equals("CAN")) System.out.println("Counting: " + word + " " + count);
-//        System.out.println("Word Count: " + word + " " + count);
+//        if(country.equals("CAN")) System.out.println("Word count more than threshold: " + word + " " + count);
+        System.out.println("Word Count: " + word + " " + count + " " + round);
         this.collector.emit(new Values(word, count, inputBolt, round, source, false, tuple.getValueByField("dates"), country));
       }
 

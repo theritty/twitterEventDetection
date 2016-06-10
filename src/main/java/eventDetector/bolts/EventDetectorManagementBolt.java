@@ -9,8 +9,6 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import cassandraConnector.CassandraDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -47,8 +45,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         long round = tuple.getLongByField("round");
         Boolean blockEnd = (Boolean) tuple.getValueByField("blockEnd");
 
-
-//        System.out.println("Mng: " + word);
+        System.out.println("Mng: in " + word + " " + country + " " + round + " " + count + " " + inputBolt );
 
         HashMap<Long, RoundInfo> roundInfoListTmp;
         if(country.equals("USA")) roundInfoListTmp = roundInfoListUSA;
@@ -65,7 +62,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             roundInfoListTmp.put(round, roundInfo);
         }
 
-        if(roundInfo.isEndOfRound()) return;
+//        if(roundInfo.isEndOfRound()) return;
 
 //        if(country.equals("CAN"))
 //            System.out.println("Round " + round + " word " + word + " for CANADA");
@@ -73,12 +70,17 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
 //            System.out.println("hof");
         if(inputBolt.equals("WordCount"))
         {
-            if(blockEnd && roundInfo.getWordCounts().size()>0)
+
+//            System.out.println("wc Mng: in " + word + " " + country + " " + round + " " + count );
+
+            if(blockEnd)
             {
-                if(roundInfoListUSA.get(round)!=null)
-                    writeToFile("USA", round, roundInfoListUSA.get(round).getWordCounts(), "sentences");
-                if(roundInfoListCAN.get(round)!=null)
-                    writeToFile("CAN", round, roundInfoListCAN.get(round).getWordCounts(), "sentences");
+                if( roundInfo.getWordCounts().size()>0) {
+                    if (roundInfoListUSA.get(round) != null)
+                        writeToFile("USA", round, roundInfoListUSA.get(round).getWordCounts(), "sentences");
+                    if (roundInfoListCAN.get(round) != null)
+                        writeToFile("CAN", round, roundInfoListCAN.get(round).getWordCounts(), "sentences");
+                }
                 roundInfo.setWordBlockEnd();
             }
             else
@@ -88,12 +90,17 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         }
         else if(inputBolt.equals("HashtagCount"))
         {
-            if(blockEnd && roundInfo.getHashtagCounts().size()>0)
+
+//            System.out.println("hc Mng: in " + word + " " + country + " " + round + " " + count );
+
+            if(blockEnd )
             {
-                if(roundInfoListUSA.get(round)!=null)
-                    writeToFile("USA", round, roundInfoListUSA.get(round).getHashtagCounts(), "hashtags");
-                if(roundInfoListCAN.get(round)!=null)
-                    writeToFile("CAN", round, roundInfoListCAN.get(round).getHashtagCounts(), "hashtags");
+                if(roundInfo.getHashtagCounts().size()>0) {
+                    if (roundInfoListUSA.get(round) != null)
+                        writeToFile("USA", round, roundInfoListUSA.get(round).getHashtagCounts(), "hashtags");
+                    if (roundInfoListCAN.get(round) != null)
+                        writeToFile("CAN", round, roundInfoListCAN.get(round).getHashtagCounts(), "hashtags");
+                }
                 roundInfo.setHashtagBlockEnd();
             }
             else
@@ -110,25 +117,42 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             roundInfoListCAN = roundInfoListTmp;
 
 
+//        if(word.equals("BLOCKEND") && round==2033805){
+//            System.out.println("here");
+//        }
         if(roundInfo.isEndOfRound())
         {
+            System.out.println("end of" +
+                    " Mng: in " + word + " " + country + " " + round + " " + count );
             ArrayList<Long> rounds = (ArrayList<Long>)tuple.getValueByField("dates");
 
-            endOfRoundOperations(roundInfoListUSA.get(round).getWordCounts(), round, "USA", source, rounds,"word");
-            endOfRoundOperations(roundInfoListUSA.get(round).getHashtagCounts(), round, "USA", source, rounds,"hashtag");
-            endOfRoundOperations(roundInfoListCAN.get(round).getWordCounts(), round, "CAN", source, rounds, "word");
-            endOfRoundOperations(roundInfoListCAN.get(round).getHashtagCounts(), round, "CAN", source, rounds, "hashtag");
+            if(roundInfoListCAN.get(round)!=null) {
+                endOfRoundOperations(roundInfoListCAN.get(round).getWordCounts(), round, "CAN", source, rounds, "word");
+                endOfRoundOperations(roundInfoListCAN.get(round).getHashtagCounts(), round, "CAN", source, rounds, "hashtag");
+            }
+            if(roundInfoListUSA.get(round)!=null) {
+                endOfRoundOperations(roundInfoListUSA.get(round).getWordCounts(), round, "USA", source, rounds, "word");
+                endOfRoundOperations(roundInfoListUSA.get(round).getHashtagCounts(), round, "USA", source, rounds, "hashtag");
+            }
+            roundInfoListCAN.remove(round);
+            roundInfoListUSA.remove(round);
+//            System.out.println("zxczxc Mng: in " + word + " " + country + " " + round + " " + count );
         }
+
+        System.out.println("Mng: out " + word + " " + country + " " + round + " " + count );
+//        System.out.println("Mng: out " + word);
 
     }
 
     public void endOfRoundOperations(HashMap<String, Long> countlist, long round, String country, String source, ArrayList<Long> rounds, String type)
     {
-        for(Map.Entry<String,Long> w : countlist.entrySet())
-        {
-            if(w != null) {
-                insertValuesToCass(round, w.getKey(), country, w.getValue());
-                this.collector.emit(new Values(rounds, w.getKey(), type, round, source, country));
+        if(countlist!=null && countlist.size()>0) {
+            for (Map.Entry<String, Long> w : countlist.entrySet()) {
+                if (w != null) {
+                    insertValuesToCass(round, w.getKey(), country, w.getValue());
+                    //new Fields("rounds", "key", "type", "round", "source", "country"));
+                    this.collector.emit(new Values(rounds, w.getKey(), type, round, source, country));
+                }
             }
         }
     }

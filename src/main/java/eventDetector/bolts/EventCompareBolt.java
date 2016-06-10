@@ -42,6 +42,8 @@ public class EventCompareBolt extends BaseRichBolt {
     long round = tuple.getLongByField("round");
     String country = tuple.getStringByField("country");
 
+    if(tfidfs.size()<2) return;
+    System.out.println("Compare: in " + key);
 
     if(tfidfs.get(tfidfs.size()-2)==0) tfidfs.set(tfidfs.size()-2, 0.0001);
     try {
@@ -52,6 +54,9 @@ public class EventCompareBolt extends BaseRichBolt {
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+
+    System.out.println("Compare: out " + key);
   }
 
   protected ArrayList<Long> getCountListFromCass(long round, String key, String country) throws Exception {
