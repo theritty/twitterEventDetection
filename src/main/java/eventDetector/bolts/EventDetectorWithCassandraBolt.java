@@ -77,7 +77,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         }
 
         if(!allzero) {
-//            System.out.println("Tf idf calculated for " + key + " at round " + round+ " country " + country);
+            System.out.println("Tf idf calculated for " + key + " at round " + round+ " country " + country);
             writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
             if(tfidfs.get(tfidfs.size()-2) == 0)
             {

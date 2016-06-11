@@ -86,28 +86,39 @@ public class CassandraDao implements Serializable
             statement_events_get = CassandraConnection.connect().prepare(
                     "SELECT * FROM " + eventsTable + " WHERE round=? AND country=?;");
         }
+
+        if(boundStatement_tweets == null)
+            boundStatement_tweets = new BoundStatement(statement_tweets);
+        if(boundStatement_events == null)
+            boundStatement_events = new BoundStatement(statement_events);
+        if(boundStatement_counts == null)
+            boundStatement_counts = new BoundStatement(statement_counts);
+        if(boundStatement_where == null)
+            boundStatement_where = new BoundStatement(statement_where);
+        if(boundStatement_events_get == null)
+            boundStatement_events_get = new BoundStatement(statement_events_get);
+        if(boundStatement_tweets_get == null)
+            boundStatement_tweets_get = new BoundStatement(statement_tweet_get);
+        if(boundStatement_rounds_get == null)
+            boundStatement_rounds_get = new BoundStatement(statement_round_get);
+        if(boundStatement_events_get_from_event == null)
+            boundStatement_events_get_from_event = new BoundStatement(statement_round_get_from_event);
     }
     public void insertIntoTweets( Object[] values ) throws Exception
     {
         prepareAll();
-        if(boundStatement_tweets == null)
-        boundStatement_tweets = new BoundStatement(statement_tweets);
         CassandraConnection.connect().executeAsync(boundStatement_tweets.bind(values));
     }
 
     public void insertIntoEvents( Object... values ) throws Exception
     {
         prepareAll();
-        if(boundStatement_events == null)
-            boundStatement_events = new BoundStatement(statement_events);
         CassandraConnection.connect().executeAsync(boundStatement_events.bind(values));
     }
 
     public void insertIntoCounts( Object[] values ) throws Exception
     {
         prepareAll();
-        if(boundStatement_counts == null)
-        boundStatement_counts = new BoundStatement(statement_counts);
         ResultSetFuture rsf = CassandraConnection.connect().executeAsync(boundStatement_counts.bind(values));
         checkError(rsf);
     }
@@ -115,8 +126,6 @@ public class CassandraDao implements Serializable
     public ResultSet getFromCounts( Object... values ) throws Exception
     {
         prepareAll();
-        if(boundStatement_where == null)
-        boundStatement_where = new BoundStatement(statement_where);
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_where.bind(values));
 
         return resultSet;
@@ -125,8 +134,6 @@ public class CassandraDao implements Serializable
     public ResultSet getFromEvents( Object... values ) throws Exception
     {
         prepareAll();
-        if(boundStatement_events_get == null)
-        boundStatement_events_get = new BoundStatement(statement_events_get);
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_events_get.bind(values));
 
         return resultSet;
@@ -135,8 +142,6 @@ public class CassandraDao implements Serializable
     public ResultSet getTweetsByRound( Object... values ) throws Exception
     {
         prepareAll();
-        if(boundStatement_tweets_get == null)
-        boundStatement_tweets_get = new BoundStatement(statement_tweet_get);
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_tweets_get.bind(values));
 
         return resultSet;
@@ -145,8 +150,6 @@ public class CassandraDao implements Serializable
     public ResultSet getRounds() throws Exception
     {
         prepareAll();
-        if(boundStatement_rounds_get == null)
-        boundStatement_rounds_get = new BoundStatement(statement_round_get);
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_rounds_get.bind());
 
         return resultSet;
@@ -155,8 +158,6 @@ public class CassandraDao implements Serializable
     public ResultSet getRoundsFromEvents() throws Exception
     {
         prepareAll();
-        if(boundStatement_events_get_from_event == null)
-        boundStatement_events_get_from_event = new BoundStatement(statement_round_get_from_event);
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_events_get_from_event.bind());
 
         return resultSet;

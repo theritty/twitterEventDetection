@@ -129,8 +129,8 @@ public class CassandraSpout extends BaseRichSpout {
       while(trainSize>i++)
         readRoundlist.add(roundlist.remove(0));
 
-//      while (roundlist.get(0) < 2033774)
-//        roundlist.remove(0);
+      while (roundlist.get(0) < 2034343)
+        roundlist.remove(0);
 
     } catch (Exception e) {
       e.printStackTrace();

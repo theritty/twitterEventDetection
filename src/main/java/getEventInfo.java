@@ -9,7 +9,25 @@ public class getEventInfo {
     CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events");
     ArrayList<Long> roundlist = new ArrayList<>();
     ResultSet resultSet;
+//    ResultSet resultSet2;
     try {
+//
+//
+//      resultSet2 = cassandraDao.getRounds();
+//
+//      Iterator<Row> iterator2 = resultSet2.iterator();
+//      while(iterator2.hasNext())
+//      {
+//        Row row = iterator2.next();
+//        roundlist.add(row.getLong("round"));
+//      }
+//      Collections.sort(roundlist, new Comparator<Long>() {
+//        public int compare(Long m1, Long m2) {
+//          return m1.compareTo(m2);
+//        }
+//      });
+//      System.out.println(roundlist);
+
       resultSet = cassandraDao.getRoundsFromEvents();
 
       Iterator<Row> iterator = resultSet.iterator();
@@ -45,7 +63,10 @@ public class getEventInfo {
       Row row = iteratorCAN.next();
       String word = row.getString("word");
         Date d = new Date(12*60*1000*r) ;
-        System.out.println(d + " " + row.getString("country") + " " + word );
+
+      double incrementpercent = row.getDouble("incrementpercent");
+      if(incrementpercent>30)
+        System.out.println(r + " " + d + " " + row.getString("country") + " " + word );
     }
   }
 }
