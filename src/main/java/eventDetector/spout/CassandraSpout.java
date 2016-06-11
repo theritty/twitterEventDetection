@@ -60,7 +60,7 @@ public class CassandraSpout extends BaseRichSpout {
 
     if(iterator == null || !iterator.hasNext())
     {
-      System.out.println(roundlist);
+//      System.out.println(roundlist);
       if(roundlist.size()==0) return;
       long round = roundlist.remove(0);
       readRoundlist.add(round);
