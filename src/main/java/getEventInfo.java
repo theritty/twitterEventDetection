@@ -3,9 +3,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import topologyBuilder.TopologyHelper;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 public class getEventInfo {
@@ -67,7 +65,7 @@ public class getEventInfo {
       {
         if(eventCAN.word.equals(eventUSA.word))
         {
-          writeToFile("", "same_events_", "Event: " + eventCAN.word +
+          writeToFile("same", "events", "Event: " + eventCAN.word +
                   ", Canada timestamp: " + new Date(12*60*1000*eventCAN.round) +
                   ", America timestamp: " + new Date(12*60*1000*eventUSA.round));
         }
@@ -127,8 +125,9 @@ public class getEventInfo {
   public static void writeToFile(String country, String fileName, String line)
   {
     try {
-      PrintWriter writer;
-      writer = new PrintWriter("/home/ceren/Desktop/report/" + country + fileName + "_" + ".txt");
+      PrintWriter writer = new PrintWriter(new FileOutputStream(
+              new File("/home/ceren/Desktop/report/" + country + "_" + fileName + ".txt"),
+              true /* append = true */));
       writer.println(line);
       writer.close();
 
