@@ -44,6 +44,7 @@ public class MatchEvents {
     {
       boolean foundoverall=false;
       String events1=events.get(i);
+      int place=0;
 
       ArrayList<String> tmp = new ArrayList<>();
       for(ArrayList<String> list : grouping)
@@ -51,54 +52,29 @@ public class MatchEvents {
         boolean found = false;
         for(String ev:list)
         {
-          if(ev.equals(events1)) {
-            found=true;break;
-          }
+          if(ev.equals(events1)) { found=true;break; }
         }
-        if(found){
-          foundoverall=true;
-          break;
-        }
+        if(found){ foundoverall=true; break; }
+        place++;
       }
-      if(!foundoverall) {
-        tmp.add(events1);
-        grouping.add(tmp);
-      }
+      if(!foundoverall) { tmp.add(events1); grouping.add(tmp); }
 
       for (int j=i+1;j<events.size();j++)
       {
         String events2=events.get(j);
         double sim = CosineSimilarity.cosineSimilarity(eventGroups.get(events1), eventGroups.get(events2));
-//        System.out.println("COS SIM " + events1 + "-" + events2 + " = " +sim );
-        if(sim>0.1)
-        {
-          for(ArrayList<String> list : grouping)
-          {
-            boolean found = false;
-            for(String ev:list)
-            {
-              if(ev.equals(events1)) {
-                list.add(events2);
-                found = true;
-                break;
-              }
-            }
-            if(found) break;
-          }
-        }
+        if(sim>0.1)  grouping.get(place).add(events2);
       }
     }
 
     for(ArrayList<String> list : grouping) {
       for (int i=0;i<list.size()-1;i++) {
         for(int j=i+1;j<list.size();j++){
-          if(list.get(i).equals(list.get(j)))
-            list.remove(j--);
+          if(list.get(i).equals(list.get(j))) list.remove(j--);
         }
       }
     }
     return grouping;
-
   }
 
   public static void main(String[] args) throws Exception {
