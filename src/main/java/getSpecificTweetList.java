@@ -9,8 +9,24 @@ import java.util.List;
 /**
  * Created by ceren on 12.06.2016.
  */
-public class asdasdasd {
+public class getSpecificTweetList {
     public static void main(String[] args) throws Exception {
+        getSpecificTweets(2033719,"sexual");
+    }
+
+    public static void getSpecificTweets(long round, String word) throws Exception {
+        CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events");
+        ResultSet resultSet = cassandraDao.getTweetsByRound(round);
+
+        Iterator<Row> iterator = resultSet.iterator();
+        while(iterator.hasNext())
+        {
+            Row row = iterator.next();
+            if(row.getString("tweet").contains(word))
+                System.out.println(row.getString("tweet"));
+        }
+    }
+    public static void prepareDemo() throws Exception {
         CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events");
         CassandraDao cassandraDao2 = new CassandraDao("tweetsdemo", "countsdemo", "eventsdemo");
         long round = 2034735;
@@ -20,7 +36,6 @@ public class asdasdasd {
             System.out.println(round + " done");
         }
     }
-
     public static void prepare(CassandraDao cassandraDao,CassandraDao cassandraDao2, long round) throws Exception {
         ResultSet resultSet = cassandraDao.getTweetsByRound(round);
 

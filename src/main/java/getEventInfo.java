@@ -1,6 +1,8 @@
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import eventDetector.algorithms.CosineSimilarity;
+import eventDetector.algorithms.MatchEvents;
 import topologyBuilder.TopologyHelper;
 
 import java.io.*;
@@ -8,15 +10,17 @@ import java.util.*;
 
 public class getEventInfo {
   public static class Event {
-    public Event(String word, long round, String country)
+    public Event(String word, long round, String country, double incrementpercent)
     {
       this.word = word;
       this.round = round;
       this.country = country;
+      this.incrementpercent = incrementpercent;
     }
     public String word;
     public long round;
     public String country;
+    public double incrementpercent;
   }
 
   public static ArrayList<Event> eventArrayListUSA = new ArrayList<>();
@@ -49,6 +53,7 @@ public class getEventInfo {
   private static String May28USA="#ICNA2016, #xicanitx, #PreClassic, #Stream727, #DaydreamTour, #13DaysTilBeSomebodyFilm, #rickychat, #ncaaLAX, #ImNotGettingUp, Billy Butler, Hull City, James Shields, Barney Frank, Kody Clemens, Ubaldo, Marcelo, Bob Dole, Andrea Bocelli, Pineda, James Loney, Kroos, Hendricks, Kimbrel, Tropical Storm Bonnie, Alicia Keys, #ReasonsDatesFail, #Hisense300, #TakeASongOutToEat, Zidane, #nationalhamburgerday, Ronaldo, Bryce Dejean-Jones, #uclfinal, #28mayo, #nassh2016, #davidrosemdc, #dont___shameme, #whatuwearin, #mcmldn16, #svlonabscbn, #udgrad2016, #twittergodfather, #mudcontiranosnosedialoga, #birminghampride, #bluehensforever, #500parade, #aporlaunadecima, #felizsabado, #breezysays, #voicekids3ph" ;
   private static String May27USA="#14DaysTilBeSomebodyFilm, #VZWBuzz, #VictorianEraModernTimes, #KCCOSalute, #Hellerball, #questionsforpup, #JumpIn, #5H727, #WeAreWithYouAmberHeard, #BottleRock, #GoldenGateBridge, #HarryPotterWeekend, #THAICOM8, #100DCOMs, #727ListeningParty, #CarbDay, #BRTalk, #HillaryArrestQuotes, #ENGvAUS, #FlashbackFriday, #7DaysTilBetter, #ImWithAmber, #FairytaleNewsHeadlines, Kyle Wright, Dustin Brown, Miles Morales, Wendy Wu, Tom Hiddleston, Money Go, Wisconsin Idea, Wayne Rooney, First Day Out Tha Feds, Ricky Williams, Eric Dier, Cassandra Butts, Will Craig, Andrew Bynum, Adam Morgan, Megan Good, Mark Salling, Dr. Heimlich, David Ross, Tropical Depression, Lemonade Mouth, #FridayFeeling, #SDTrumpRally, #KeepAFilmSafe, #MakeMeMadIn5Words, Johnny Depp, #MemorialDayWeekend" ;
   private static String May26USA="#selfiefornash, #GHOpen, #Hisense300, #AmberAlert, #FrenchASong, #kcwx, #ThirstyThursday, #ReinventCA, #NCAATF, #DangerousWomanOnSpotify, #MaduroEsColombiano, #LuckyToHaveNiall, #15DaysTilBeSomebodyFilm, #FocusForJacob, #THAICOM8, #BadInspirationalQuotes, #ThingsOfNoUseToMe, Mega Man, Nathaniel Kibby, Tornado Warning, Plaxico Burress, Rubio, Neil Allen, Moose, CC Sabathia, Keyshia, Cheddar Bob, Ray Rice, Mike Moustakas, Hector Olivera, Anthony Davis, Horse Cave, #bbcqt, Boosie, James Harden, #blacksalonproblems, #PutButtsInAVideoGameTitle, Baylor, #ComedianASong, All-NBA, Mike D'Antoni, #DadAdvicein3Words, Troy Ave, Gucci, #26May, #StevieNicks, #MonacoGP, #VzlaYEstudiantesALasCalles, #LaFormaMasFacilDeLigar, #GivetoLincoln" ;
+
 
   public static void main(String[] args) throws Exception {
     Properties properties = new Properties();
@@ -101,6 +106,13 @@ public class getEventInfo {
       }
     }
 
+//    compareTweetsWithTwitter();
+
+    return ;
+  }
+
+  public static void compareTweetsWithTwitter()
+  {
     for(Event eventUSA:eventArrayListUSA) {
       if(match(Jun1USA, eventUSA.word)){
         System.out.println("USA Match: " + eventUSA.word + ", event timestamp: " + new Date(12*60*1000*eventUSA.round) + ", twitter date: 1 June." );
@@ -193,7 +205,6 @@ public class getEventInfo {
       }
     }
 
-    return ;
   }
 
   private static boolean match(String list, String word)
@@ -208,6 +219,8 @@ public class getEventInfo {
   private static void writeInfo(CassandraDao cassandraDao, long r, String country) throws Exception {
     ResultSet rsCAN = cassandraDao.getFromEvents(r,country);
     Iterator<Row> iteratorCAN = rsCAN.iterator();
+    ArrayList<String> eventsForUSA = new ArrayList<>();
+    ArrayList<String> eventsForCAN = new ArrayList<>();
     while (iteratorCAN.hasNext())
     {
       Row row = iteratorCAN.next();
@@ -215,15 +228,19 @@ public class getEventInfo {
       double incrementpercent = row.getDouble("incrementpercent");
       Date d = new Date(12*60*1000*r) ;
 
-      Event event = new Event(word,r,country);
-      if(country.equals("USA"))
+      Event event = new Event(word,r,country, incrementpercent);
+      if(country.equals("USA")) {
         eventArrayListUSA.add(event);
-      else
+        eventsForUSA.add(event.word);
+      }
+      else {
         eventArrayListCAN.add(event);
+        eventsForCAN.add(event.word);
+      }
 
       if(incrementpercent<5)
       {
-        writeToFile(country, "5-10_", "Round: " + r + ", date time:" + d + " Event: " + word);
+        writeToFile(country, "5-_", "Round: " + r + ", date time:" + d + " Event: " + word);
       }
       else if( incrementpercent>=5 && incrementpercent<10)
       {
@@ -245,11 +262,39 @@ public class getEventInfo {
       {
         writeToFile(country, "40-50_", "Round: " + r + ", date time:" + d + " Event: " + word);
       }
+      else if( incrementpercent>=50 && incrementpercent<100)
+      {
+        writeToFile(country, "50-100_", "Round: " + r + ", date time:" + d + " Event: " + word);
+      }
       else
       {
-        writeToFile(country, "50+_", "Round: " + r + ", date time:" + d + " Event: " + word);
+        writeToFile(country, "100+_", "Round: " + r + ", date time:" + d + " Event: " + word);
       }
-      System.out.println(r + " " + d + " " + row.getString("country") + " " + word );
+
+
+//      System.out.println(r + " " + d + " " + row.getString("country") + " " + word );
+    }
+//      System.out.println("=========================================");
+    ArrayList<ArrayList<String>> usaGroup = MatchEvents.groupEvents(eventsForUSA, r, "USA");
+    ArrayList<ArrayList<String>> canGroup = MatchEvents.groupEvents(eventsForCAN, r, "CAN");
+//      System.out.println("=========================================");
+
+    printGrouping(usaGroup,r,new Date(12*60*1000*r),"USA");
+    printGrouping(canGroup,r,new Date(12*60*1000*r),"CAN");
+  }
+
+  public static void printGrouping(ArrayList<ArrayList<String>> group, long r, Date d, String country)
+  {
+    for(ArrayList<String> list : group)
+    {
+      System.out.print("Round " + r + " timestamp " + d + " country " + country + ": ");
+      double increment=0.0;
+      for(String ev:list)
+      {
+        for(Event a:eventArrayListUSA) if(a.word.equals(ev) && increment<a.incrementpercent) increment = a.incrementpercent;
+        System.out.print(ev + ", ");
+      }
+      System.out.println(" increment percent " + increment);
     }
   }
 
