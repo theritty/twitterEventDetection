@@ -41,7 +41,7 @@ public class EventCompareBolt extends BaseRichBolt {
 
     if(tfidfs.size()<2) return;
 
-    System.out.println("Event" + key + " at round " + round + " created on " + new Date() + " for " + country + " ");
+    System.out.println("Event " + key + " at round " + round + " created on " + new Date() + " for " + country + " ");
     if(tfidfs.get(tfidfs.size()-2)==0) tfidfs.set(tfidfs.size()-2, 0.0001);
     try {
       cassandraDao.insertIntoEvents(round, country, key, tfidfs.get(tfidfs.size()-1) / tfidfs.get(tfidfs.size()-2));

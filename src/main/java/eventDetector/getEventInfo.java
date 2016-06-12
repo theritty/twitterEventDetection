@@ -1,7 +1,8 @@
+package eventDetector;
+
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import eventDetector.algorithms.CosineSimilarity;
 import eventDetector.algorithms.MatchEvents;
 import topologyBuilder.TopologyHelper;
 
@@ -56,6 +57,10 @@ public class getEventInfo {
 
 
   public static void main(String[] args) throws Exception {
+    report();
+  }
+
+  public static void report() throws Exception {
     Properties properties = new Properties();
     InputStream inputStream = TopologyHelper.class.getClassLoader().getResourceAsStream( "config.properties" );
     properties.load( inputStream );
@@ -275,12 +280,13 @@ public class getEventInfo {
 //      System.out.println(r + " " + d + " " + row.getString("country") + " " + word );
     }
 //      System.out.println("=========================================");
-    ArrayList<ArrayList<String>> usaGroup = MatchEvents.groupEvents(eventsForUSA, r, "USA");
-    ArrayList<ArrayList<String>> canGroup = MatchEvents.groupEvents(eventsForCAN, r, "CAN");
+      ArrayList<ArrayList<String>> usaGroup = MatchEvents.groupEvents(eventsForUSA, r, "USA");
+      ArrayList<ArrayList<String>> canGroup = MatchEvents.groupEvents(eventsForCAN, r, "CAN");
+
 //      System.out.println("=========================================");
 
-    printGrouping(usaGroup,r,new Date(12*60*1000*r),"USA");
-    printGrouping(canGroup,r,new Date(12*60*1000*r),"CAN");
+      printGrouping(usaGroup, r, new Date(12 * 60 * 1000 * r), "USA");
+      printGrouping(canGroup, r, new Date(12 * 60 * 1000 * r), "CAN");
   }
 
   public static void printGrouping(ArrayList<ArrayList<String>> group, long r, Date d, String country)

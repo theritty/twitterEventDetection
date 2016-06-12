@@ -9,6 +9,7 @@ import backtype.storm.tuple.Values;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
+import eventDetector.getEventInfo;
 
 import java.util.*;
 
@@ -61,7 +62,16 @@ public class CassandraSpout extends BaseRichSpout {
     if(iterator == null || !iterator.hasNext())
     {
 //      System.out.println(roundlist);
-      if(roundlist.size()==0) return;
+      if(roundlist.size()==0)
+      {
+        try {
+//          getEventInfo.report();
+          Thread.sleep(10000000);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        return;
+      }
       long round = roundlist.remove(0);
       readRoundlist.add(round);
       System.out.println("new round:" + round);

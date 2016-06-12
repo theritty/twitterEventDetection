@@ -3,9 +3,6 @@ package eventDetector.algorithms;
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import topologyBuilder.TopologyHelper;
-
-import java.io.*;
 import java.util.*;
 
 public class MatchEvents {
