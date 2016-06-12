@@ -1,5 +1,7 @@
 package weka;
 
+import tweetCollector.nlp.TextAnalyzer;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,41 +75,26 @@ public class NaiveBayesClassification {
   public static void main(String[] args) throws Exception {
     NaiveBayesClassification e = new NaiveBayesClassification();
     e.prepare();
-    List<String> deneme = new ArrayList<>();
 
-    // Test1: music and politics
-    deneme.add("alone");
-    deneme.add("unplug");
-    deneme.add("spellbinding");
-    deneme.add("acoustic");
-    deneme.add("performance");
-    deneme.add("music");
-    deneme.add("biggest");
-    deneme.add("icon");
+    TextAnalyzer ta = new TextAnalyzer();
 
-    // Try uncommenting the keywords below :)
-//	    deneme.add("republican");
-//	    deneme.add("president");
-//	    deneme.add("trump");
-//	    deneme.add("election");
+    String tweet1 = "increasingly vocal hispanic minority speak favor trump resentment suspicion friend family";
+    String tweet2 = "leader speak strip parliamentary immunity one major turkish news channel will broadcast";
+    String tweet3 = "professor say three point choose intense study really mean none result make sense";
+    String tweet4 = "walk steal base ground wild pitch bring home first st. michael prep run game tie 1-1 go bottom three";
+    List<String> deneme1 = ta.extractWordList(tweet1);
+    List<String> deneme2 = ta.extractWordList(tweet2);
+    List<String> deneme3 = ta.extractWordList(tweet3);
+    List<String> deneme4 = ta.extractWordList(tweet4);
 
-
-    // Test2: other
-//	    deneme.add("not");
-//	    deneme.add("mystique");
-//	    deneme.add("inject");
-//	    deneme.add("guard");
-//	    deneme.add("excess");
-//	    deneme.add("iron");
-//	    deneme.add("magneto");
-//	    deneme.add("escape");
-//	    deneme.add("be");
-//	    deneme.add("talk");
-//	    deneme.add("natural");
-//	    deneme.add("body");
-//	    deneme.add("iron");
-    List<String> predictedCategories = e.execute(deneme);
-    System.out.println("Predicted Categories: " + predictedCategories);
+    List<String> predictedCategories1 = e.execute(deneme1);
+    List<String> predictedCategories2 = e.execute(deneme2);
+    List<String> predictedCategories3 = e.execute(deneme3);
+    List<String> predictedCategories4 = e.execute(deneme4);
+    System.out.println("Predicted Categories: " + predictedCategories1);
+    System.out.println("Predicted Categories: " + predictedCategories2);
+    System.out.println("Predicted Categories: " + predictedCategories3);
+    System.out.println("Predicted Categories: " + predictedCategories4);
   }
 
 }

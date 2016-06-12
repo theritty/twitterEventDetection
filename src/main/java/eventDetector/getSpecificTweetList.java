@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class getSpecificTweetList {
     public static void main(String[] args) throws Exception {
-        getSpecificTweets(2033719,"sexual");
+        getSpecificTweets(2034243,"katy");
     }
 
     public static void getSpecificTweets(long round, String word) throws Exception {

@@ -111,7 +111,7 @@ public class getEventInfo {
       }
     }
 
-//    compareTweetsWithTwitter();
+    // compareTweetsWithTwitter();
 
     return ;
   }
@@ -217,7 +217,8 @@ public class getEventInfo {
     List<String> stringList = new ArrayList<>(Arrays.asList(list.split(",")));
     for(String s:stringList)
     {
-      if(s.equals(word) || s.equals("#"+word) ||  word.equals("#"+s)) return true;
+      System.out.println("Compare: " + s + " " + word);
+      if(s.equalsIgnoreCase(word) || s.equalsIgnoreCase("#"+word) ||  word.equalsIgnoreCase("#"+s)) return true;
     }
     return  false;
   }
