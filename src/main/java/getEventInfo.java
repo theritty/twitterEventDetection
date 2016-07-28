@@ -8,12 +8,14 @@ import java.util.*;
 
 public class getEventInfo {
   public static class Event {
-    public Event(String word, long round, String country)
+    public Event(String word, long round, String country, double incrementPercent)
     {
       this.word = word;
       this.round = round;
       this.country = country;
+      this.incrementPercent = incrementPercent;
     }
+    public double incrementPercent;
     public String word;
     public long round;
     public String country;
@@ -63,7 +65,8 @@ public class getEventInfo {
     {
       for(Event eventCAN:eventArrayListCAN)
       {
-        if(eventCAN.word.equals(eventUSA.word))
+        if(eventCAN.word.equals(eventUSA.word) && !eventCAN.word.equals("job") && !eventCAN.word.equals("jobs")
+                && !eventCAN.word.equals("#job") && !eventCAN.word.equals("#jobs"))
         {
           writeToFile("same", "events", "Event: " + eventCAN.word +
                   ", Canada timestamp: " + new Date(12*60*1000*eventCAN.round) +
@@ -81,10 +84,13 @@ public class getEventInfo {
     {
       Row row = iteratorCAN.next();
       String word = row.getString("word");
+      if(word.equals("job") && word.equals("jobs") && word.equals("#job") && word.equals("#jobs"))
+        continue;
+
       double incrementpercent = row.getDouble("incrementpercent");
       Date d = new Date(12*60*1000*r) ;
 
-      Event event = new Event(word,r,country);
+      Event event = new Event(word,r,country, incrementpercent);
       if(country.equals("USA"))
         eventArrayListUSA.add(event);
       else

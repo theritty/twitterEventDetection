@@ -9,8 +9,11 @@ import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import eventDetector.drawing.LineChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 import topologyBuilder.Constants;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class EventCompareBolt extends BaseRichBolt {
@@ -46,25 +49,29 @@ public class EventCompareBolt extends BaseRichBolt {
     try {
       cassandraDao.insertIntoEvents(round, country, key, tfidfs.get(tfidfs.size()-1) / tfidfs.get(tfidfs.size()-2));
 
-      ArrayList<Long> countsList = getCountListFromCass(round, key, country);
+      DefaultCategoryDataset countsList = getCountListFromCass(round, key, country);
       LineChart.drawLineChart(countsList,key,round,country, drawFilePath);
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
-  protected ArrayList<Long> getCountListFromCass(long round, String key, String country) throws Exception {
+  protected DefaultCategoryDataset getCountListFromCass(long round, String key, String country) throws Exception {
     long roundPast = round-10;
-    ArrayList<Long> countsList = new ArrayList<>();
+//    ArrayList<Long> countsList = new ArrayList<>();
+
+    DefaultCategoryDataset countsList = new DefaultCategoryDataset( );
+    DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
     while(roundPast<=round) {
       ResultSet resultSet = cassandraDao.getFromCounts(roundPast, key, country);
       Iterator<Row> iterator = resultSet.iterator();
       if (iterator.hasNext()) {
         Row row = iterator.next();
-        countsList.add(row.getLong("count"));
+//        countsList.add(row.getLong("count"));
+        countsList.addValue(row.getLong("count"), "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
       }
       else
-        countsList.add(0L);
+        countsList.addValue(0L, "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
       roundPast++;
     }
     return countsList;
