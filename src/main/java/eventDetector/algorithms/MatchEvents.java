@@ -7,7 +7,7 @@ import java.util.*;
 
 public class MatchEvents {
   public static HashMap<String,ArrayList<Integer>> prepareEventVectors(ArrayList<String> events, long round) throws Exception {
-    CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events");
+    CassandraDao cassandraDao = new CassandraDao("tweets", "counts8", "events8");
     HashMap<String,ArrayList<Integer>> eventGroups = new HashMap<>();
 
     for(String event:events) {
