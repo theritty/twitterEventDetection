@@ -9,8 +9,6 @@ import backtype.storm.tuple.Values;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
-import eventDetector.getEventInfo;
-
 import java.util.*;
 
 public class CassandraSpout extends BaseRichSpout {
@@ -57,15 +55,11 @@ public class CassandraSpout extends BaseRichSpout {
      * we will wait and then return
      */
 
-//    if(roundlist.size()>0) System.out.println("Number of rounds " + roundlist.size());
-
     if(iterator == null || !iterator.hasNext())
     {
-//      System.out.println(roundlist);
       if(roundlist.size()==0)
       {
         try {
-//          getEventInfo.report();
           Thread.sleep(10000000);
         } catch (Exception e) {
           e.printStackTrace();
@@ -96,13 +90,9 @@ public class CassandraSpout extends BaseRichSpout {
     long retweetcount = row.getLong("retweetcount");
     long userid = row.getLong("userid");
 
-//        System.out.println("cass spout: " + tweet);
-
     if(tweet == null || tweet.length() == 0) return;
     ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
 
-//    System.out.println("Sending tweet from spout: " + tweet +" at round " + readRoundlist.get(readRoundlist.size()-1));
-    // round | tweettime | id | country | retweetcount | tweet | userid
     if(iterator.hasNext())
       collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
     else {

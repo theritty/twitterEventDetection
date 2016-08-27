@@ -2,16 +2,11 @@ package topologyBuilder;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
-import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
-import backtype.storm.utils.Utils;
-import org.json.simple.JSONValue;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 
@@ -78,6 +73,8 @@ public class TopologyCreator {
         String stormPorts = properties.getProperty( "storm.ports" );
 
 //        config.setDebug( true );
+
+
 
         switch ( stormExecutionMode )
         {
