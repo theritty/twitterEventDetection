@@ -9,7 +9,7 @@ import com.datastax.driver.core.policies.TokenAwarePolicy;
 
 public class CassandraConnection {
 
-    private static String CASS_CONTACT_POINT = "127.0.0.1";
+    private static String CASS_CONTACT_POINT = "demo-cassandra1";
     private static String CASS_KEYSPACE = "tweetcollection";
     static Session session = null;
 
