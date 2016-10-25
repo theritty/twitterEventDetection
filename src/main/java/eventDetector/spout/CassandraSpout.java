@@ -26,6 +26,7 @@ public class CassandraSpout extends BaseRichSpout {
   private int batch_size;
   private int remaining_for_batch;
   private long current_round;
+  private long count_tweets = 0;
 
 
   public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, int batch_size) throws Exception {
@@ -66,6 +67,7 @@ public class CassandraSpout extends BaseRichSpout {
       {
         try {
 //          getEventInfo.report();
+          System.out.println("Number of tweets: " + count_tweets);
           Thread.sleep(10000000);
         } catch (Exception e) {
           e.printStackTrace();
@@ -103,6 +105,8 @@ public class CassandraSpout extends BaseRichSpout {
 
 //    System.out.println("Sending tweet from spout: " + tweet +" at round " + readRoundlist.get(readRoundlist.size()-1));
     // round | tweettime | id | country | retweetcount | tweet | userid
+    count_tweets++;
+
     if(iterator.hasNext())
       collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
     else {

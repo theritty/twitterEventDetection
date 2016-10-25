@@ -6,7 +6,7 @@ import com.datastax.driver.core.Session;
 
 public class CassandraConnection {
 
-    private static String CASS_CONTACT_POINT = "demo-cassandra2";
+    private static String CASS_CONTACT_POINT = "localhost";
     private static String CASS_KEYSPACE = "tweetcollection";
     static Session session = null;
 
