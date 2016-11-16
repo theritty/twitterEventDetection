@@ -6,6 +6,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
@@ -27,6 +28,7 @@ public class CassandraSpout extends BaseRichSpout {
   private int remaining_for_batch;
   private long current_round;
   private long count_tweets = 0;
+  private long round_start;
 
 
   public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, int batch_size) throws Exception {
@@ -38,6 +40,7 @@ public class CassandraSpout extends BaseRichSpout {
     remaining_for_batch = 0;
     roundlist = new ArrayList<>();
     readRoundlist = new ArrayList<>();
+    round_start = 0L;
   }
   @Override
   public void ack(Object msgId) {}
@@ -74,9 +77,15 @@ public class CassandraSpout extends BaseRichSpout {
         }
         return;
       }
+
+      long round_current = new Date().getTime();
+//      if(round_current - round_start < 10000)
+        Utils.sleep(60000);
+
+      round_start = new Date().getTime();
       long round = roundlist.remove(0);
       readRoundlist.add(round);
-      System.out.println("new round:" + round);
+      System.out.println("new round:" + round + " " + round_current);
 
       if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
 
@@ -113,6 +122,7 @@ public class CassandraSpout extends BaseRichSpout {
       collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
       collector.emit(new Values("BLOCKEND", tmp_roundlist, true, current_round, "cassandra", "USA", tweetTime, id, retweetcount, userid));
       collector.emit(new Values("BLOCKEND", tmp_roundlist, true, current_round, "cassandra", "CAN", tweetTime, id, retweetcount, userid));
+
     }
 
   }

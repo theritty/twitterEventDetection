@@ -123,7 +123,7 @@ public class BoltBuilder {
     TopologyHelper.createFolder(Constants.IMAGES_FILE_PATH + Integer.toString(FILENUM));
 
 
-    builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout);
+    builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout,1);
 
     //USA
     builder.setBolt(Constants.COUNTRY1_SPLIT_BOLT_ID, splitBolt1).
