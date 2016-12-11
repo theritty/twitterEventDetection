@@ -20,7 +20,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     private CassandraDao cassandraDao;
     private String filePath;
 
-    public EventDetectorManagementBolt(CassandraDao cassandraDao, String filePath, int fileNum)
+    public EventDetectorManagementBolt(CassandraDao cassandraDao, String filePath, String fileNum)
     {
         this.filePath = filePath + fileNum + "/" ;
         roundInfoList = new HashMap<>();
@@ -118,6 +118,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             {
 //                System.out.println("Manager: End of round " + round + " for country " + country + ". No entry for round! " );
             }
+            System.out.println(new Date() + ": TF-IDF calculation and event detection step is starting for round => " + round);
             roundInfoList.remove(round);
         }
     }

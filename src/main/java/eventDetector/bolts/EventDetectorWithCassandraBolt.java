@@ -25,7 +25,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private CassandraDao cassandraDao;
     private String tweetTable;
 
-    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, int fileNum, double tfidfEventRate, String tweetTable )
+    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable )
     {
         this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;

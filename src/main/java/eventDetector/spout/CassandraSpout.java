@@ -57,11 +57,8 @@ public class CassandraSpout extends BaseRichSpout {
      * we will wait and then return
      */
 
-//    if(roundlist.size()>0) System.out.println("Number of rounds " + roundlist.size());
-
     if(iterator == null || !iterator.hasNext())
     {
-//      System.out.println(roundlist);
       if(roundlist.size()==0)
       {
         try {
@@ -74,7 +71,7 @@ public class CassandraSpout extends BaseRichSpout {
       }
       long round = roundlist.remove(0);
       readRoundlist.add(round);
-      System.out.println("new round:" + round);
+      System.out.println(new Date() + ": Round submission from cass spout =>" + round);
 
       if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
 
@@ -103,14 +100,21 @@ public class CassandraSpout extends BaseRichSpout {
 
 //    System.out.println("Sending tweet from spout: " + tweet +" at round " + readRoundlist.get(readRoundlist.size()-1));
     // round | tweettime | id | country | retweetcount | tweet | userid
-    if(iterator.hasNext())
+    if(iterator.hasNext()) {
       collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
+
+    }
     else {
       collector.emit(new Values(tweet, tmp_roundlist, false, current_round, "cassandra", country, tweetTime, id, retweetcount, userid));
       collector.emit(new Values("BLOCKEND", tmp_roundlist, true, current_round, "cassandra", "USA", tweetTime, id, retweetcount, userid));
       collector.emit(new Values("BLOCKEND", tmp_roundlist, true, current_round, "cassandra", "CAN", tweetTime, id, retweetcount, userid));
+      System.out.println(new Date() + ": Round end from cass spout =>" + current_round);
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
-
   }
 
   public void getRoundListFromCassandra(){

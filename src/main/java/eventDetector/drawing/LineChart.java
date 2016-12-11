@@ -21,7 +21,7 @@ public class LineChart
     DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
     String date = df.format(new Date(new Long(round) * 12*60*1000));
 
-    System.out.println("Date::::: " + date + " round " + round);
+    //System.out.println("Date::::: " + date + " round " + round);
     JFreeChart lineChartObject = ChartFactory.createLineChart(
             "Count graph for \"" + word + "\" in " + date + " in " + country,
             "Document order",
@@ -32,7 +32,7 @@ public class LineChart
 
     int width = 2560; /* Width of the image */
     int height = 960; /* Height of the image */
-    File lineChart = new File(drawFilePath + word + "-" + country + "-" + date +".jpeg" );
+    File lineChart = new File(drawFilePath.replace("/","//") + word + "-" + country + "-" + date +".jpeg" );
     ChartUtilities.saveChartAsJPEG(lineChart ,lineChartObject, width ,height);
   }
   public static void main( String[ ] args )

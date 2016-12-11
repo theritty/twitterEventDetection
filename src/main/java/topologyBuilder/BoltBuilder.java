@@ -19,7 +19,7 @@ public class BoltBuilder {
   public static StormTopology prepareBoltsForTwitter(Properties properties) {
     int COUNT_THRESHOLD = Integer.parseInt(properties.getProperty("topology.count.threshold"));
     double TIME_INTERVAL_IN_HOURS = Double.parseDouble(properties.getProperty("topology.time.interval"));
-    int FILENUM = Integer.parseInt(properties.getProperty("topology.file.number"));
+    String FILENUM = properties.getProperty("topology.file.number");
     String TWEETS_TABLE = properties.getProperty("tweets.table");
     String COUNTS_TABLE = properties.getProperty("counts.table");
     String EVENTS_TABLE = properties.getProperty("events.table");
@@ -39,7 +39,7 @@ public class BoltBuilder {
 
     System.out.println("time interval " + TIME_INTERVAL_IN_HOURS * 60 * 60 + " & threshold " + COUNT_THRESHOLD);
 
-    TopologyHelper.createFolder(Constants.STREAM_FILE_PATH + Integer.toString(FILENUM));
+    TopologyHelper.createFolder(Constants.STREAM_FILE_PATH + FILENUM);
     builder.setSpout(Constants.TWITTER_SPOUT_ID, spout);
     builder.setBolt(Constants.PREPROCESS_SPOUT_ID, preprocessor).shuffleGrouping(Constants.TWITTER_SPOUT_ID);
 
@@ -79,7 +79,7 @@ public class BoltBuilder {
 
   public static StormTopology prepareBoltsForCassandraSpout(Properties properties) throws Exception {
     int COUNT_THRESHOLD = Integer.parseInt(properties.getProperty("topology.count.threshold"));
-    int FILENUM = Integer.parseInt(properties.getProperty("topology.file.number"));
+    String FILENUM = properties.getProperty("topology.file.number");
     double TFIDF_EVENT_RATE = Double.parseDouble(properties.getProperty("topology.tfidf.event.rate"));
     double RATE_FOR_SAME_EVENT = Double.parseDouble(properties.getProperty("topology.rate.for.same.event"));
     String TWEETS_TABLE = properties.getProperty("tweets.table");
@@ -119,8 +119,8 @@ public class BoltBuilder {
 
 
     System.out.println("Count threshold " + COUNT_THRESHOLD);
-    TopologyHelper.createFolder(Constants.RESULT_FILE_PATH + Integer.toString(FILENUM));
-    TopologyHelper.createFolder(Constants.IMAGES_FILE_PATH + Integer.toString(FILENUM));
+    TopologyHelper.createFolder(Constants.RESULT_FILE_PATH + FILENUM);
+    TopologyHelper.createFolder(Constants.IMAGES_FILE_PATH + FILENUM);
 
 
     builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout);

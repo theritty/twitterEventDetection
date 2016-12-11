@@ -22,7 +22,7 @@ public class EventCompareBolt extends BaseRichBolt {
 
   HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
-  public EventCompareBolt(CassandraDao cassandraDao, int fileNum, double rateForSameEvent)
+  public EventCompareBolt(CassandraDao cassandraDao, String fileNum, double rateForSameEvent)
   {
     this.drawFilePath = Constants.IMAGES_FILE_PATH + fileNum +"/";
     wordList = new HashMap<>();
@@ -44,7 +44,7 @@ public class EventCompareBolt extends BaseRichBolt {
 
     if(tfidfs.size()<2) return;
 
-    System.out.println("Event " + key + " at round " + round + " created on " + new Date() + " for " + country + " ");
+    System.out.println(new Date() + ": Event found => " + key + " at round " + round  + " for " + country + " ");
     if(tfidfs.get(tfidfs.size()-2)==0) tfidfs.set(tfidfs.size()-2, 0.0001);
     try {
       cassandraDao.insertIntoEvents(round, country, key, tfidfs.get(tfidfs.size()-1) / tfidfs.get(tfidfs.size()-2));
