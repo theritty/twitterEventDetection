@@ -58,8 +58,8 @@ public class BoltBuilder {
     System.out.println("Preparing Bolts...");
     TopologyBuilder builder = new TopologyBuilder();
 
-    CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, 0,
-            Integer.parseInt(properties.getProperty("topology.compare.size")),Integer.MAX_VALUE, 1);
+    CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, 3,
+            Integer.parseInt(properties.getProperty("topology.compare.size")),Integer.MAX_VALUE);
 
     PreprocessFromCassTweetBolt preprocessor = new PreprocessFromCassTweetBolt();
     TweetCategoryPredictionBolt tweetCategoryPredictionBolt = new TweetCategoryPredictionBolt();
@@ -86,82 +86,54 @@ public class BoltBuilder {
     String COUNTS_TABLE = properties.getProperty("counts.table");
     String EVENTS_TABLE = properties.getProperty("events.table");
 
-    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE, EVENTS_TABLE);
-    System.out.println("Preparing Bolts...");
-    TopologyBuilder builder = new TopologyBuilder();
-
-    CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
-            Integer.parseInt(properties.getProperty("topology.compare.size")), Integer.MAX_VALUE, 1);
-
-    SplitWordBolt splitBolt1 = new SplitWordBolt("USA");
-    SplitWordBolt splitBolt2 = new SplitWordBolt("CAN");
-    SplitHashtagsBolt splitHashtagsBolt1 = new SplitHashtagsBolt("USA");
-    SplitHashtagsBolt splitHashtagsBolt2 = new SplitHashtagsBolt("CAN");
-
-    WordCountBolt countBolt = new WordCountBolt(COUNT_THRESHOLD);
-    WordCountBolt countHashtagBolt = new WordCountBolt(COUNT_THRESHOLD);
-    WordCountBolt countBolt2 = new WordCountBolt(COUNT_THRESHOLD);
-    WordCountBolt countHashtagBolt2 = new WordCountBolt(COUNT_THRESHOLD);
-
-//    ReportBolt reportBolt = new ReportBolt("sentences", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
-//    ReportBolt reportHashtagBolt = new ReportBolt("hashtags", COUNT_THRESHOLD, Constants.RESULT_FILE_PATH, FILENUM);
-
-    EventDetectorManagementBolt eventDetectorManagementBolt = new EventDetectorManagementBolt(cassandraDao,Constants.RESULT_FILE_PATH, FILENUM);
-    EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao,
-            Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
-    EventDetectorManagementBolt eventDetectorManagementBolt2 = new EventDetectorManagementBolt(cassandraDao,Constants.RESULT_FILE_PATH, FILENUM);
-    EventDetectorWithCassandraBolt eventDetectorBolt2 = new EventDetectorWithCassandraBolt(cassandraDao,
-            Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
-
-//    EventDetectorManagerWithCassandraBolt eventDetectorManagerBolt = new EventDetectorManagerWithCassandraBolt(cassandraDao);
-    EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM, RATE_FOR_SAME_EVENT);
-
-
 
     System.out.println("Count threshold " + COUNT_THRESHOLD);
     TopologyHelper.createFolder(Constants.RESULT_FILE_PATH + FILENUM);
     TopologyHelper.createFolder(Constants.IMAGES_FILE_PATH + FILENUM);
 
+    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE, EVENTS_TABLE);
+    System.out.println("Preparing Bolts...");
+    TopologyBuilder builder = new TopologyBuilder();
+
+    CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
+            Integer.parseInt(properties.getProperty("topology.compare.size")), Integer.MAX_VALUE);
+
+    WordCountBolt countBoltUSA = new WordCountBolt(COUNT_THRESHOLD);
+    WordCountBolt countBoltCAN = new WordCountBolt(COUNT_THRESHOLD);
+
+
+    EventDetectorManagementBolt eventDetectorManagementBolt = new EventDetectorManagementBolt(Constants.RESULT_FILE_PATH, FILENUM);
+    EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao,
+            Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
+    EventDetectorManagementBolt eventDetectorManagementBolt2 = new EventDetectorManagementBolt(Constants.RESULT_FILE_PATH, FILENUM);
+    EventDetectorWithCassandraBolt eventDetectorBolt2 = new EventDetectorWithCassandraBolt(cassandraDao,
+            Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
+
+//    EventDetectorManagerWithCassandraBolt eventDetectorManagerBolt = new EventDetectorManagerWithCassandraBolt(cassandraDao);
+    EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM);
 
     builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout,1);
+    builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBoltUSA,5) .fieldsGrouping(Constants.CASS_SPOUT_ID, "USA", new Fields("word"));
+    builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBoltCAN,5).fieldsGrouping(Constants.CASS_SPOUT_ID, "CAN", new Fields("word"));
+
 
     //USA
-    builder.setBolt(Constants.COUNTRY1_SPLIT_BOLT_ID, splitBolt1).
-            shuffleGrouping(Constants.CASS_SPOUT_ID);
-    builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBolt,5).
-            fieldsGrouping(Constants.COUNTRY1_SPLIT_BOLT_ID, new Fields("word"));
-    builder.setBolt(Constants.COUNTRY1_SPLIT_HASHTAG_BOLT_ID, splitHashtagsBolt1).
-            shuffleGrouping(Constants.CASS_SPOUT_ID);
-    builder.setBolt(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID, countHashtagBolt,2).
-            fieldsGrouping(Constants.COUNTRY1_SPLIT_HASHTAG_BOLT_ID, new Fields("word"));
     builder.setBolt(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, eventDetectorManagementBolt).
-            globalGrouping(Constants.COUNTRY1_COUNT_HASHTAG_BOLT_ID).
             globalGrouping(Constants.COUNTRY1_COUNT_BOLT_ID);
     builder.setBolt( Constants.COUNTRY1_EVENT_DETECTOR_BOLT, eventDetectorBolt,2).
             fieldsGrouping(Constants.COUNTRY1_REPORT_HASHTAG_BOLT_ID, new Fields("key"));
 
 
     //CAN
-    builder.setBolt(Constants.COUNTRY2_SPLIT_BOLT_ID, splitBolt2).
-            shuffleGrouping(Constants.CASS_SPOUT_ID);
-    builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBolt2,5).
-            fieldsGrouping(Constants.COUNTRY2_SPLIT_BOLT_ID, new Fields("word"));
-    builder.setBolt(Constants.COUNTRY2_SPLIT_HASHTAG_BOLT_ID, splitHashtagsBolt2).
-            shuffleGrouping(Constants.CASS_SPOUT_ID);
-    builder.setBolt(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID, countHashtagBolt2,2).
-            fieldsGrouping(Constants.COUNTRY2_SPLIT_HASHTAG_BOLT_ID, new Fields("word"));
     builder.setBolt(Constants.COUNTRY2_REPORT_HASHTAG_BOLT_ID, eventDetectorManagementBolt2).
-            globalGrouping(Constants.COUNTRY2_COUNT_HASHTAG_BOLT_ID).
             globalGrouping(Constants.COUNTRY2_COUNT_BOLT_ID);
     builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt2,2).
             fieldsGrouping(Constants.COUNTRY2_REPORT_HASHTAG_BOLT_ID, new Fields("key"));
 
 
-
-
-    builder.setBolt( Constants.COUNTRY2_EVENT_COMPARE_BOLT, eventCompareBolt).
-            globalGrouping(Constants.COUNTRY1_EVENT_DETECTOR_BOLT).
-            globalGrouping(Constants.COUNTRY2_EVENT_DETECTOR_BOLT);
+//    builder.setBolt( Constants.COUNTRY2_EVENT_COMPARE_BOLT, eventCompareBolt).
+//            globalGrouping(Constants.COUNTRY1_EVENT_DETECTOR_BOLT).
+//            globalGrouping(Constants.COUNTRY2_EVENT_DETECTOR_BOLT);
 
     return builder.createTopology();
   }

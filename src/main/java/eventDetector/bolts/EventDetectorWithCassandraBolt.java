@@ -15,7 +15,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
@@ -24,6 +26,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private double tfidfEventRate;
     private CassandraDao cassandraDao;
     private String tweetTable;
+    private String componentId;
 
     public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable )
     {
@@ -37,6 +40,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
         this.collector = collector;
+        this.componentId = String.valueOf(UUID.randomUUID());
     }
 
     @Override
@@ -44,28 +48,19 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
         ArrayList<Long> rounds = (ArrayList<Long>)tuple.getValueByField("rounds");
         String key = tuple.getStringByField("key");
-        String type = tuple.getStringByField("type");
-        String source = (String) tuple.getValueByField( "source" );
         String country = (String) tuple.getValueByField( "country" );
         long round = tuple.getLongByField("round");
 
 
 //        System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
         ArrayList<Double> tfidfs = new ArrayList<>();
+        System.out.println("Detector bolt " + componentId + " start of round " + round + " at " + new Date());
 
         for (long roundNum: rounds)
         {
             TFIDFCalculatorWithCassandra calculator = new TFIDFCalculatorWithCassandra();
-            if(source.equals("twitter"))
-            {
-                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country, tweetTable));
-            }
-            else
-            {
-                tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country, tweetTable));
-            }
+            tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country, tweetTable));
         }
-
         boolean allzero=true;
         for(double tfidf: tfidfs)
         {
@@ -79,16 +74,18 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         if(!allzero) {
 //            System.out.println("Tf idf calculated for " + key + " at round " + round+ " country " + country);
             writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
-            if(tfidfs.get(tfidfs.size()-2) == 0)
+            if(tfidfs.size()<2 || tfidfs.get(tfidfs.size()-2) == 0)
             {
+                System.out.println("tfidf for " + key + " is " + tfidfs.get(tfidfs.size()-1)/0.0001 );
                 if(tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
                 {
-                    this.collector.emit(new Values(key, tfidfs, type, round, source, country));
+                    this.collector.emit(new Values(key, tfidfs, round, country));
                 }
             }
             else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>tfidfEventRate)
             {
-                this.collector.emit(new Values(key, tfidfs, type, round, source, country));
+                System.out.println("tfidf for " + key + " is " + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2) );
+                this.collector.emit(new Values(key, tfidfs, round, country));
             }
         }
         else
@@ -96,6 +93,8 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 //            System.out.println("Tf idf all zero for " + key + " at round " + round+ " country " + country);
             writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt", "Key: " + key );
         }
+
+        System.out.println("Detector bolt " + componentId + " end of round " + round + " at " + new Date());
     }
 
     public void writeToFile(String fileName, String tweet)
@@ -121,6 +120,6 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
-        declarer.declare(new Fields( "key", "tfidfs", "type", "round", "source", "country"));
+        declarer.declare(new Fields( "key", "tfidfs", "round", "country"));
     }
 }

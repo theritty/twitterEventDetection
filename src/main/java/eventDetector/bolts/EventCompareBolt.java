@@ -19,10 +19,11 @@ import java.util.*;
 public class EventCompareBolt extends BaseRichBolt {
   private String drawFilePath;
   private CassandraDao cassandraDao;
+  private String componentId;
 
   HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
-  public EventCompareBolt(CassandraDao cassandraDao, String fileNum, double rateForSameEvent)
+  public EventCompareBolt(CassandraDao cassandraDao, String fileNum)
   {
     this.drawFilePath = Constants.IMAGES_FILE_PATH + fileNum +"/";
     wordList = new HashMap<>();
@@ -32,6 +33,7 @@ public class EventCompareBolt extends BaseRichBolt {
   @Override
   public void prepare(Map config, TopologyContext context,
                       OutputCollector collector) {
+    this.componentId = String.valueOf(UUID.randomUUID());
   }
 
   @Override
@@ -42,6 +44,7 @@ public class EventCompareBolt extends BaseRichBolt {
     long round = tuple.getLongByField("round");
     String country = tuple.getStringByField("country");
 
+    System.out.println("Compare bolt " + componentId + " start of round " + round + " at " + new Date());
     if(tfidfs.size()<2) return;
 
     System.out.println(new Date() + ": Event found => " + key + " at round " + round  + " for " + country + " ");
@@ -54,11 +57,12 @@ public class EventCompareBolt extends BaseRichBolt {
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    System.out.println("Compare bolt " + componentId + " end of round " + round + " at " + new Date());
   }
 
   protected DefaultCategoryDataset getCountListFromCass(long round, String key, String country) throws Exception {
     long roundPast = round-10;
-//    ArrayList<Long> countsList = new ArrayList<>();
 
     DefaultCategoryDataset countsList = new DefaultCategoryDataset( );
     DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
@@ -67,7 +71,6 @@ public class EventCompareBolt extends BaseRichBolt {
       Iterator<Row> iterator = resultSet.iterator();
       if (iterator.hasNext()) {
         Row row = iterator.next();
-//        countsList.add(row.getLong("count"));
         countsList.addValue(row.getLong("count"), "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
       }
       else
