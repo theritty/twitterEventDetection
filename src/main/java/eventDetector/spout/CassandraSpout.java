@@ -10,7 +10,10 @@ import backtype.storm.utils.Utils;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
+import eventDetector.bolts.EventDetectorWithCassandraBolt;
 import eventDetector.getEventInfo;
+import topologyBuilder.Constants;
+import topologyBuilder.TopologyHelper;
 
 import java.util.*;
 
@@ -26,15 +29,17 @@ public class CassandraSpout extends BaseRichSpout {
     private Iterator<Row> iterator = null;
     private long current_round;
     private long count_tweets = 0;
+    private String fileNum;
 
 
-    public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize) throws Exception {
+    public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum) throws Exception {
         this.cassandraDao = cassandraDao;
         this.compareSize = compareSize;
         this.trainSize = trainSize;
         this.testSize = testSize;
         roundlist = new ArrayList<>();
         readRoundlist = new ArrayList<>();
+        this.fileNum = filenum + "/";
     }
     @Override
     public void ack(Object msgId) {}
@@ -72,7 +77,8 @@ public class CassandraSpout extends BaseRichSpout {
 
             current_round = roundlist.remove(0);
             readRoundlist.add(current_round);
-            System.out.println(new Date() + ": Round submission from cass spout =>" + current_round);
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
+                    new Date() + ": Round submission from cass spout =>" + current_round );
 
             if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
 
@@ -95,7 +101,8 @@ public class CassandraSpout extends BaseRichSpout {
             splitAndEmit(tweet, current_round, tmp_roundlist, country);
             collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
-            System.out.println(new Date() + ": Round end from cass spout =>" + current_round);
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
+                    new Date() + ": Round end from cass spout =>" + current_round );
         }
     }
 

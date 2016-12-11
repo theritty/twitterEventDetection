@@ -7,6 +7,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import topologyBuilder.Constants;
+import topologyBuilder.TopologyHelper;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -21,10 +23,13 @@ public class WordCountBolt extends BaseRichBolt {
   private int threshold;
   private long ignoredCount = 0;
   private String componentId;
+  private String fileNum;
 
-  public WordCountBolt(int threshold)
+
+  public WordCountBolt(int threshold, String filenum)
   {
     this.threshold = threshold;
+    this.fileNum = filenum + "/";
   }
   @Override
   public void prepare(Map config, TopologyContext context,
@@ -41,14 +46,18 @@ public class WordCountBolt extends BaseRichBolt {
 
     if(round > currentRound)
     {
-      System.out.println("Word count "+ componentId + " starting for round " + round + " at " + new Date());
+      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+              "Word count "+ componentId + " starting for round " + round + " at " + new Date() );
+      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+              "Word count "+ componentId + " end for round " + currentRound + " at " + new Date() );
       countsForRounds.clear();
       currentRound = round;
     }
     else if(round < currentRound) {
       ignoredCount++;
       if(ignoredCount%1000==0)
-        System.out.println("Ignored count " + componentId + ": " + ignoredCount);
+        TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
+              "Ignored count " + componentId + ": " + ignoredCount );
       return;
     }
 

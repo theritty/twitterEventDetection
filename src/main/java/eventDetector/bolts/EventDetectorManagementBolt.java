@@ -8,6 +8,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import topologyBuilder.Constants;
+import topologyBuilder.TopologyHelper;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -21,11 +23,13 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     private long currentRound = 0;
     private ArrayList<Long> rounds;
     private String componentId;
+    private String fileNum;
 
     public EventDetectorManagementBolt(String filePath, String fileNum)
     {
         this.filePath = filePath + fileNum + "/" ;
         words = new ArrayList<>();
+        this.fileNum = fileNum +"/";
     }
 
     @Override
@@ -45,13 +49,17 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         {
             ignoredCount++;
             if(ignoredCount%1000==0)
-                System.out.println("Management bolt Ignored count " + componentId +" : " + ignoredCount);
+                TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
+                    "Management bolt Ignored count " + componentId +" : " + ignoredCount );
             return;
         }
 
         if(round > currentRound)
         {
-            System.out.println("Management bolt " + componentId + " end of round " + currentRound + " at " + new Date());
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Management bolt " + componentId + " end of round " + currentRound + " at " + new Date() );
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+                    "Management bolt " + componentId + " start of round " + round + " at " + new Date() );
 
             writeToFile(country, currentRound);
             endOfRoundOperations(currentRound, country, rounds);

@@ -33,6 +33,7 @@ public class Constants {
 
     public static final String IMAGES_FILE_PATH = "/home/ceren/Desktop/thesis/results/charts/";
     public static final String RESULT_FILE_PATH = "/home/ceren/Desktop/thesis/results/";
+    public static final String TIMEBREAKDOWN_FILE_PATH = "/home/ceren/Desktop/thesis/results/timebreakdown/";
     public static final String STREAM_FILE_PATH = "/home/ceren/Desktop/thesis/streamData2/";
     public static final String INPUT_FILE_PATH = "/home/ceren/Desktop/thesis/streamData/";
 

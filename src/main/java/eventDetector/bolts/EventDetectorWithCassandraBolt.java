@@ -9,11 +9,9 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import eventDetector.algorithms.TFIDFCalculatorWithCassandra;
 import cassandraConnector.CassandraDao;
+import topologyBuilder.Constants;
+import topologyBuilder.TopologyHelper;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
@@ -27,6 +25,8 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private CassandraDao cassandraDao;
     private String tweetTable;
     private String componentId;
+    private long currentRound = 0;
+    private String fileNum;
 
     public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable )
     {
@@ -34,6 +34,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         this.filePath = filePath + fileNum;
         this.cassandraDao = cassandraDao;
         this.tweetTable = tweetTable;
+        this.fileNum = fileNum + "/";
     }
 
     @Override
@@ -52,9 +53,18 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
 
 
-//        System.out.println("Event Detector Bolt for " + key + " at round " + round+ " country " + country);
         ArrayList<Double> tfidfs = new ArrayList<>();
-        System.out.println("Detector bolt " + componentId + " start of round " + round + " at " + new Date());
+        if(currentRound < round) {
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+                    "Detector bolt " + componentId + " start of round " + round + " at " + new Date());
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Detector bolt " + componentId + " end of round " + currentRound + " at " + new Date());
+            currentRound = round;
+        }
+
+        if(currentRound > round) {
+            System.out.println("ignoooooooooooooooooreeeeeeeeeeeeeee");
+        }
 
         for (long roundNum: rounds)
         {
@@ -73,10 +83,10 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
         if(!allzero) {
 //            System.out.println("Tf idf calculated for " + key + " at round " + round+ " country " + country);
-            writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt", "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+            TopologyHelper.writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt",
+                    "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
             if(tfidfs.size()<2 || tfidfs.get(tfidfs.size()-2) == 0)
             {
-                System.out.println("tfidf for " + key + " is " + tfidfs.get(tfidfs.size()-1)/0.0001 );
                 if(tfidfs.get(tfidfs.size()-1)/0.0001>tfidfEventRate)
                 {
                     this.collector.emit(new Values(key, tfidfs, round, country));
@@ -84,38 +94,20 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
             }
             else if(tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2)>tfidfEventRate)
             {
-                System.out.println("tfidf for " + key + " is " + tfidfs.get(tfidfs.size()-1)/tfidfs.get(tfidfs.size()-2) );
                 this.collector.emit(new Values(key, tfidfs, round, country));
             }
         }
         else
         {
 //            System.out.println("Tf idf all zero for " + key + " at round " + round+ " country " + country);
-            writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt", "Key: " + key );
+            TopologyHelper.writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt",
+                    "Key: " + key );
         }
 
-        System.out.println("Detector bolt " + componentId + " end of round " + round + " at " + new Date());
     }
 
-    public void writeToFile(String fileName, String tweet)
-    {
-        try {
-            PrintWriter writer = new PrintWriter(new FileOutputStream(
-                    new File(fileName),
-                    true /* append = true */));
 
-            write(writer, tweet);
-            writer.close();
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void write(PrintWriter writer, String line) {
-        writer.println(line);
-//        System.out.println(line);
-    }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer)
