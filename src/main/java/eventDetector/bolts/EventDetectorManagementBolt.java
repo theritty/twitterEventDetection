@@ -19,12 +19,15 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     private OutputCollector collector;
     private CassandraDao cassandraDao;
     private String filePath;
+    private ArrayList<Long> finishedRounds;
+    private long ignoredCount = 0;
 
     public EventDetectorManagementBolt(CassandraDao cassandraDao, String filePath, String fileNum)
     {
         this.filePath = filePath + fileNum + "/" ;
         roundInfoList = new HashMap<>();
         this.cassandraDao = cassandraDao;
+        finishedRounds = new ArrayList<>();
     }
 
     @Override
@@ -45,7 +48,14 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
 
 //        System.out.println("Manager: word " + word + " country: " + country + " round: " + round + " count: " + count + " inpBolt: " + inputBolt );
         RoundInfo roundInfo;
-        if(roundInfoList.get(round) != null)
+        if(finishedRounds.contains(round))
+        {
+            ignoredCount++;
+            if(ignoredCount%1000==0)
+                System.out.println("Ignored count: " + ignoredCount);
+            return;
+        }
+        else if(roundInfoList.get(round) != null)
         {
             roundInfo = roundInfoList.get(round);
         }

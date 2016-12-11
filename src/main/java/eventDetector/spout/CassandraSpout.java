@@ -6,6 +6,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
@@ -26,6 +27,7 @@ public class CassandraSpout extends BaseRichSpout {
   private int batch_size;
   private int remaining_for_batch;
   private long current_round;
+  private long count_tweets = 0;
 
 
   public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, int batch_size) throws Exception {
@@ -63,12 +65,15 @@ public class CassandraSpout extends BaseRichSpout {
       {
         try {
 //          getEventInfo.report();
+          System.out.println("Number of tweets: " + count_tweets);
           Thread.sleep(10000000);
         } catch (Exception e) {
           e.printStackTrace();
         }
         return;
       }
+      Utils.sleep(60000);
+
       long round = roundlist.remove(0);
       readRoundlist.add(round);
       System.out.println(new Date() + ": Round submission from cass spout =>" + round);
