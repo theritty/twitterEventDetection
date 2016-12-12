@@ -32,7 +32,7 @@ public class LineChart
 
     int width = 2560; /* Width of the image */
     int height = 960; /* Height of the image */
-    File lineChart = new File(drawFilePath.replace("/","//") + word + "-" + country + "-" + date +".jpeg" );
+    File lineChart = new File(drawFilePath.replace("/","//") + word.replace("/", "-") + "-" + country + "-" + date +".jpeg" );
     ChartUtilities.saveChartAsJPEG(lineChart ,lineChartObject, width ,height);
   }
   public static void main( String[ ] args )

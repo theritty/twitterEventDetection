@@ -44,6 +44,8 @@ public class WordCountBolt extends BaseRichBolt {
     String word = tuple.getStringByField("word");
     long round = tuple.getLongByField("round");
 
+
+    TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Word count " + componentId + " working "  + round);
     if(round > currentRound)
     {
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",

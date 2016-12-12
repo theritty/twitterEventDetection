@@ -46,6 +46,7 @@ public class CassandraDao implements Serializable
         this.tweetsTable = tweetsTable;
         this.countsTable = countsTable;
         this.eventsTable = eventsTable;
+
         prepareAll();
     }
 

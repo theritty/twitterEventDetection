@@ -52,6 +52,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         String country = (String) tuple.getValueByField( "country" );
         long round = tuple.getLongByField("round");
 
+        TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() +  " Detector " + componentId + " working " + round);
 
         ArrayList<Double> tfidfs = new ArrayList<>();
         if(currentRound < round) {

@@ -6,12 +6,9 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-import backtype.storm.utils.Utils;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
-import eventDetector.bolts.EventDetectorWithCassandraBolt;
-import eventDetector.getEventInfo;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -30,6 +27,7 @@ public class CassandraSpout extends BaseRichSpout {
     private long current_round;
     private long count_tweets = 0;
     private String fileNum;
+    private boolean start = true;
 
 
     public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum) throws Exception {
@@ -73,7 +71,6 @@ public class CassandraSpout extends BaseRichSpout {
                 }
                 return;
             }
-//            Utils.sleep(60000);
 
             current_round = roundlist.remove(0);
             readRoundlist.add(current_round);
@@ -81,6 +78,17 @@ public class CassandraSpout extends BaseRichSpout {
                     new Date() + ": Round submission from cass spout =>" + current_round );
 
             if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
+
+            try {
+                if(!start) {
+                    TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass sleeping " + current_round);
+                    Thread.sleep(300000);
+                    TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass wake up " + current_round);
+                }
+                else start = false;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             ResultSet resultSet = getDataFromCassandra(current_round);
             iterator = resultSet.iterator();
@@ -103,6 +111,7 @@ public class CassandraSpout extends BaseRichSpout {
             collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
                     new Date() + ": Round end from cass spout =>" + current_round );
+
         }
     }
 
@@ -145,7 +154,8 @@ public class CassandraSpout extends BaseRichSpout {
 
             int j = roundlist.size()-1;
 
-            while(roundlist.get(j)>2035083)
+//            while(roundlist.get(j)>2035083)
+            while(roundlist.get(j)>2034855)
                 roundlist.remove(j--);
 
         } catch (Exception e) {

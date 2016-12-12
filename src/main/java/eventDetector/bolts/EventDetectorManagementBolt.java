@@ -22,6 +22,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     private long ignoredCount = 0;
     private long currentRound = 0;
     private ArrayList<Long> rounds;
+    private HashMap<Long, Long> ignores;
     private String componentId;
     private String fileNum;
 
@@ -29,6 +30,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     {
         this.filePath = filePath + fileNum + "/" ;
         words = new ArrayList<>();
+        ignores = new HashMap<>();
         this.fileNum = fileNum +"/";
     }
 
@@ -45,12 +47,24 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         String country = tuple.getStringByField("country");
         long round = tuple.getLongByField("round");
 
+        TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Mgmt detector " + componentId + " working " + round);
         if(round < currentRound)
         {
+            ignores.putIfAbsent(round, 0L);
+            ignores.put(round,ignores.get(round)+1);
+
             ignoredCount++;
-            if(ignoredCount%1000==0)
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
+                    "Management bolt Ignoring " + word + " from round " + round +
+                            " while evaluating round " + currentRound + ". total ignore count: " + ignoredCount);
+
+            for(long r:ignores.keySet())
                 TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
-                    "Management bolt Ignored count " + componentId +" : " + ignoredCount );
+                        "Management bolt Ignored count " + componentId + " : " + ignoredCount + " round " + r +
+                                " ignore count: " + ignores.get(r));
+
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
+                    "---------------------------------------------------------------------------------");
             return;
         }
 
@@ -83,8 +97,8 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
 
     public void writeToFile(String country, long round)
     {
+        PrintWriter writer1 = null, writer2= null;
         try {
-            PrintWriter writer1, writer2;
             writer1 = new PrintWriter(filePath + "word" + Long.toString(round) + "-" + country + ".txt");
             writer2 = new PrintWriter(filePath + "hashtag" + Long.toString(round) + "-" + country + ".txt");
             write(writer1, "----- FINAL COUNTS -----");
@@ -97,11 +111,12 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
 
             write(writer1, "------------------------");
             write(writer2, "------------------------");
-            writer1.close();
-            writer2.close();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } finally {
+            writer1.close();
+            writer2.close();
         }
     }
     @Override
