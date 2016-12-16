@@ -82,7 +82,7 @@ public class CassandraSpout extends BaseRichSpout {
             try {
                 if(!start) {
                     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass sleeping " + current_round);
-                    Thread.sleep(300000);
+                    Thread.sleep(180000);
                     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass wake up " + current_round);
                 }
                 else start = false;
@@ -113,6 +113,15 @@ public class CassandraSpout extends BaseRichSpout {
                     new Date() + ": Round end from cass spout =>" + current_round );
 
         }
+
+
+//        try {
+////                TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass sleeping " + current_round);
+//                Thread.sleep(5);
+////                TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass wake up " + current_round);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void splitAndEmit(String tweetSentence, long round, ArrayList<Long> roundlist, String country) {

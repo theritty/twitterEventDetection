@@ -12,10 +12,7 @@ import cassandraConnector.CassandraDao;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
@@ -27,6 +24,10 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private String componentId;
     private long currentRound = 0;
     private String fileNum;
+    private Date lastDate = new Date();
+    private Date startDate = new Date();
+    private HashMap<Long, Long> ignores;
+    private long ignoredCount = 0L;
 
     public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable )
     {
@@ -35,6 +36,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         this.cassandraDao = cassandraDao;
         this.tweetTable = tweetTable;
         this.fileNum = fileNum + "/";
+        this.ignores = new HashMap<>();
     }
 
     @Override
@@ -56,16 +58,39 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
         ArrayList<Double> tfidfs = new ArrayList<>();
         if(currentRound < round) {
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Detector bolt " + componentId + " end of round " + currentRound + " at " + lastDate);
+
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Word count "+ componentId + " time taken for round" + currentRound + " is " +
+                            (lastDate.getTime()-startDate.getTime())/1000);
+
+            startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
                     "Detector bolt " + componentId + " start of round " + round + " at " + new Date());
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Detector bolt " + componentId + " end of round " + currentRound + " at " + new Date());
             currentRound = round;
         }
 
-        if(currentRound > round) {
-            System.out.println("ignoooooooooooooooooreeeeeeeeeeeeeee");
+        if(round < currentRound)
+        {
+            ignores.putIfAbsent(round, 0L);
+            ignores.put(round,ignores.get(round)+1);
+
+            ignoredCount++;
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
+                    "Detector bolt Ignoring " + key + " from round " + round +
+                            " while evaluating round " + currentRound + ". total ignore count: " + ignoredCount);
+
+            for(long r:ignores.keySet())
+                TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
+                        "Detector bolt Ignored count " + componentId + " : " + ignoredCount + " round " + r +
+                                " ignore count: " + ignores.get(r));
+
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
+                    "---------------------------------------------------------------------------------");
+            return;
         }
+        lastDate = new Date();
 
         for (long roundNum: rounds)
         {

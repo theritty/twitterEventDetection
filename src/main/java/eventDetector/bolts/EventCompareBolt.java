@@ -23,6 +23,8 @@ public class EventCompareBolt extends BaseRichBolt {
     private String componentId;
     private String fileNum;
     private long currentRound = 0;
+    private Date lastDate = new Date();
+    private Date startDate = new Date();
 
     HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
@@ -51,12 +53,19 @@ public class EventCompareBolt extends BaseRichBolt {
         TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Compare " + componentId + " working " + round);
         if(currentRound < round) {
 
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
-                    "Compare bolt " + componentId + " start of round " + round + " at " + new Date());
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Compare bolt " + componentId + " end of round " + currentRound + " at " + new Date());
+                    "Compare bolt " + componentId + " end of round " + currentRound + " at " + lastDate);
+
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Word count "+ componentId + " time taken for round" + currentRound + " is " +
+                            (lastDate.getTime()-startDate.getTime())/1000);
+
+            startDate = new Date();
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+                    "Compare bolt " + componentId + " start of round " + round + " at " + startDate);
             currentRound = round;
         }
+        lastDate = new Date();
 
 
         if(tfidfs.size()<2) return;

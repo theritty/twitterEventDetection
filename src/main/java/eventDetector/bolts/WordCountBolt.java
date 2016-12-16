@@ -24,6 +24,8 @@ public class WordCountBolt extends BaseRichBolt {
   private long ignoredCount = 0;
   private String componentId;
   private String fileNum;
+  private Date lastDate = new Date();
+  private Date startDate = new Date();
 
 
   public WordCountBolt(int threshold, String filenum)
@@ -48,10 +50,17 @@ public class WordCountBolt extends BaseRichBolt {
     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Word count " + componentId + " working "  + round);
     if(round > currentRound)
     {
-      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
-              "Word count "+ componentId + " starting for round " + round + " at " + new Date() );
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-              "Word count "+ componentId + " end for round " + currentRound + " at " + new Date() );
+              "Word count "+ componentId + " end for round " + currentRound + " at " + lastDate);
+
+      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+              "Word count "+ componentId + " time taken for round" + currentRound + " is " +
+                      (lastDate.getTime()-startDate.getTime())/1000);
+
+      startDate = new Date();
+      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+              "Word count "+ componentId + " starting for round " + round + " at " + startDate );
+
       countsForRounds.clear();
       currentRound = round;
     }
@@ -59,10 +68,10 @@ public class WordCountBolt extends BaseRichBolt {
       ignoredCount++;
       if(ignoredCount%1000==0)
         TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
-              "Ignored count " + componentId + ": " + ignoredCount );
+              "Word count ignored count " + componentId + ": " + ignoredCount );
       return;
     }
-
+    lastDate = new Date();
     Long count = countsForRounds.get(word);
 
     if (count == null) count = 1L;
@@ -78,7 +87,7 @@ public class WordCountBolt extends BaseRichBolt {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("word", "round", "blockEnd", "dates", "country"));
+    declarer.declare(new Fields("key", "round", "blockEnd", "rounds", "country"));
   }
 
 }

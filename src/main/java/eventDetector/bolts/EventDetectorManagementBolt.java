@@ -25,6 +25,8 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     private HashMap<Long, Long> ignores;
     private String componentId;
     private String fileNum;
+    private Date lastDate = new Date();
+    private Date startDate = new Date();
 
     public EventDetectorManagementBolt(String filePath, String fileNum)
     {
@@ -71,7 +73,13 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         if(round > currentRound)
         {
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Management bolt " + componentId + " end of round " + currentRound + " at " + new Date() );
+                    "Management bolt " + componentId + " end of round " + currentRound + " at " + lastDate );
+
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Word count "+ componentId + " time taken for round" + currentRound + " is " +
+                            (lastDate.getTime()-startDate.getTime())/1000);
+
+            startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
                     "Management bolt " + componentId + " start of round " + round + " at " + new Date() );
 
@@ -81,6 +89,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             rounds = (ArrayList<Long>)tuple.getValueByField("dates");
             words.clear();
         }
+        lastDate = new Date();
         words.add(word);
     }
 
