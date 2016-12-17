@@ -8,11 +8,13 @@ import backtype.storm.tuple.Tuple;
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import eventDetector.drawing.ExcelWriter;
 import eventDetector.drawing.LineChart;
 import org.jfree.data.category.DefaultCategoryDataset;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -50,6 +52,14 @@ public class EventCompareBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
         String country = tuple.getStringByField("country");
 
+        if("dummyBLOCKdone".equals(key)) {
+            try {
+                ExcelWriter.createTimeChart();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Compare " + componentId + " working " + round);
         if(currentRound < round) {
 
@@ -59,7 +69,8 @@ public class EventCompareBolt extends BaseRichBolt {
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Word count "+ componentId + " time taken for round" + currentRound + " is " +
                             (lastDate.getTime()-startDate.getTime())/1000);
-
+            if ( currentRound!=0)
+                ExcelWriter.putData(componentId,startDate,lastDate, "Compare", "both");
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
                     "Compare bolt " + componentId + " start of round " + round + " at " + startDate);

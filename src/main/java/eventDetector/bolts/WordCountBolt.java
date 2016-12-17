@@ -7,6 +7,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -46,6 +47,8 @@ public class WordCountBolt extends BaseRichBolt {
     String word = tuple.getStringByField("word");
     long round = tuple.getLongByField("round");
 
+    if("dummyBLOCKdone".equals(word))
+       this.collector.emit(new Values(word, round, false, tuple.getValueByField("dates"), tuple.getSourceStreamId()));
 
     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Word count " + componentId + " working "  + round);
     if(round > currentRound)
@@ -56,6 +59,8 @@ public class WordCountBolt extends BaseRichBolt {
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
               "Word count "+ componentId + " time taken for round" + currentRound + " is " +
                       (lastDate.getTime()-startDate.getTime())/1000);
+      if ( currentRound!=0)
+        ExcelWriter.putData(componentId,startDate,lastDate, "wc",tuple.getSourceStreamId() );
 
       startDate = new Date();
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",

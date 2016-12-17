@@ -9,6 +9,7 @@ import backtype.storm.tuple.Values;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
+import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -28,6 +29,8 @@ public class CassandraSpout extends BaseRichSpout {
     private long count_tweets = 0;
     private String fileNum;
     private boolean start = true;
+    private Date startDate = new Date();
+    private Date lastDate = new Date();
 
 
     public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum) throws Exception {
@@ -64,6 +67,15 @@ public class CassandraSpout extends BaseRichSpout {
             {
                 try {
 //          getEventInfo.report();
+                    collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
+                    try {
+                            Thread.sleep(120000);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    collector.emit("CAN", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
+
                     System.out.println("Number of tweets: " + count_tweets);
                     Thread.sleep(10000000);
                 } catch (Exception e) {
@@ -82,13 +94,16 @@ public class CassandraSpout extends BaseRichSpout {
             try {
                 if(!start) {
                     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass sleeping " + current_round);
-                    Thread.sleep(180000);
+                    Thread.sleep(120000);
                     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass wake up " + current_round);
+                    ExcelWriter.putData("Cass-spout",startDate,lastDate, "cassSpout", "both");
                 }
                 else start = false;
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            startDate = new Date();
 
             ResultSet resultSet = getDataFromCassandra(current_round);
             iterator = resultSet.iterator();
@@ -113,6 +128,7 @@ public class CassandraSpout extends BaseRichSpout {
                     new Date() + ": Round end from cass spout =>" + current_round );
 
         }
+        lastDate = new Date();
 
 
 //        try {
@@ -164,7 +180,8 @@ public class CassandraSpout extends BaseRichSpout {
             int j = roundlist.size()-1;
 
 //            while(roundlist.get(j)>2035083)
-            while(roundlist.get(j)>2034855)
+//            while(roundlist.get(j)>2034855)
+            while(roundlist.get(j)>2034735)
                 roundlist.remove(j--);
 
         } catch (Exception e) {
@@ -192,6 +209,7 @@ public class CassandraSpout extends BaseRichSpout {
                      SpoutOutputCollector collector) {
         getRoundListFromCassandra();
         this.collector = collector;
+        ExcelWriter.putStartDate(new Date(), fileNum);
     }
 
     /**

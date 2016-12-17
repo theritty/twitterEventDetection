@@ -9,6 +9,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import eventDetector.algorithms.TFIDFCalculatorWithCassandra;
 import cassandraConnector.CassandraDao;
+import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -54,6 +55,9 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         String country = (String) tuple.getValueByField( "country" );
         long round = tuple.getLongByField("round");
 
+        if("dummyBLOCKdone".equals(key))
+            this.collector.emit(new Values(key, new ArrayList<Double>(), round, country));
+
         TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() +  " Detector " + componentId + " working " + round);
 
         ArrayList<Double> tfidfs = new ArrayList<>();
@@ -64,6 +68,8 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Word count "+ componentId + " time taken for round" + currentRound + " is " +
                             (lastDate.getTime()-startDate.getTime())/1000);
+            if ( currentRound!=0)
+                ExcelWriter.putData(componentId,startDate,lastDate, "detector", country);
 
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
