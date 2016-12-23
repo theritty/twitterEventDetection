@@ -22,7 +22,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private double tfidfEventRate;
     private CassandraDao cassandraDao;
     private String tweetTable;
-    private String componentId;
+    private int componentId;
     private long currentRound = 0;
     private String fileNum;
     private Date lastDate = new Date();
@@ -44,7 +44,9 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
         this.collector = collector;
-        this.componentId = String.valueOf(UUID.randomUUID());
+
+        this.componentId = context.getThisTaskId()-1;
+        System.out.println("detector: " + componentId );
     }
 
     @Override
@@ -69,7 +71,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
                     "Word count "+ componentId + " time taken for round" + currentRound + " is " +
                             (lastDate.getTime()-startDate.getTime())/1000);
             if ( currentRound!=0)
-                ExcelWriter.putData(componentId,startDate,lastDate, "detector", country);
+                ExcelWriter.putData(componentId,startDate,lastDate, "detector", country, currentRound);
 
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",

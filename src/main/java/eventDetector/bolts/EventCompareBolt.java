@@ -22,7 +22,7 @@ import java.util.*;
 public class EventCompareBolt extends BaseRichBolt {
     private String drawFilePath;
     private CassandraDao cassandraDao;
-    private String componentId;
+    private int componentId;
     private String fileNum;
     private long currentRound = 0;
     private Date lastDate = new Date();
@@ -41,7 +41,8 @@ public class EventCompareBolt extends BaseRichBolt {
     @Override
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
-        this.componentId = String.valueOf(UUID.randomUUID());
+        this.componentId = context.getThisTaskId()-1;
+        System.out.println("compare: " + componentId );
     }
 
     @Override
@@ -70,7 +71,7 @@ public class EventCompareBolt extends BaseRichBolt {
                     "Word count "+ componentId + " time taken for round" + currentRound + " is " +
                             (lastDate.getTime()-startDate.getTime())/1000);
             if ( currentRound!=0)
-                ExcelWriter.putData(componentId,startDate,lastDate, "Compare", "both");
+                ExcelWriter.putData(componentId,startDate,lastDate, "Compare", "both", currentRound);
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
                     "Compare bolt " + componentId + " start of round " + round + " at " + startDate);

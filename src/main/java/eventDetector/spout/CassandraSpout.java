@@ -24,6 +24,7 @@ public class CassandraSpout extends BaseRichSpout {
     private int compareSize;
     private int trainSize;
     private int testSize;
+    private int componentId;
     private Iterator<Row> iterator = null;
     private long current_round;
     private long count_tweets = 0;
@@ -31,6 +32,7 @@ public class CassandraSpout extends BaseRichSpout {
     private boolean start = true;
     private Date startDate = new Date();
     private Date lastDate = new Date();
+    private long startRound = 2034735;
 
 
     public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum) throws Exception {
@@ -96,7 +98,7 @@ public class CassandraSpout extends BaseRichSpout {
                     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass sleeping " + current_round);
                     Thread.sleep(120000);
                     TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass wake up " + current_round);
-                    ExcelWriter.putData("Cass-spout",startDate,lastDate, "cassSpout", "both");
+                    ExcelWriter.putData(componentId,startDate,lastDate, "cassSpout", "both", current_round);
                 }
                 else start = false;
             }
@@ -174,14 +176,14 @@ public class CassandraSpout extends BaseRichSpout {
             while(trainSize>i++)
                 readRoundlist.add(roundlist.remove(0));
 
-            while (roundlist.get(0) < 2034735)
+            while (roundlist.get(0) < startRound)
                 roundlist.remove(0);
 
             int j = roundlist.size()-1;
 
 //            while(roundlist.get(j)>2035083)
-//            while(roundlist.get(j)>2034855)
-            while(roundlist.get(j)>2034735)
+            while(roundlist.get(j)>2034775)
+//            while(roundlist.get(j)>2034735)
                 roundlist.remove(j--);
 
         } catch (Exception e) {
@@ -209,7 +211,9 @@ public class CassandraSpout extends BaseRichSpout {
                      SpoutOutputCollector collector) {
         getRoundListFromCassandra();
         this.collector = collector;
-        ExcelWriter.putStartDate(new Date(), fileNum);
+        this.componentId = context.getThisTaskId()-1;
+        System.out.println("cas: s" + " id: " + componentId);
+        ExcelWriter.putStartDate(new Date(), fileNum, this.startRound);
     }
 
     /**

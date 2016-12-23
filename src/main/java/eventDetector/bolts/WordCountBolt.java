@@ -23,7 +23,7 @@ public class WordCountBolt extends BaseRichBolt {
   private long currentRound = 0;
   private int threshold;
   private long ignoredCount = 0;
-  private String componentId;
+  private int componentId;
   private String fileNum;
   private Date lastDate = new Date();
   private Date startDate = new Date();
@@ -39,7 +39,8 @@ public class WordCountBolt extends BaseRichBolt {
                       OutputCollector collector) {
     this.collector = collector;
     this.countsForRounds = new HashMap<>();
-    this.componentId = String.valueOf(UUID.randomUUID());
+    this.componentId = context.getThisTaskId()-1;
+    System.out.println("wc : " + componentId );
   }
 
   @Override
@@ -60,7 +61,7 @@ public class WordCountBolt extends BaseRichBolt {
               "Word count "+ componentId + " time taken for round" + currentRound + " is " +
                       (lastDate.getTime()-startDate.getTime())/1000);
       if ( currentRound!=0)
-        ExcelWriter.putData(componentId,startDate,lastDate, "wc",tuple.getSourceStreamId() );
+        ExcelWriter.putData(componentId,startDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
 
       startDate = new Date();
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
