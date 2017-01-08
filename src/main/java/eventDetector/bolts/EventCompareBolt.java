@@ -61,7 +61,7 @@ public class EventCompareBolt extends BaseRichBolt {
             }
         }
 
-        TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Compare " + componentId + " working " + round);
+        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Compare " + componentId + " working " + round);
         if(currentRound < round) {
 
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",

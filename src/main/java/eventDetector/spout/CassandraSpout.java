@@ -32,7 +32,7 @@ public class CassandraSpout extends BaseRichSpout {
     private boolean start = true;
     private Date startDate = new Date();
     private Date lastDate = new Date();
-    private long startRound = 2034735;
+    private long startRound = 0;
 
 
     public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum) throws Exception {
@@ -93,18 +93,18 @@ public class CassandraSpout extends BaseRichSpout {
 
             if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
 
-            try {
+//            try {
                 if(!start) {
-                    TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass sleeping " + current_round);
-                    Thread.sleep(120000);
-                    TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass wake up " + current_round);
+//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
+//                    Thread.sleep(120000);
+//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
                     ExcelWriter.putData(componentId,startDate,lastDate, "cassSpout", "both", current_round);
                 }
                 else start = false;
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            }
+//            catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             startDate = new Date();
 
             ResultSet resultSet = getDataFromCassandra(current_round);
@@ -124,7 +124,7 @@ public class CassandraSpout extends BaseRichSpout {
         }
         else {
             splitAndEmit(tweet, current_round, tmp_roundlist, country);
-            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
+//            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
                     new Date() + ": Round end from cass spout =>" + current_round );
@@ -133,13 +133,13 @@ public class CassandraSpout extends BaseRichSpout {
         lastDate = new Date();
 
 
-//        try {
-////                TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass sleeping " + current_round);
-//                Thread.sleep(5);
-////                TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Cass wake up " + current_round);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
+                Thread.sleep(5);
+                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void splitAndEmit(String tweetSentence, long round, ArrayList<Long> roundlist, String country) {
@@ -176,15 +176,15 @@ public class CassandraSpout extends BaseRichSpout {
             while(trainSize>i++)
                 readRoundlist.add(roundlist.remove(0));
 
-            while (roundlist.get(0) < startRound)
-                roundlist.remove(0);
-
-            int j = roundlist.size()-1;
-
-//            while(roundlist.get(j)>2035083)
-            while(roundlist.get(j)>2034775)
-//            while(roundlist.get(j)>2034735)
-                roundlist.remove(j--);
+//            while (roundlist.get(0) < startRound)
+//                roundlist.remove(0);
+//
+//            int j = roundlist.size()-1;
+//
+////            while(roundlist.get(j)>2035083)
+//            while(roundlist.get(j)>2034775)
+////            while(roundlist.get(j)>2034735)
+//                roundlist.remove(j--);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -213,6 +213,7 @@ public class CassandraSpout extends BaseRichSpout {
         this.collector = collector;
         this.componentId = context.getThisTaskId()-1;
         System.out.println("cas: s" + " id: " + componentId);
+        this.startRound = roundlist.get(0);
         ExcelWriter.putStartDate(new Date(), fileNum, this.startRound);
     }
 

@@ -49,7 +49,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         String country = tuple.getStringByField("country");
         long round = tuple.getLongByField("round");
 
-        TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() + " Mgmt detector " + componentId + " working " + round);
+        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Mgmt detector " + componentId + " working " + round);
         if(round < currentRound)
         {
             ignores.putIfAbsent(round, 0L);

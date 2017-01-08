@@ -60,7 +60,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         if("dummyBLOCKdone".equals(key))
             this.collector.emit(new Values(key, new ArrayList<Double>(), round, country));
 
-        TopologyHelper.writeToFile("/Users/ozlemcerensahin/Desktop/workhistory.txt", new Date() +  " Detector " + componentId + " working " + round);
+        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() +  " Detector " + componentId + " working " + round);
 
         ArrayList<Double> tfidfs = new ArrayList<>();
         if(currentRound < round) {
