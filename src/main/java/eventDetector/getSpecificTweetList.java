@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by ceren on 12.06.2016.
- */
 public class getSpecificTweetList {
     public static void main(String[] args) throws Exception {
         getSpecificTweets(2034243,"katy");
