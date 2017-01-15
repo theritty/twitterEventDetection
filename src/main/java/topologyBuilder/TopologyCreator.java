@@ -42,6 +42,20 @@ public class TopologyCreator {
         }
     }
 
+    public void submitPreprocessTopology()
+    {
+        try
+        {
+            loadTopologyPropertiesAndSubmit( properties, config, BoltBuilder.prepareBoltsForPreprocess(properties) );
+        }
+        catch ( TTransportException | InvalidTopologyException | AuthorizationException | AlreadyAliveException | InterruptedException e )
+        {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void submitTopologyWithCassandra()
     {
         try
@@ -99,17 +113,22 @@ public class TopologyCreator {
 
             case ( "local" ):
                 if(localCluster==null) localCluster = new LocalCluster();
-                localCluster.submitTopology( topologyName, new Config(), stormTopology );
+                Config conf = new Config();
+                conf.setDebug(false);
+                conf.put(Config.TOPOLOGY_SLEEP_SPOUT_WAIT_STRATEGY_TIME_MS, 6);
+                localCluster.submitTopology( topologyName, conf, stormTopology );
 
-                long sleep_day=10;
-                long sleep_hour=50;
-                long sleep_minute=50;
-                long sleep_seconds=0;
-                Utils.sleep(sleep_day*24*60*60*1000 + sleep_hour*60*60*1000 + sleep_minute*60*1000 + sleep_seconds*1000);
+                while(true){ Thread.sleep(1000000);}
 
-                System.out.println("Shutting down");
-                localCluster.killTopology(topologyName);
-                localCluster.shutdown();
+//                long sleep_day=10;
+//                long sleep_hour=50;
+//                long sleep_minute=50;
+//                long sleep_seconds=0;
+//                Utils.sleep(sleep_day*24*60*60*1000 + sleep_hour*60*60*1000 + sleep_minute*60*1000 + sleep_seconds*1000);
+//
+//                System.out.println("Shutting down");
+//                localCluster.killTopology(topologyName);
+//                localCluster.shutdown();
 
 
         }

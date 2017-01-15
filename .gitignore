@@ -1,5 +1,6 @@
 target/
 *.txt
+*.classifier
 .idea/*
 *.classpath
 *.project

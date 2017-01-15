@@ -8,131 +8,114 @@ import backtype.storm.tuple.Tuple;
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import eventDetector.drawing.ExcelWriter;
 import eventDetector.drawing.LineChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 import topologyBuilder.Constants;
+import topologyBuilder.TopologyHelper;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class EventCompareBolt extends BaseRichBolt {
+    private String drawFilePath;
+    private CassandraDao cassandraDao;
+    private int componentId;
+    private String fileNum;
+    private long currentRound = 0;
+    private Date lastDate = new Date();
+    private Date startDate = new Date();
 
-  private OutputCollector collector;
-  private String filePath;
-  private String drawFilePath;
-  private double rateForSameEvent;
-  private CassandraDao cassandraDao;
+    HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
-  HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
-
-  public EventCompareBolt(CassandraDao cassandraDao, String filePath, int fileNum, double rateForSameEvent)
-  {
-    this.rateForSameEvent = rateForSameEvent;
-    this.filePath = filePath + fileNum + "/";
-    this.drawFilePath = Constants.IMAGES_FILE_PATH + fileNum +"/";
-    wordList = new HashMap<>();
-    this.cassandraDao = cassandraDao;
-  }
-
-  @Override
-  public void prepare(Map config, TopologyContext context,
-                      OutputCollector collector) {
-    this.collector = collector;
-  }
-
-  @Override
-  public void execute(Tuple tuple) {
-
-    ArrayList<Double> tfidfs = (ArrayList<Double>) tuple.getValueByField("tfidfs");
-    String key = tuple.getStringByField("key");
-    String type = tuple.getStringByField("type");
-    long round = tuple.getLongByField("round");
-    String country = tuple.getStringByField("country");
-
-    ArrayList<ArrayList<HashMap<String, Object>>> compareList = new ArrayList<>();
-    if(wordList.get(round) == null)
+    public EventCompareBolt(CassandraDao cassandraDao, String fileNum)
     {
-      wordList.put(round, new ArrayList<>());
+        this.drawFilePath = Constants.IMAGES_FILE_PATH + fileNum +"/";
+        wordList = new HashMap<>();
+        this.cassandraDao = cassandraDao;
+        this.fileNum = fileNum +"/";
     }
-    HashMap<String, Object> xx = new HashMap<>();
-    xx.put("word", key);
-    xx.put("type", type);
-    xx.put("tfidfs", tfidfs);
 
-    wordList.get(round).add(xx);
-
-    compareList.add(wordList.get(round));
-    if(compareList.size()>0) {
-      writeToFile(filePath + "events-" + country + "-" + round, compareList);
-      try {
-        ArrayList<Long> countsList = getCountListFromCass(round, key, country);
-        LineChart.drawLineChart(countsList,key,round,country, drawFilePath);
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    @Override
+    public void prepare(Map config, TopologyContext context,
+                        OutputCollector collector) {
+        this.componentId = context.getThisTaskId()-1;
+        System.out.println("compare: " + componentId );
     }
-  }
 
-  protected ArrayList<Long> getCountListFromCass(long round, String key, String country) throws Exception {
-    long roundPast = round-10;
-    ArrayList<Long> countsList = new ArrayList<>();
-    while(roundPast<=round) {
-      ResultSet resultSet = cassandraDao.getFromCounts(roundPast, key, country);
-      Iterator<Row> iterator = resultSet.iterator();
-      if (iterator.hasNext()) {
-        Row row = iterator.next();
-        countsList.add(row.getLong("count"));
-      }
-      else
-        countsList.add(0L);
-      roundPast++;
-    }
-    return countsList;
-  }
-  public void writeToFile(String fileName,  ArrayList<ArrayList<HashMap<String, Object>>> compareList)
-  {
-    File filePath = new File(fileName);
-    filePath.delete();
+    @Override
+    public void execute(Tuple tuple) {
 
-    try {
-      PrintWriter writer = new PrintWriter(new FileOutputStream(
-              new File(fileName),
-              true /* append = true */));
-      writer.print("");
-      int cnt = 1;
-      for (ArrayList<HashMap<String, Object>> al : compareList) {
-        write(writer, "Event " + cnt);
-        for (HashMap<String, Object> chm : al) {
-          if(chm.get("type").equals("hashtag"))
-          {
-            write(writer, "\t#" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
-          }
-          else
-          {
-            write(writer, "\t" + chm.get("word") + " " + (chm.get("tfidfs")).toString());
-          }
+        ArrayList<Double> tfidfs = (ArrayList<Double>) tuple.getValueByField("tfidfs");
+        String key = tuple.getStringByField("key");
+        long round = tuple.getLongByField("round");
+        String country = tuple.getStringByField("country");
+
+        if("dummyBLOCKdone".equals(key)) {
+            try {
+                ExcelWriter.createTimeChart();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        cnt++;
-      }
 
-      writer.close();
+        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Compare " + componentId + " working " + round);
+        if(currentRound < round) {
 
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Compare bolt " + componentId + " end of round " + currentRound + " at " + lastDate);
+
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+                    "Word count "+ componentId + " time taken for round" + currentRound + " is " +
+                            (lastDate.getTime()-startDate.getTime())/1000);
+            if ( currentRound!=0)
+                ExcelWriter.putData(componentId,startDate,lastDate, "Compare", "both", currentRound);
+            startDate = new Date();
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+                    "Compare bolt " + componentId + " start of round " + round + " at " + startDate);
+            currentRound = round;
+        }
+        lastDate = new Date();
+
+
+        if(tfidfs.size()<2) return;
+
+        System.out.println(new Date() + ": Event found => " + key + " at round " + round  + " for " + country + " ");
+        if(tfidfs.get(tfidfs.size()-2)==0) tfidfs.set(tfidfs.size()-2, 0.0001);
+        try {
+            cassandraDao.insertIntoEvents(round, country, key, tfidfs.get(tfidfs.size()-1) / tfidfs.get(tfidfs.size()-2));
+
+            DefaultCategoryDataset countsList = getCountListFromCass(round, key, country);
+            LineChart.drawLineChart(countsList,key,round,country, drawFilePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
-  }
 
-  public void write(PrintWriter writer, String line) {
-    writer.println(line);
-//        System.out.println(line);
-  }
+    protected DefaultCategoryDataset getCountListFromCass(long round, String key, String country) throws Exception {
+        long roundPast = round-10;
 
-  @Override
-  public void declareOutputFields(OutputFieldsDeclarer declarer)
-  {
-  }
+        DefaultCategoryDataset countsList = new DefaultCategoryDataset( );
+        DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+        while(roundPast<=round) {
+            ResultSet resultSet = cassandraDao.getFromCounts(roundPast, key, country);
+            Iterator<Row> iterator = resultSet.iterator();
+            if (iterator.hasNext()) {
+                Row row = iterator.next();
+                countsList.addValue(row.getLong("count"), "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
+            }
+            else
+                countsList.addValue(0L, "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
+            roundPast++;
+        }
+        return countsList;
+    }
+
+    @Override
+    public void declareOutputFields(OutputFieldsDeclarer declarer)
+    {
+    }
 }

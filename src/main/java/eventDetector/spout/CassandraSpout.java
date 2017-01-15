@@ -9,149 +9,211 @@ import backtype.storm.tuple.Values;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
+import eventDetector.drawing.ExcelWriter;
+import topologyBuilder.Constants;
+import topologyBuilder.TopologyHelper;
 
 import java.util.*;
 
 public class CassandraSpout extends BaseRichSpout {
 
-  private SpoutOutputCollector collector;
-  CassandraDao cassandraDao;
-  boolean readed=false;
-  ArrayList<Long> roundlist;
-  ArrayList<Long> readRoundlist;
-  int compareSize;
-  int trainSize;
+    private SpoutOutputCollector collector;
+    private CassandraDao cassandraDao;
+    private ArrayList<Long> roundlist;
+    private ArrayList<Long> readRoundlist;
+    private int compareSize;
+    private int trainSize;
+    private int testSize;
+    private int componentId;
+    private Iterator<Row> iterator = null;
+    private long current_round;
+    private long count_tweets = 0;
+    private String fileNum;
+    private boolean start = true;
+    private Date startDate = new Date();
+    private Date lastDate = new Date();
+    private long startRound = 0;
 
-  public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize) throws Exception {
-    this.cassandraDao = cassandraDao;
-    this.compareSize = compareSize;
-    this.trainSize = trainSize;
-    roundlist = new ArrayList<>();
-    readRoundlist = new ArrayList<>();
-  }
-  @Override
-  public void ack(Object msgId) {}
-  @Override
-  public void close() {}
 
-  @Override
-  public void fail(Object msgId) {}
+    public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum) throws Exception {
+        this.cassandraDao = cassandraDao;
+        this.compareSize = compareSize;
+        this.trainSize = trainSize;
+        this.testSize = testSize;
+        roundlist = new ArrayList<>();
+        readRoundlist = new ArrayList<>();
+        this.fileNum = filenum + "/";
+    }
+    @Override
+    public void ack(Object msgId) {}
+    @Override
+    public void close() {}
 
-  /**
-   * The only thing that the methods will do It is emit each
-   * file line
-   */
-  @Override
-  public void nextTuple() {
+    @Override
+    public void fail(Object msgId) {}
+
     /**
-     * The nextuple it is called forever, so if we have been readed the file
-     * we will wait and then return
+     * The only thing that the methods will do It is emit each
+     * file line
      */
-//    if(readed){
-//      try {
-//        Thread.sleep(10000);
-//      } catch (InterruptedException e) {
-//        //Do nothing
-//      }
-//      return;
-//    }
-//    while(roundlist.size() > 120)
-//      roundlist.remove(roundlist.size()-1);
+    @Override
+    public void nextTuple() {
+        /**
+         * The nextuple it is called forever, so if we have been readed the file
+         * we will wait and then return
+         */
 
-    if(roundlist.size()>0) System.out.println("Number of rounds " + roundlist.size());
-    if(roundlist.size()==0) return;
-    long round = roundlist.remove(0);
-//    for(long round : roundlist) {
-      readRoundlist.add(round);
+        if(iterator == null || !iterator.hasNext())
+        {
+            if(roundlist.size()==0)
+            {
+                try {
+//          getEventInfo.report();
+                    collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
+                    collector.emit("USA", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
+                    try {
+                            Thread.sleep(120000);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    collector.emit("CAN", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
+                    collector.emit("USA", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
 
-      if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
-//      if (readRoundlist.size() <= trainSize) continue;
+                    System.out.println("Number of tweets: " + count_tweets);
+                    Thread.sleep(10000000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return;
+            }
 
+            current_round = roundlist.remove(0);
+            readRoundlist.add(current_round);
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
+                    new Date() + ": Round submission from cass spout =>" + current_round );
 
+            if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
 
-      ResultSet resultSet = getDataFromCassandra(round);
+//            try {
+                if(!start) {
+//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
+//                    Thread.sleep(120000);
+//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
+                    ExcelWriter.putData(componentId,startDate,lastDate, "cassSpout", "both", current_round);
+                }
+                else start = false;
+//            }
+//            catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+            startDate = new Date();
 
-      Iterator<Row> iterator = resultSet.iterator();
-      while (iterator.hasNext()) {
+            ResultSet resultSet = getDataFromCassandra(current_round);
+            iterator = resultSet.iterator();
+        }
         Row row = iterator.next();
         String tweet = row.getString("tweet");
         String country = row.getString("country");
 
-        if(tweet == null || tweet.length() == 0) continue;
+        if(tweet == null || tweet.length() == 0) return;
         ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
-//        System.out.println("Tweet: " + tweet);
-        if(iterator.hasNext())
-          collector.emit(new Values(tweet, tmp_roundlist, round, false, round, "cassandra", "cassandraSpout", country));
-        else
-          collector.emit(new Values(tweet, tmp_roundlist, round, true, round, "cassandra", "cassandraSpout", country));
-      }
-//    }
 
-//    readed = true;
-    System.out.println("Reading finished.");
-
-  }
-
-  public void getRoundListFromCassandra(){
-    ResultSet resultSet = null;
-    try {
-      resultSet = cassandraDao.getRounds();
-      roundlist = new ArrayList<>();
-
-      Iterator<Row> iterator = resultSet.iterator();
-      while(iterator.hasNext())
-      {
-        Row row = iterator.next();
-        roundlist.add(row.getLong("round"));
-      }
-      Collections.sort(roundlist, new Comparator<Long>() {
-        public int compare(Long m1, Long m2) {
-          return m1.compareTo(m2);
+        if(iterator.hasNext()) {
+            splitAndEmit(tweet, current_round, tmp_roundlist, country);
         }
-      });
+        else {
+            splitAndEmit(tweet, current_round, tmp_roundlist, country);
+            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
+            collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
+            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
+                    new Date() + ": Round end from cass spout =>" + current_round );
+
+        }
+        lastDate = new Date();
 
 
-      roundlist.remove(roundlist.size()-1);
-
-//      while(roundlist.size()>10)
-//        roundlist.remove(roundlist.size()-1);
-
-      readRoundlist.add(roundlist.remove(0));
-      readRoundlist.add(roundlist.remove(0));
-      readRoundlist.add(roundlist.remove(0));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-
-  public ResultSet getDataFromCassandra(long round) {
-    ResultSet resultSet = null;
-    try {
-      resultSet = cassandraDao.getTweetsByRound(round);
-    } catch (Exception e) {
-      e.printStackTrace();
+//        try {
+//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
+//                Thread.sleep(5);
+//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
-    return resultSet;
-  }
+    public void splitAndEmit(String tweetSentence, long round, ArrayList<Long> roundlist, String country) {
+        List<String> tweets = Arrays.asList(tweetSentence.split(" "));
+        for (String tweet : tweets) {
+            if (!tweet.equals("") && tweet.length() > 2 && !tweet.equals("hiring") && !tweet.equals("careerarc")) {
+                this.collector.emit(country, new Values(tweet, round, false, roundlist));
+            }
+        }
+    }
+    public void getRoundListFromCassandra(){
+        ResultSet resultSet;
+        try {
+            resultSet = cassandraDao.getRounds();
+            roundlist = new ArrayList<>();
 
-  /**
-   * We will create the file and get the collector object
-   */
-  @Override
-  public void open(Map conf, TopologyContext context,
-                   SpoutOutputCollector collector) {
-    getRoundListFromCassandra();
-    this.collector = collector;
-  }
+            Iterator<Row> iterator = resultSet.iterator();
+            while(iterator.hasNext())
+            {
+                Row row = iterator.next();
+                roundlist.add(row.getLong("round"));
+            }
+            Collections.sort(roundlist, new Comparator<Long>() {
+                public int compare(Long m1, Long m2) {
+                    return m1.compareTo(m2);
+                }
+            });
 
-  /**
-   * Declare the output field "word"
-   */
-  @Override
-  public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("tweet", "dates","currentDate","blockEnd", "round", "source", "inputBolt", "country"));
-  }
+            if(testSize!=Integer.MAX_VALUE) {
+                while (roundlist.size() > testSize + trainSize)
+                    roundlist.remove(roundlist.size() - 1);
+            }
+            int i = 0;
+            while(trainSize>i++)
+                readRoundlist.add(roundlist.remove(0));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public ResultSet getDataFromCassandra(long round) {
+        ResultSet resultSet = null;
+        try {
+            resultSet = cassandraDao.getTweetsByRound(round);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return resultSet;
+    }
+
+    /**
+     * We will create the file and get the collector object
+     */
+    @Override
+    public void open(Map conf, TopologyContext context,
+                     SpoutOutputCollector collector) {
+        getRoundListFromCassandra();
+        this.collector = collector;
+        this.componentId = context.getThisTaskId()-1;
+        System.out.println("cas: s" + " id: " + componentId);
+        this.startRound = roundlist.get(0);
+        ExcelWriter.putStartDate(new Date(), fileNum, this.startRound);
+    }
+
+    /**
+     * Declare the output field "word"
+     */
+    @Override
+    public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
+        declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
+    }
 
 }

@@ -2,9 +2,7 @@ package topologyBuilder;
 
 import backtype.storm.Config;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -14,7 +12,22 @@ import java.util.Properties;
  */
 public class TopologyHelper {
 
+    public static void writeToFile(String fileName, String tweet)
+    {
+        try {
+            PrintWriter writer = new PrintWriter(new FileOutputStream(
+                    new File(fileName),
+                    true /* append = true */));
 
+                writer.println(tweet);
+//        System.out.println(tweet);
+
+            writer.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static List<Integer> splitInteger( String sentence )
     {
