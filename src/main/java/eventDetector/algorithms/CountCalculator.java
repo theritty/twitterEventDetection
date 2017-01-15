@@ -17,14 +17,14 @@ public class CountCalculator {
     HashMap<String, Long> counts = new HashMap<>();
     ResultSet resultSet2 ;
     try {
-      resultSet2 = cassandraDao.getTweetsByRound(round);
+      resultSet2 = cassandraDao.getTweetsByRoundAndCountry(round, country);
       Iterator<Row> iterator2 = resultSet2.iterator();
 
       while(iterator2.hasNext())
       {
         Row row = iterator2.next();
         String tweet = row.getString("tweet");
-        if(tweet == null) continue;
+        if(tweet == null || !row.getString("country").equals(country)) continue;
         String[] splittedList = tweet.split(" ");
         for(String s : splittedList) {
           allcount++;

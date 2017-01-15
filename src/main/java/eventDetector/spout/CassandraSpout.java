@@ -133,13 +133,13 @@ public class CassandraSpout extends BaseRichSpout {
         lastDate = new Date();
 
 
-        try {
-                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
-                Thread.sleep(5);
-                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
+//                Thread.sleep(5);
+//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void splitAndEmit(String tweetSentence, long round, ArrayList<Long> roundlist, String country) {
@@ -222,7 +222,7 @@ public class CassandraSpout extends BaseRichSpout {
      */
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
+//        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
         declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
     }
 

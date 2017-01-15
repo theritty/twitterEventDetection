@@ -17,6 +17,7 @@ public class CassandraDao implements Serializable
     private transient PreparedStatement statement_events;
     private transient PreparedStatement statement_where;
     private transient PreparedStatement statement_tweet_get;
+    private transient PreparedStatement statement_tweet_by_country_get;
     private transient PreparedStatement statement_round_get;
     private transient PreparedStatement statement_round_get_from_event;
     private transient PreparedStatement statement_events_get;
@@ -24,6 +25,7 @@ public class CassandraDao implements Serializable
     private transient BoundStatement boundStatement_events_get;
     private transient BoundStatement boundStatement_events_get_from_event;
     private transient BoundStatement boundStatement_tweets;
+    private transient BoundStatement boundStatement_tweets_by_country_get;
     private transient BoundStatement boundStatement_tweets_get;
     private transient BoundStatement boundStatement_rounds_get;
     private transient BoundStatement boundStatement_counts;
@@ -75,6 +77,10 @@ public class CassandraDao implements Serializable
             statement_tweet_get = CassandraConnection.connect().prepare(
                     "SELECT * FROM " + tweetsTable + " WHERE round=?;");
         }
+        if(statement_tweet_by_country_get==null) {
+            statement_tweet_by_country_get = CassandraConnection.connect().prepare(
+                    "SELECT * FROM " + tweetsTable + " WHERE round=? AND country=?;");
+        }
         if(statement_round_get==null) {
             statement_round_get = CassandraConnection.connect().prepare(
                     "SELECT DISTINCT round FROM " + tweetsTable + ";");
@@ -100,6 +106,8 @@ public class CassandraDao implements Serializable
             boundStatement_events_get = new BoundStatement(statement_events_get);
         if(boundStatement_tweets_get == null)
             boundStatement_tweets_get = new BoundStatement(statement_tweet_get);
+        if(boundStatement_tweets_by_country_get == null)
+            boundStatement_tweets_by_country_get = new BoundStatement(statement_tweet_by_country_get);
         if(boundStatement_rounds_get == null)
             boundStatement_rounds_get = new BoundStatement(statement_round_get);
         if(boundStatement_events_get_from_event == null)
@@ -145,6 +153,13 @@ public class CassandraDao implements Serializable
         prepareAll();
         ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_tweets_get.bind(values));
 
+        return resultSet;
+    }
+
+    public ResultSet getTweetsByRoundAndCountry( Object... values ) throws Exception
+    {
+        prepareAll();
+        ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_tweets_by_country_get.bind(values));
         return resultSet;
     }
 
