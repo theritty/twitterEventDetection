@@ -52,7 +52,7 @@ public class BoltBuilder {
 
         builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout,1);
 //        builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBoltUSA,5) .fieldsGrouping(Constants.CASS_SPOUT_ID, "USA", new Fields("word"));
-        builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBoltCAN,5).fieldsGrouping(Constants.CASS_SPOUT_ID, "CAN", new Fields("word"));
+        builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBoltCAN,2).fieldsGrouping(Constants.CASS_SPOUT_ID, "CAN", new Fields("word"));
 
         //USA
 //        builder.setBolt( Constants.COUNTRY1_EVENT_DETECTOR_BOLT, eventDetectorBolt,2).

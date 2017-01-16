@@ -60,16 +60,17 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         if("dummyBLOCKdone".equals(key))
             this.collector.emit(new Values(key, new ArrayList<Double>(), round, country));
 
-        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() +  " Detector " + componentId + " working " + round);
+        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() +  " Detector " + componentId + " working " + round);
 
         ArrayList<Double> tfidfs = new ArrayList<>();
         if(currentRound < round) {
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Detector bolt " + componentId + " end of round " + currentRound + " at " + lastDate);
 
+            double diff = (lastDate.getTime()-startDate.getTime())/1000;
+            if(diff==0.0) diff=1.0;
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Word count "+ componentId + " time taken for round" + currentRound + " is " +
-                            (lastDate.getTime()-startDate.getTime())/1000);
+                    "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff);
             if ( currentRound!=0)
                 ExcelWriter.putData(componentId,startDate,lastDate, "detector", country, currentRound);
 
@@ -98,7 +99,6 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
                     "---------------------------------------------------------------------------------");
             return;
         }
-        lastDate = new Date();
 
         for (long roundNum: rounds)
         {
@@ -137,6 +137,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
             TopologyHelper.writeToFile(filePath + "/tfidf-" + Long.toString(round)+"-allzero-" + country + ".txt",
                     "Key: " + key );
         }
+        lastDate = new Date();
 
     }
 

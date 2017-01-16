@@ -71,6 +71,7 @@ public class CassandraSpout extends BaseRichSpout {
 //          getEventInfo.report();
                     collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
                     try {
+                        System.out.println("sleeeeeeeep");
                             Thread.sleep(120000);
                     }
                     catch (InterruptedException e) {
@@ -95,9 +96,9 @@ public class CassandraSpout extends BaseRichSpout {
 
 //            try {
                 if(!start) {
-//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
+//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass sleeping " + current_round);
 //                    Thread.sleep(120000);
-//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
+//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass wake up " + current_round);
                     ExcelWriter.putData(componentId,startDate,lastDate, "cassSpout", "both", current_round);
                 }
                 else start = false;
@@ -134,9 +135,9 @@ public class CassandraSpout extends BaseRichSpout {
 
 
 //        try {
-//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass sleeping " + current_round);
+//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass sleeping " + current_round);
 //                Thread.sleep(5);
-//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Cass wake up " + current_round);
+//                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass wake up " + current_round);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
@@ -175,6 +176,8 @@ public class CassandraSpout extends BaseRichSpout {
             int i = 0;
             while(trainSize>i++)
                 readRoundlist.add(roundlist.remove(0));
+
+            System.out.println(roundlist);
 
 //            while (roundlist.get(0) < startRound)
 //                roundlist.remove(0);

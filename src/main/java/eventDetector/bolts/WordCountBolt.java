@@ -51,15 +51,16 @@ public class WordCountBolt extends BaseRichBolt {
     if("dummyBLOCKdone".equals(word))
        this.collector.emit(new Values(word, round, false, tuple.getValueByField("dates"), tuple.getSourceStreamId()));
 
-    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Word count " + componentId + " working "  + round);
+    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Word count " + componentId + " working "  + round);
     if(round > currentRound)
     {
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
               "Word count "+ componentId + " end for round " + currentRound + " at " + lastDate);
 
+      double diff = (lastDate.getTime()-startDate.getTime())/1000;
+      if(diff==0.0) diff=1.0;
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-              "Word count "+ componentId + " time taken for round" + currentRound + " is " +
-                      (lastDate.getTime()-startDate.getTime())/1000);
+              "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff );
       if ( currentRound!=0)
         ExcelWriter.putData(componentId,startDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
 
@@ -77,7 +78,6 @@ public class WordCountBolt extends BaseRichBolt {
               "Word count ignored count " + componentId + ": " + ignoredCount );
       return;
     }
-    lastDate = new Date();
     Long count = countsForRounds.get(word);
 
     if (count == null) count = 1L;
@@ -88,6 +88,7 @@ public class WordCountBolt extends BaseRichBolt {
     if (count == threshold) {
       this.collector.emit(new Values(word, round, false, tuple.getValueByField("dates"), tuple.getSourceStreamId()));
     }
+      lastDate = new Date();
 
   }
 

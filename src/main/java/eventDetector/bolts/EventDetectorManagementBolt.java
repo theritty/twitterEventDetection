@@ -49,7 +49,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         String country = tuple.getStringByField("country");
         long round = tuple.getLongByField("round");
 
-        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Mgmt detector " + componentId + " working " + round);
+        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Mgmt detector " + componentId + " working " + round);
         if(round < currentRound)
         {
             ignores.putIfAbsent(round, 0L);
@@ -75,9 +75,10 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Management bolt " + componentId + " end of round " + currentRound + " at " + lastDate );
 
+            double diff = (lastDate.getTime()-startDate.getTime())/1000;
+            if(diff==0.0) diff=1.0;
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Word count "+ componentId + " time taken for round" + currentRound + " is " +
-                            (lastDate.getTime()-startDate.getTime())/1000);
+                    "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff);
 
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
@@ -89,8 +90,8 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
             rounds = (ArrayList<Long>)tuple.getValueByField("dates");
             words.clear();
         }
-        lastDate = new Date();
         words.add(word);
+        lastDate = new Date();
     }
 
     public void endOfRoundOperations(long round, String country, ArrayList<Long> rounds)

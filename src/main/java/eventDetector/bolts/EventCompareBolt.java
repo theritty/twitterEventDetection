@@ -61,15 +61,16 @@ public class EventCompareBolt extends BaseRichBolt {
             }
         }
 
-        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE, new Date() + " Compare " + componentId + " working " + round);
+        TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Compare " + componentId + " working " + round);
         if(currentRound < round) {
 
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Compare bolt " + componentId + " end of round " + currentRound + " at " + lastDate);
 
+            double diff = (lastDate.getTime()-startDate.getTime())/1000;
+            if(diff==0.0) diff=1.0;
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Word count "+ componentId + " time taken for round" + currentRound + " is " +
-                            (lastDate.getTime()-startDate.getTime())/1000);
+                    "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff);
             if ( currentRound!=0)
                 ExcelWriter.putData(componentId,startDate,lastDate, "Compare", "both", currentRound);
             startDate = new Date();
@@ -77,7 +78,6 @@ public class EventCompareBolt extends BaseRichBolt {
                     "Compare bolt " + componentId + " start of round " + round + " at " + startDate);
             currentRound = round;
         }
-        lastDate = new Date();
 
 
         if(tfidfs.size()<2) return;
@@ -92,6 +92,7 @@ public class EventCompareBolt extends BaseRichBolt {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        lastDate = new Date();
 
     }
 
