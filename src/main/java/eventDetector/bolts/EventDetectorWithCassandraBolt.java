@@ -57,6 +57,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         String country = (String) tuple.getValueByField( "country" );
         long round = tuple.getLongByField("round");
 
+        Date nowDate = new Date();
         if("dummyBLOCKdone".equals(key))
             this.collector.emit(new Values(key, new ArrayList<Double>(), round, country));
 
@@ -71,8 +72,6 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
             if(diff==0.0) diff=1.0;
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff);
-            if ( currentRound!=0)
-                ExcelWriter.putData(componentId,startDate,lastDate, "detector", country, currentRound);
 
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
@@ -138,6 +137,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
                     "Key: " + key );
         }
         lastDate = new Date();
+        ExcelWriter.putData(componentId,nowDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
 
     }
 

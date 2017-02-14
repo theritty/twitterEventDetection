@@ -21,6 +21,9 @@ public class BoltBuilder {
         String COUNTS_TABLE = properties.getProperty("counts.table");
         String EVENTS_TABLE = properties.getProperty("events.table");
 
+        long START_ROUND = Long.parseLong(properties.getProperty("start.round"));
+        long END_ROUND = Long.parseLong(properties.getProperty("end.round"));
+
 
         System.out.println("Count threshold " + COUNT_THRESHOLD);
         TopologyHelper.createFolder(Constants.RESULT_FILE_PATH + FILENUM);
@@ -34,15 +37,15 @@ public class BoltBuilder {
 //        CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
 //                Integer.parseInt(properties.getProperty("topology.compare.size")), Integer.MAX_VALUE, FILENUM);
         CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao, Integer.parseInt(properties.getProperty("topology.train.size")),
-                Integer.parseInt(properties.getProperty("topology.compare.size")), 20, FILENUM);
+                Integer.parseInt(properties.getProperty("topology.compare.size")), 20, FILENUM, START_ROUND, END_ROUND);
 
-//        WordCountBolt countBoltUSA = new WordCountBolt(COUNT_THRESHOLD, FILENUM);
+        WordCountBolt countBoltUSA = new WordCountBolt(COUNT_THRESHOLD, FILENUM);
         WordCountBolt countBoltCAN = new WordCountBolt(COUNT_THRESHOLD, FILENUM);
 
 
 //        EventDetectorManagementBolt eventDetectorManagementBolt = new EventDetectorManagementBolt(Constants.RESULT_FILE_PATH, FILENUM);
-//        EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao,
-//                Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
+        EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao,
+                Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
 //        EventDetectorManagementBolt eventDetectorManagementBolt2 = new EventDetectorManagementBolt(Constants.RESULT_FILE_PATH, FILENUM);
         EventDetectorWithCassandraBolt eventDetectorBolt2 = new EventDetectorWithCassandraBolt(cassandraDao,
                 Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE);
@@ -50,13 +53,18 @@ public class BoltBuilder {
 //    EventDetectorManagerWithCassandraBolt eventDetectorManagerBolt = new EventDetectorManagerWithCassandraBolt(cassandraDao);
         EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM);
 
+
+
+
+
+
         builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout,1);
-//        builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBoltUSA,5) .fieldsGrouping(Constants.CASS_SPOUT_ID, "USA", new Fields("word"));
+        builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBoltUSA,3) .fieldsGrouping(Constants.CASS_SPOUT_ID, "USA", new Fields("word"));
         builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBoltCAN,2).fieldsGrouping(Constants.CASS_SPOUT_ID, "CAN", new Fields("word"));
 
         //USA
-//        builder.setBolt( Constants.COUNTRY1_EVENT_DETECTOR_BOLT, eventDetectorBolt,2).
-//                shuffleGrouping(Constants.COUNTRY1_COUNT_BOLT_ID);
+        builder.setBolt( Constants.COUNTRY1_EVENT_DETECTOR_BOLT, eventDetectorBolt,2).
+                shuffleGrouping(Constants.COUNTRY1_COUNT_BOLT_ID);
 
 
         //CAN
@@ -78,8 +86,8 @@ public class BoltBuilder {
 //                fieldsGrouping(Constants.COUNTRY2_REPORT_HASHTAG_BOLT_ID, new Fields("key"));
 
 
-    builder.setBolt( Constants.COUNTRY2_EVENT_COMPARE_BOLT, eventCompareBolt).
-//            globalGrouping(Constants.COUNTRY1_EVENT_DETECTOR_BOLT).
+    builder.setBolt( Constants.COUNTRY2_EVENT_COMPARE_BOLT, eventCompareBolt,1).
+            globalGrouping(Constants.COUNTRY1_EVENT_DETECTOR_BOLT).
             globalGrouping(Constants.COUNTRY2_EVENT_DETECTOR_BOLT);
 
         return builder.createTopology();

@@ -8,6 +8,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -23,7 +24,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     private long currentRound = 0;
     private ArrayList<Long> rounds;
     private HashMap<Long, Long> ignores;
-    private String componentId;
+    private int componentId;
     private String fileNum;
     private Date lastDate = new Date();
     private Date startDate = new Date();
@@ -40,7 +41,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
         this.collector = collector;
-        this.componentId = String.valueOf(UUID.randomUUID());
+        this.componentId = context.getThisTaskId()-1;
     }
 
     @Override
@@ -49,6 +50,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         String country = tuple.getStringByField("country");
         long round = tuple.getLongByField("round");
 
+        Date nowDate = new Date();
         TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Mgmt detector " + componentId + " working " + round);
         if(round < currentRound)
         {
@@ -92,6 +94,7 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
         }
         words.add(word);
         lastDate = new Date();
+        ExcelWriter.putData(componentId,nowDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
     }
 
     public void endOfRoundOperations(long round, String country, ArrayList<Long> rounds)

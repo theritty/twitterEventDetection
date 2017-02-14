@@ -29,7 +29,8 @@ public class ExcelWriter {
     private static int rowNum = 7200;
     private static int columnNum = 200;
 //    private static int parallelismNum = 16;
-    private static int parallelismNum = 9;
+    private static int parallelismNum = 11;
+    private static int writeChart = 0;
 
     public static void putStartDate(Date date, String filenum, long round) {
         times = new int[rowNum][columnNum];
@@ -50,16 +51,18 @@ public class ExcelWriter {
         long timeStart = (boltStartTime.getTime()-startTime.getTime())/1000;
         long duration = (boltEndTime.getTime()-boltStartTime.getTime())/1000;
 
+        if(duration==0) duration = 1;
+
         while (duration-->0)
             times[(int) timeStart++][id + parallelismNum * ((int) ((round - startRound)/2) % 10) ] = id;
-
-        System.out.println( "Key: " + id + ", name: " + boltName + ", country: " + country );
     }
 
     public static void createTimeChart () throws IOException {
-
-        System.out.println("Excel creation started");
-        writeExcel();
+        writeChart++;
+        if(writeChart>= 4) {
+            System.out.println("Excel creation started");
+            writeExcel();
+        }
     }
 
 

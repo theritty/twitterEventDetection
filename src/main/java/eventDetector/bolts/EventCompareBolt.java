@@ -53,6 +53,7 @@ public class EventCompareBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
         String country = tuple.getStringByField("country");
 
+        Date nowDate = new Date();
         if("dummyBLOCKdone".equals(key)) {
             try {
                 ExcelWriter.createTimeChart();
@@ -71,8 +72,7 @@ public class EventCompareBolt extends BaseRichBolt {
             if(diff==0.0) diff=1.0;
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff);
-            if ( currentRound!=0)
-                ExcelWriter.putData(componentId,startDate,lastDate, "Compare", "both", currentRound);
+
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
                     "Compare bolt " + componentId + " start of round " + round + " at " + startDate);
@@ -94,6 +94,8 @@ public class EventCompareBolt extends BaseRichBolt {
         }
         lastDate = new Date();
 
+        ExcelWriter.putData(componentId,nowDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
+
     }
 
     protected DefaultCategoryDataset getCountListFromCass(long round, String key, String country) throws Exception {
@@ -110,7 +112,7 @@ public class EventCompareBolt extends BaseRichBolt {
             }
             else
                 countsList.addValue(0L, "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
-            roundPast++;
+            roundPast+=2;
         }
         return countsList;
     }
