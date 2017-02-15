@@ -27,12 +27,14 @@ public class WordCountBolt extends BaseRichBolt {
   private String fileNum;
   private Date lastDate = new Date();
   private Date startDate = new Date();
+    private String country;
 
 
-  public WordCountBolt(int threshold, String filenum)
+  public WordCountBolt(int threshold, String filenum, String country)
   {
     this.threshold = threshold;
     this.fileNum = filenum + "/";
+      this.country = country;
   }
   @Override
   public void prepare(Map config, TopologyContext context,
@@ -40,7 +42,7 @@ public class WordCountBolt extends BaseRichBolt {
     this.collector = collector;
     this.countsForRounds = new HashMap<>();
     this.componentId = context.getThisTaskId()-1;
-    System.out.println("wc : " + componentId );
+    System.out.println("wc : " + componentId  + " " + country);
   }
 
   @Override

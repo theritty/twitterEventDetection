@@ -9,8 +9,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import topologyBuilder.Constants;
 
 /**
@@ -26,7 +24,7 @@ public class ExcelWriter {
     private static long startRound = 0;
     private static String fileNum="12345";
     private static int lastInd ;
-    private static int rowNum = 7200;
+    private static int rowNum = 86400;
     private static int columnNum = 200;
 //    private static int parallelismNum = 16;
     private static int parallelismNum = 11;
@@ -87,9 +85,9 @@ public class ExcelWriter {
             for (int j = 0; j<columnNum; j++) {
                 if(columnNum%100==0) System.out.println(i + " " + j);
                 Cell cell = row.createCell(j);
-                if(times[i][j] == 0)
-                    cell.setCellValue("");
-                else
+//                if(times[i][j] == 0)
+//                    cell.setCellValue("");
+//                else
                     cell.setCellValue(times[i][j]);
             }
         }

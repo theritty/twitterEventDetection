@@ -29,8 +29,9 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private Date startDate = new Date();
     private HashMap<Long, Long> ignores;
     private long ignoredCount = 0L;
+    private String country;
 
-    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable )
+    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable, String country )
     {
         this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;
@@ -38,6 +39,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         this.tweetTable = tweetTable;
         this.fileNum = fileNum + "/";
         this.ignores = new HashMap<>();
+        this.country = country;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         this.collector = collector;
 
         this.componentId = context.getThisTaskId()-1;
-        System.out.println("detector: " + componentId );
+        System.out.println("detector: " + componentId  + " " + country);
     }
 
     @Override

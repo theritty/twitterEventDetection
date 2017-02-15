@@ -42,7 +42,7 @@ public class EventCompareBolt extends BaseRichBolt {
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
         this.componentId = context.getThisTaskId()-1;
-        System.out.println("compare: " + componentId );
+        System.out.println("compare: " + componentId + " " );
     }
 
     @Override

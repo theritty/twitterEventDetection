@@ -28,13 +28,15 @@ public class EventDetectorManagementBolt extends BaseRichBolt{
     private String fileNum;
     private Date lastDate = new Date();
     private Date startDate = new Date();
+    private String country;
 
-    public EventDetectorManagementBolt(String filePath, String fileNum)
+    public EventDetectorManagementBolt(String filePath, String fileNum, String country)
     {
         this.filePath = filePath + fileNum + "/" ;
         words = new ArrayList<>();
         ignores = new HashMap<>();
         this.fileNum = fileNum +"/";
+        this.country = country;
     }
 
     @Override
