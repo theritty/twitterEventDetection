@@ -114,8 +114,6 @@ public class CassandraSpout extends BaseRichSpout {
         Row row = iterator.next();
         String tweet = row.getString("tweet");
         String country = row.getString("country");
-        //Date tweetTime = row.getTimestamp("tweettime");
-        //long id = row.getLong("id");
 
         if(tweet == null || tweet.length() == 0) return;
         ArrayList<Long> tmp_roundlist = new ArrayList<>(readRoundlist);
@@ -169,25 +167,15 @@ public class CassandraSpout extends BaseRichSpout {
                 }
             });
 
-            if(testSize!=Integer.MAX_VALUE) {
-                while (roundlist.size() > testSize + trainSize)
-                    roundlist.remove(roundlist.size() - 1);
-            }
+//            if(testSize!=Integer.MAX_VALUE) {
+//                while (roundlist.size() > testSize + trainSize)
+//                    roundlist.remove(roundlist.size() - 1);
+//            }
             int i = 0;
             while(trainSize>i++)
                 readRoundlist.add(roundlist.remove(0));
 
             System.out.println(roundlist);
-
-//            while (roundlist.get(0) < startRound)
-//                roundlist.remove(0);
-//
-//            int j = roundlist.size()-1;
-//
-////            while(roundlist.get(j)>2035083)
-//            while(roundlist.get(j)>2034775)
-////            while(roundlist.get(j)>2034735)
-//                roundlist.remove(j--);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -225,7 +213,6 @@ public class CassandraSpout extends BaseRichSpout {
      */
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-//        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
         declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
     }
 

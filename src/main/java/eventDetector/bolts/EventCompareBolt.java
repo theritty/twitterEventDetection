@@ -110,7 +110,7 @@ public class EventCompareBolt extends BaseRichBolt {
             }
             else
                 countsList.addValue(0L, "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
-            roundPast++;
+            roundPast+=2;
         }
         return countsList;
     }
