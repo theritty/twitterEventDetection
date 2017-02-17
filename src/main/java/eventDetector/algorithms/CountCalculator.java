@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CountCalculator {
 
-  public HashMap<String, Long> addNewEntryToCassCounts(CassandraDao cassandraDao, String tweetTable, long round, String word, String country)
+  public HashMap<String, Long> addNewEntryToCassCounts(CassandraDao cassandraDao, long round, String word, String country)
   {
     long count=0L, allcount=0L;
     HashMap<String, Long> counts = new HashMap<>();
@@ -42,7 +42,7 @@ public class CountCalculator {
     return counts;
   }
 
-  public HashMap<String, Double> getCountOfWord(CassandraDao cassandraDao, String tweetTable, String word, long round, String country) {
+  public HashMap<String, Double> getCountOfWord(CassandraDao cassandraDao, String word, long round, String country) {
     double count, allcount;
     HashMap<String, Double> hm = null;
     try {
@@ -50,7 +50,7 @@ public class CountCalculator {
 
       Iterator<Row> iterator = resultSet.iterator();
       if (!iterator.hasNext()) {
-        HashMap<String, Long> tmp = addNewEntryToCassCounts(cassandraDao, tweetTable, round, word, country);
+        HashMap<String, Long> tmp = addNewEntryToCassCounts(cassandraDao, round, word, country);
         count = tmp.get("count");
         allcount = tmp.get("allcount");
       }
@@ -58,7 +58,7 @@ public class CountCalculator {
         Row row = iterator.next();
         if(row.getLong("count")<0 || row.getLong("totalnumofwords")<0 )
         {
-          HashMap<String, Long> tmp = addNewEntryToCassCounts(cassandraDao, tweetTable, round, word, country);
+          HashMap<String, Long> tmp = addNewEntryToCassCounts(cassandraDao, round, word, country);
           count = tmp.get("count");
           allcount = tmp.get("allcount");
         }

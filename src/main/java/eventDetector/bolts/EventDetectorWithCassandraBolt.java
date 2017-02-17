@@ -21,7 +21,6 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private String filePath;
     private double tfidfEventRate;
     private CassandraDao cassandraDao;
-    private String tweetTable;
     private int componentId;
     private long currentRound = 0;
     private String fileNum;
@@ -30,12 +29,11 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private HashMap<Long, Long> ignores;
     private long ignoredCount = 0L;
 
-    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable )
+    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate )
     {
         this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;
         this.cassandraDao = cassandraDao;
-        this.tweetTable = tweetTable;
         this.fileNum = fileNum + "/";
         this.ignores = new HashMap<>();
     }
@@ -103,7 +101,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         for (long roundNum: rounds)
         {
             TFIDFCalculatorWithCassandra calculator = new TFIDFCalculatorWithCassandra();
-            tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country, tweetTable));
+            tfidfs.add(calculator.tfIdf(cassandraDao, rounds,key,roundNum,country));
         }
         boolean allzero=true;
         for(double tfidf: tfidfs)

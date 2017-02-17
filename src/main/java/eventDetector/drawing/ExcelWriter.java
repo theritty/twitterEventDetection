@@ -9,8 +9,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import topologyBuilder.Constants;
 
 /**
@@ -28,7 +26,6 @@ public class ExcelWriter {
     private static int lastInd ;
     private static int rowNum = 7200;
     private static int columnNum = 200;
-//    private static int parallelismNum = 16;
     private static int parallelismNum = 9;
 
     public static void putStartDate(Date date, String filenum, long round) {
@@ -83,12 +80,8 @@ public class ExcelWriter {
         for (int i=0;i<lastInd;i++) {
             Row row = sheet.createRow(i);
             for (int j = 0; j<columnNum; j++) {
-//                if(columnNum%100==0) System.out.println(i + " " + j);
                 Cell cell = row.createCell(j);
-//                if(times[i][j] == 0)
-//                    cell.setCellValue("");
-//                else
-                    cell.setCellValue(times[i][j]);
+                cell.setCellValue(times[i][j]);
             }
         }
 
@@ -102,10 +95,6 @@ public class ExcelWriter {
         times = new int[rowNum][columnNum];
         times[0][1] = 3;
         times[9][7] = 3;
-//        times[rowNum/8][5] = 5;
-//        times[rowNum/4][136] = 36;
-//        times[rowNum/2][190] = 10;
-//        times[rowNum-10][12] = 11;
         writeExcel();
     }
 

@@ -22,8 +22,6 @@ public class CassandraSpout extends BaseRichSpout {
     private ArrayList<Long> roundlist;
     private ArrayList<Long> readRoundlist;
     private int compareSize;
-    private int trainSize;
-    private int testSize;
     private int componentId;
     private Iterator<Row> iterator = null;
     private long current_round;
@@ -35,11 +33,9 @@ public class CassandraSpout extends BaseRichSpout {
     private long startRound = 0;
 
 
-    public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum) throws Exception {
+    public CassandraSpout(CassandraDao cassandraDao, int compareSize, String filenum) throws Exception {
         this.cassandraDao = cassandraDao;
         this.compareSize = compareSize;
-        this.trainSize = trainSize;
-        this.testSize = testSize;
         roundlist = new ArrayList<>();
         readRoundlist = new ArrayList<>();
         this.fileNum = filenum + "/";
@@ -72,7 +68,7 @@ public class CassandraSpout extends BaseRichSpout {
                     collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
                     try {
                         System.out.println("sleeeeeeeep");
-                            Thread.sleep(120000);
+                        Thread.sleep(120000);
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
@@ -80,7 +76,7 @@ public class CassandraSpout extends BaseRichSpout {
                     collector.emit("CAN", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
 
                     System.out.println("Number of tweets: " + count_tweets);
-                    Thread.sleep(10000000);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -123,7 +119,6 @@ public class CassandraSpout extends BaseRichSpout {
         }
         else {
             splitAndEmit(tweet, current_round, tmp_roundlist, country);
-//            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
                     new Date() + ": Round end from cass spout =>" + current_round );
@@ -167,12 +162,8 @@ public class CassandraSpout extends BaseRichSpout {
                 }
             });
 
-//            if(testSize!=Integer.MAX_VALUE) {
-//                while (roundlist.size() > testSize + trainSize)
-//                    roundlist.remove(roundlist.size() - 1);
-//            }
             int i = 0;
-            while(trainSize>i++)
+            while(3>i++)
                 readRoundlist.add(roundlist.remove(0));
 
             System.out.println(roundlist);
@@ -203,7 +194,7 @@ public class CassandraSpout extends BaseRichSpout {
         getRoundListFromCassandra();
         this.collector = collector;
         this.componentId = context.getThisTaskId()-1;
-        System.out.println("cas: s" + " id: " + componentId);
+        System.out.println("cass: " + componentId);
         this.startRound = roundlist.get(0);
         ExcelWriter.putStartDate(new Date(), fileNum, this.startRound);
     }
