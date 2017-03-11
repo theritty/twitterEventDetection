@@ -57,7 +57,7 @@ public class ExcelWriter {
 
     public static void createTimeChart () throws IOException {
         writeChart++;
-        if(writeChart>= 4) {
+        if(writeChart>= 2) {
             System.out.println("Excel creation started");
             writeExcel();
         }
@@ -83,7 +83,7 @@ public class ExcelWriter {
         for (int i=0;i<lastInd;i++) {
             Row row = sheet.createRow(i);
             for (int j = 0; j<columnNum; j++) {
-                if(columnNum%100==0) System.out.println(i + " " + j);
+//                if(columnNum%100==0) System.out.println(i + " " + j);
                 Cell cell = row.createCell(j);
 //                if(times[i][j] == 0)
 //                    cell.setCellValue("");

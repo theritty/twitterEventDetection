@@ -183,6 +183,9 @@ public class CassandraSpout extends BaseRichSpout {
             readRoundlist.add(roundlist.get(0)-2);
 
 
+
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
