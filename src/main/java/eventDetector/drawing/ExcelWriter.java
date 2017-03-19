@@ -26,8 +26,8 @@ public class ExcelWriter {
     private static int lastInd ;
     private static int rowNum = 86400;
     private static int columnNum = 200;
-//    private static int parallelismNum = 16;
-    private static int parallelismNum = 11;
+    private static int parallelismNum = 16;
+//    private static int parallelismNum = 11;
     private static int writeChart = 0;
 
     public static void putStartDate(Date date, String filenum, long round) {

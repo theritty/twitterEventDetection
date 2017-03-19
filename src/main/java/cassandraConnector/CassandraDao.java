@@ -21,6 +21,14 @@ public class CassandraDao implements Serializable
     private transient PreparedStatement statement_round_get;
     private transient PreparedStatement statement_round_get_from_event;
     private transient PreparedStatement statement_events_get;
+    private transient PreparedStatement statement_processedTweets_get;
+    private transient PreparedStatement statement_processedTweets_getCountry;
+    private transient PreparedStatement statement_processedTweets_getAll;
+    private transient PreparedStatement statement_processedTweets;
+    private transient BoundStatement boundStatement_processedTweets_get;
+    private transient BoundStatement boundStatement_processedTweets_getCountry;
+    private transient BoundStatement boundStatement_processedTweets_getAll;
+    private transient BoundStatement boundStatement_processedTweets;
     private transient BoundStatement boundStatement_events;
     private transient BoundStatement boundStatement_events_get;
     private transient BoundStatement boundStatement_events_get_from_event;
@@ -40,14 +48,20 @@ public class CassandraDao implements Serializable
 
     private static String COUNTS_FIELDS = "(round, word, country, count, totalnumofwords)";
     private static String COUNTS_VALUES = "(?, ?, ?, ?, ?)";
+
+    private static String PROCESSED_FIELDS =   "(round, boltid, spoutSent, boltProcessed, finished, country)";
+    private static String PROCESSED_VALUES = "(?, ?, ?, ?, ?, ?)";
+
     private String tweetsTable;
     private String countsTable;
     private String eventsTable;
+    private String processedTweetsTable;
 
-    public CassandraDao(String tweetsTable, String countsTable, String eventsTable) throws Exception {
+    public CassandraDao(String tweetsTable, String countsTable, String eventsTable, String processedTweetsTable) throws Exception {
         this.tweetsTable = tweetsTable;
         this.countsTable = countsTable;
         this.eventsTable = eventsTable;
+        this.processedTweetsTable = processedTweetsTable;
 
         prepareAll();
     }
@@ -94,6 +108,26 @@ public class CassandraDao implements Serializable
                     "SELECT * FROM " + eventsTable + " WHERE round=? AND country=?;");
         }
 
+        if(statement_processedTweets==null) {
+            statement_processedTweets = CassandraConnection.connect().prepare(
+                    "INSERT INTO " + processedTweetsTable + " " + PROCESSED_FIELDS
+                            + " VALUES " + PROCESSED_VALUES + ";");
+        }
+        if(statement_processedTweets_get==null) {
+            statement_processedTweets_get = CassandraConnection.connect().prepare(
+                    "SELECT * FROM " + processedTweetsTable + " WHERE round=? AND boltid=?;" );
+        }
+
+        if(statement_processedTweets_getCountry==null) {
+            statement_processedTweets_getCountry = CassandraConnection.connect().prepare(
+                    "SELECT * FROM " + processedTweetsTable + " WHERE round=? AND country=? ALLOW FILTERING;" );
+        }
+
+        if(statement_processedTweets_getAll==null) {
+            statement_processedTweets_getAll = CassandraConnection.connect().prepare(
+                    "SELECT * FROM " + processedTweetsTable + " WHERE round=? ;" );
+        }
+
         if(boundStatement_tweets == null)
             boundStatement_tweets = new BoundStatement(statement_tweets);
         if(boundStatement_events == null)
@@ -112,7 +146,46 @@ public class CassandraDao implements Serializable
             boundStatement_rounds_get = new BoundStatement(statement_round_get);
         if(boundStatement_events_get_from_event == null)
             boundStatement_events_get_from_event = new BoundStatement(statement_round_get_from_event);
+        if(boundStatement_processedTweets_get == null)
+            boundStatement_processedTweets_get = new BoundStatement(statement_processedTweets_get);
+        if(boundStatement_processedTweets_getCountry == null)
+            boundStatement_processedTweets_getCountry = new BoundStatement(statement_processedTweets_getCountry);
+        if(boundStatement_processedTweets_getAll == null)
+            boundStatement_processedTweets_getAll = new BoundStatement(statement_processedTweets_getAll);
+        if(boundStatement_processedTweets == null)
+            boundStatement_processedTweets = new BoundStatement(statement_processedTweets);
     }
+
+
+    public void insertIntoProcessed( Object[] values ) throws Exception
+    {
+        prepareAll();
+        CassandraConnection.connect().execute(boundStatement_processedTweets.bind(values));
+    }
+    public ResultSet getProcessed( Object... values ) throws Exception
+    {
+        prepareAll();
+        ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_processedTweets_get.bind(values));
+
+        return resultSet;
+    }
+
+    public ResultSet getProcessedByCountry( Object... values ) throws Exception
+    {
+        prepareAll();
+        ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_processedTweets_getCountry.bind(values));
+
+        return resultSet;
+    }
+
+    public ResultSet getAllProcessed( Object... values ) throws Exception
+    {
+        prepareAll();
+        ResultSet resultSet = CassandraConnection.connect().execute(boundStatement_processedTweets_getAll.bind(values));
+
+        return resultSet;
+    }
+
     public void insertIntoTweets( Object[] values ) throws Exception
     {
         prepareAll();

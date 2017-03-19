@@ -7,14 +7,13 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import cassandraConnector.CassandraDao;
+import com.datastax.driver.core.Row;
 import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class WordCountBolt extends BaseRichBolt {
 
@@ -28,13 +27,19 @@ public class WordCountBolt extends BaseRichBolt {
   private Date lastDate = new Date();
   private Date startDate = new Date();
     private String country;
+  private CassandraDao cassandraDao;
+  private HashMap<Long, Long> counts = new HashMap<>();
+
+  private int USATask=13;
+  private int CANTask=15;
 
 
-  public WordCountBolt(int threshold, String filenum, String country)
+  public WordCountBolt(int threshold, String filenum, String country, CassandraDao cassandraDao)
   {
     this.threshold = threshold;
     this.fileNum = filenum + "/";
       this.country = country;
+    this.cassandraDao = cassandraDao;
   }
   @Override
   public void prepare(Map config, TopologyContext context,
@@ -49,11 +54,48 @@ public class WordCountBolt extends BaseRichBolt {
   public void execute(Tuple tuple) {
     String word = tuple.getStringByField("word");
     long round = tuple.getLongByField("round");
+    boolean blockEnd = tuple.getBooleanByField("blockEnd");
 
 
+    USATask = USATask%2+13;
+    CANTask = CANTask%2+15;
     Date nowDate = new Date();
-    if("dummyBLOCKdone".equals(word))
-       this.collector.emit(new Values(word, round, false, tuple.getValueByField("dates"), tuple.getSourceStreamId()));
+    if(blockEnd) {
+      System.out.println( new Date() + " round end " + round + " for " + country + " for " + componentId);
+
+      try {
+        Iterator<Row> iteratorProcessed = cassandraDao.getProcessed(round, componentId).iterator();
+        List<Object> values = new ArrayList<>();
+        values.add(round);
+        values.add(componentId);
+        values.add(iteratorProcessed.next().getLong("spoutSent"));
+        values.add(counts.get(round));
+        values.add(true);
+        values.add(country);
+        cassandraDao.insertIntoProcessed(values.toArray());
+
+        Iterator<Row> iteratorByCountry = cassandraDao.getProcessedByCountry(round, country).iterator();
+        while (iteratorByCountry.hasNext()){
+          Row r = iteratorByCountry.next();
+          if(r.getInt("boltId")<13 && !r.getBool("finished")) {
+            System.out.println("I am " + componentId + ", " +  r.getInt("boltId") + " is not finished.");
+            return;
+          }
+        }
+          System.out.println("USA sending finish");
+          this.collector.emitDirect(13, new Values(word, round, true, tuple.getValueByField("dates"), "USA"));
+          this.collector.emitDirect(14, new Values(word, round, true, tuple.getValueByField("dates"), "USA"));
+          System.out.println("CAN sending finish");
+          this.collector.emitDirect(15, new Values(word, round, true, tuple.getValueByField("dates"), "CAN"));
+          this.collector.emitDirect(16, new Values(word, round, true, tuple.getValueByField("dates"), "CAN"));
+
+        counts.remove(round);
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
 
     TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Word count " + componentId + " working "  + round);
     if(round > currentRound)
@@ -88,7 +130,11 @@ public class WordCountBolt extends BaseRichBolt {
     countsForRounds.put(word, count);
 
     if (count == threshold) {
-      this.collector.emit(new Values(word, round, false, tuple.getValueByField("dates"), tuple.getSourceStreamId()));
+      if(country.equals("USA"))
+        this.collector.emitDirect(USATask++, new Values(word, round, false, tuple.getValueByField("dates"), country));
+      else
+        this.collector.emitDirect(CANTask++, new Values(word, round, false, tuple.getValueByField("dates"), country));
+
     }
     lastDate = new Date();
 

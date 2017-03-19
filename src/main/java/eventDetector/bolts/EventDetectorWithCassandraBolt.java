@@ -58,10 +58,30 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         String key = tuple.getStringByField("key");
         String country = (String) tuple.getValueByField( "country" );
         long round = tuple.getLongByField("round");
+        boolean blockEnd = tuple.getBooleanByField("blockEnd");
 
         Date nowDate = new Date();
-        if("dummyBLOCKdone".equals(key))
+        if("dummyBLOCKdone".equals(key)) {
             this.collector.emit(new Values(key, new ArrayList<Double>(), round, country));
+        }
+
+        if(blockEnd) {
+            try {
+                System.out.println("comp id :" + componentId + "finished");
+                List<Object> values = new ArrayList<>();
+                values.add(round);
+                values.add(componentId);
+                values.add(0L);
+                values.add(0L);
+                values.add(true);
+                values.add(country);
+                cassandraDao.insertIntoProcessed(values.toArray());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return;
+        }
 
         TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() +  " Detector " + componentId + " working " + round);
 

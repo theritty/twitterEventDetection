@@ -68,8 +68,9 @@ public class getEventInfo {
     String TWEETS_TABLE = properties.getProperty("tweets.table");
     String COUNTS_TABLE = properties.getProperty("counts.table");
     String EVENTS_TABLE = properties.getProperty("events.table");
+    String PROCESSEDTWEET_TABLE = properties.getProperty("processed_tweets.table");
 
-    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE, EVENTS_TABLE);
+    CassandraDao cassandraDao = new CassandraDao(TWEETS_TABLE, COUNTS_TABLE, EVENTS_TABLE, PROCESSEDTWEET_TABLE);
     ArrayList<Long> roundlist = new ArrayList<>();
     ResultSet resultSet;
     try {

@@ -10,6 +10,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
 import eventDetector.drawing.ExcelWriter;
+import jnr.ffi.annotations.In;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -34,9 +35,19 @@ public class CassandraSpout extends BaseRichSpout {
     private Date lastDate = new Date();
     private long startRound = 2033719;
     private long endRound = 2033719;
+    private int USATask=0;
+    private int CANTask=0;
+
+    private HashMap<String, Integer> USAwordsNbolts = new HashMap<>();
+    private HashMap<String, Integer> CANwordsNbolts = new HashMap<>();
+
+    private int CANTaskNumber = 0;
+    private int USATaskNumber = 0;
+
+    private HashMap<Integer, Long> counts = new HashMap<>();
 
 
-    public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum, long start, long end) throws Exception {
+    public CassandraSpout(CassandraDao cassandraDao, int trainSize, int compareSize, int testSize, String filenum, long start, long end, int canTaskNum, int usaTaskNum) throws Exception {
         this.cassandraDao = cassandraDao;
         this.compareSize = compareSize;
         this.trainSize = trainSize;
@@ -47,6 +58,8 @@ public class CassandraSpout extends BaseRichSpout {
 
         this.startRound = start;
         this.endRound = end;
+        this.CANTaskNumber = canTaskNum;
+        this.USATaskNumber = usaTaskNum;
     }
     @Override
     public void ack(Object msgId) {}
@@ -67,6 +80,9 @@ public class CassandraSpout extends BaseRichSpout {
          * we will wait and then return
          */
 
+        USATask = USATask%USATaskNumber+3;
+        CANTask = CANTask%CANTaskNumber+USATaskNumber+3;
+
         Date nowDate = new Date();
         if(iterator == null || !iterator.hasNext())
         {
@@ -74,8 +90,9 @@ public class CassandraSpout extends BaseRichSpout {
             {
                 try {
 //          getEventInfo.report();
-                    collector.emit("USA", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
-                    collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
+                    for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++)
+                        collector.emitDirect(k, new Values("dummy", current_round+1, true, new ArrayList<Long>()));
+
                     try {
                         System.out.println("sleeeeeeeep");
                             Thread.sleep(120000);
@@ -83,8 +100,8 @@ public class CassandraSpout extends BaseRichSpout {
                     catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    collector.emit("USA", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
-                    collector.emit("CAN", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
+                    for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++)
+                        collector.emitDirect(k, new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
 
                     System.out.println("Number of tweets: " + count_tweets);
                     Thread.sleep(10000000);
@@ -121,8 +138,84 @@ public class CassandraSpout extends BaseRichSpout {
         }
         else {
             splitAndEmit(tweet, current_round, tmp_roundlist, country);
-            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
-            collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
+
+            try {
+                for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++) {
+                    List<Object> values = new ArrayList<>();
+                    values.add(current_round);
+                    values.add(k-1);
+                    values.add(counts.get(k));
+                    values.add(0L);
+                    values.add(false);
+                    if(k<USATaskNumber+3) values.add("USA");
+                    else values.add("CAN");
+                    cassandraDao.insertIntoProcessed(values.toArray());
+                }
+                counts.clear();
+                CANwordsNbolts.clear();
+                USAwordsNbolts.clear();
+                for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++)
+                    collector.emitDirect(k, new Values("dummy", current_round, true, new ArrayList<Long>()));
+
+
+                List<Object> values = new ArrayList<>();
+                values.add(current_round);
+                values.add(12);
+                values.add(0L);
+                values.add(0L);
+                values.add(false);
+                values.add("USA");
+                cassandraDao.insertIntoProcessed(values.toArray());
+
+                values = new ArrayList<>();
+                values.add(current_round);
+                values.add(13);
+                values.add(0L);
+                values.add(0L);
+                values.add(false);
+                values.add("USA");
+                cassandraDao.insertIntoProcessed(values.toArray());
+
+
+                List<Object> values2 = new ArrayList<>();
+                values2.add(current_round);
+                values2.add(14);
+                values2.add(0L);
+                values2.add(0L);
+                values2.add(false);
+                values2.add("CAN");
+                cassandraDao.insertIntoProcessed(values2.toArray());
+
+                values2 = new ArrayList<>();
+                values2.add(current_round);
+                values2.add(15);
+                values2.add(0L);
+                values2.add(0L);
+                values2.add(false);
+                values2.add("CAN");
+                cassandraDao.insertIntoProcessed(values2.toArray());
+
+
+                TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass sleeping " + current_round);
+                while(true) {
+                    Iterator<Row> iteratorProcessed = cassandraDao.getAllProcessed(current_round).iterator();
+                    boolean fin = true;
+                    while (iteratorProcessed.hasNext()) {
+                        if(!iteratorProcessed.next().getBool("finished")) fin = false;
+                    }
+                    if(fin) break;
+                    else Thread.sleep(2000);
+                }
+                TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass wake up " + current_round);
+
+
+                TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
+                        new Date() + ": Round end from cass spout =>" + current_round );
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
                     new Date() + ": Round end from cass spout =>" + current_round );
 
@@ -147,7 +240,32 @@ public class CassandraSpout extends BaseRichSpout {
         List<String> tweets = Arrays.asList(tweetSentence.split(" "));
         for (String tweet : tweets) {
             if (!tweet.equals("") && tweet.length() > 2 && !tweet.equals("hiring") && !tweet.equals("careerarc")) {
-                this.collector.emit(country, new Values(tweet, round, false, roundlist));
+                int taskNum;
+                if(country.equals("USA")) {
+                    if(USAwordsNbolts.get(tweet)!= null)
+                        taskNum = USAwordsNbolts.get(tweet);
+                    else
+                        taskNum = USATask++;
+
+                    this.collector.emitDirect(taskNum, new Values(tweet, round, false, roundlist));
+                    if (counts.get(taskNum) != null)
+                        counts.put(taskNum, counts.get(taskNum) + 1);
+                    else
+                        counts.put(taskNum,1L);
+                }
+                else {
+                    if(CANwordsNbolts.get(tweet)!= null)
+                        taskNum = CANwordsNbolts.get(tweet);
+                    else
+                        taskNum = CANTask++;
+
+                    this.collector.emitDirect(taskNum, new Values(tweet, round, false, roundlist));
+                    if (counts.get(taskNum) != null)
+                        counts.put(taskNum, counts.get(taskNum) + 1);
+                    else
+                        counts.put(taskNum,1L);
+                }
+
             }
         }
     }
@@ -222,8 +340,9 @@ public class CassandraSpout extends BaseRichSpout {
      */
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
-        declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
+        declarer.declare( new Fields("word", "round", "blockEnd", "dates"));
+//        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
+//        declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
     }
 
 }
