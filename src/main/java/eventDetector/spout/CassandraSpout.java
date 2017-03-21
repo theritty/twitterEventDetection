@@ -10,7 +10,6 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import cassandraConnector.CassandraDao;
 import eventDetector.drawing.ExcelWriter;
-import jnr.ffi.annotations.In;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -90,16 +89,17 @@ public class CassandraSpout extends BaseRichSpout {
             {
                 try {
 //          getEventInfo.report();
-                    for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++)
-                        collector.emitDirect(k, new Values("dummy", current_round+1, true, new ArrayList<Long>()));
+//                    for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++)
+//                        collector.emitDirect(k, new Values("dummy", current_round+1, true, new ArrayList<Long>()));
 
                     try {
-                        System.out.println("sleeeeeeeep");
+                        System.out.println(new Date() + " sleeeeeeeep");
                             Thread.sleep(120000);
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    System.out.println("dummy spout");
                     for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++)
                         collector.emitDirect(k, new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
 
@@ -154,13 +154,15 @@ public class CassandraSpout extends BaseRichSpout {
                 counts.clear();
                 CANwordsNbolts.clear();
                 USAwordsNbolts.clear();
+
+//                System.out.println("Spout sending done for round " + current_round);
                 for(int k=3;k<CANTaskNumber+USATaskNumber+3;k++)
                     collector.emitDirect(k, new Values("dummy", current_round, true, new ArrayList<Long>()));
 
 
                 List<Object> values = new ArrayList<>();
                 values.add(current_round);
-                values.add(12);
+                values.add(13);
                 values.add(0L);
                 values.add(0L);
                 values.add(false);
@@ -169,7 +171,7 @@ public class CassandraSpout extends BaseRichSpout {
 
                 values = new ArrayList<>();
                 values.add(current_round);
-                values.add(13);
+                values.add(14);
                 values.add(0L);
                 values.add(0L);
                 values.add(false);
@@ -179,7 +181,7 @@ public class CassandraSpout extends BaseRichSpout {
 
                 List<Object> values2 = new ArrayList<>();
                 values2.add(current_round);
-                values2.add(14);
+                values2.add(15);
                 values2.add(0L);
                 values2.add(0L);
                 values2.add(false);
@@ -188,7 +190,7 @@ public class CassandraSpout extends BaseRichSpout {
 
                 values2 = new ArrayList<>();
                 values2.add(current_round);
-                values2.add(15);
+                values2.add(16);
                 values2.add(0L);
                 values2.add(0L);
                 values2.add(false);

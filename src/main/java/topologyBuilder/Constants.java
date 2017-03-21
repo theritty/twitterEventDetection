@@ -1,5 +1,7 @@
 package topologyBuilder;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Created by ceren on 10.05.2016.
  */
@@ -10,6 +12,7 @@ public class Constants {
     public static final String COUNTRY2_COUNT_BOLT_ID = "count-bolt2";
     public static final String COUNTRY2_EVENT_DETECTOR_BOLT = "event-detector-bolt2";
     public static final String COUNTRY2_EVENT_COMPARE_BOLT = "event-compare-bolt2";
+    public static ReentrantLock lock = new ReentrantLock();
 
 
 //    public static final String WORKHISTORY_FILE = "/home/ceren/Desktop/";

@@ -5,6 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
@@ -27,6 +28,7 @@ public class EventCompareBolt extends BaseRichBolt {
     private long currentRound = 0;
     private Date lastDate = new Date();
     private Date startDate = new Date();
+    private int countStreamEnd = 0;
 
     HashMap<Long, ArrayList<HashMap<String, Object>>> wordList;
 
@@ -55,8 +57,11 @@ public class EventCompareBolt extends BaseRichBolt {
 
         Date nowDate = new Date();
         if("dummyBLOCKdone".equals(key)) {
+            System.out.println("dummy comp " );
             try {
-                ExcelWriter.createTimeChart();
+                countStreamEnd++;
+                if(countStreamEnd==4)
+                    ExcelWriter.createTimeChart();
             } catch (IOException e) {
                 e.printStackTrace();
             }

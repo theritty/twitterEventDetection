@@ -30,8 +30,12 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private HashMap<Long, Long> ignores;
     private long ignoredCount = 0L;
     private String country;
+    private ArrayList<Long> finished = new ArrayList<>();
+    private int countStreamEnd = 0;
+    private int CANTaskNumber = 0;
+    private int USATaskNumber = 0;
 
-    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable, String country )
+    public EventDetectorWithCassandraBolt(CassandraDao cassandraDao, String filePath, String fileNum, double tfidfEventRate, String tweetTable, String country, int USATaskNumber, int CANTaskNumber )
     {
         this.tfidfEventRate = tfidfEventRate;
         this.filePath = filePath + fileNum;
@@ -40,6 +44,8 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         this.fileNum = fileNum + "/";
         this.ignores = new HashMap<>();
         this.country = country;
+        this.USATaskNumber = USATaskNumber;
+        this.CANTaskNumber = CANTaskNumber;
     }
 
     @Override
@@ -62,12 +68,18 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
         Date nowDate = new Date();
         if("dummyBLOCKdone".equals(key)) {
-            this.collector.emit(new Values(key, new ArrayList<Double>(), round, country));
+            System.out.println("dummy det " + componentId);
+            countStreamEnd++;
+            if((country.equals("USA") && countStreamEnd==USATaskNumber) || (country.equals("CAN") && countStreamEnd==CANTaskNumber))
+                this.collector.emit(new Values(key, new ArrayList<Double>(), round, country));
+            return;
         }
 
         if(blockEnd) {
+            if(finished.contains(round)) return;
+            finished.add(round);
             try {
-                System.out.println("comp id :" + componentId + "finished");
+                System.out.println("comp id :" + componentId + " finished for round " + round);
                 List<Object> values = new ArrayList<>();
                 values.add(round);
                 values.add(componentId);
@@ -75,7 +87,9 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
                 values.add(0L);
                 values.add(true);
                 values.add(country);
+                Constants.lock.lock();
                 cassandraDao.insertIntoProcessed(values.toArray());
+                Constants.lock.unlock();
             } catch (Exception e) {
                 e.printStackTrace();
             }

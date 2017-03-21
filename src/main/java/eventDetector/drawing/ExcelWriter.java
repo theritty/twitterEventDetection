@@ -56,11 +56,9 @@ public class ExcelWriter {
     }
 
     public static void createTimeChart () throws IOException {
-        writeChart++;
-        if(writeChart>= 2) {
-            System.out.println("Excel creation started");
+            System.out.println(new Date() + "Excel creation started");
             writeExcel();
-        }
+
     }
 
 

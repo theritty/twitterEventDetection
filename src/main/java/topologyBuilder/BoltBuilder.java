@@ -49,10 +49,10 @@ public class BoltBuilder {
 
 //        EventDetectorManagementBolt eventDetectorManagementBolt = new EventDetectorManagementBolt(Constants.RESULT_FILE_PATH, FILENUM);
         EventDetectorWithCassandraBolt eventDetectorBolt = new EventDetectorWithCassandraBolt(cassandraDao,
-                Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE, "USA");
+                Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE, "USA", USA_TASK_NUM, CAN_TASK_NUM);
 //        EventDetectorManagementBolt eventDetectorManagementBolt2 = new EventDetectorManagementBolt(Constants.RESULT_FILE_PATH, FILENUM);
         EventDetectorWithCassandraBolt eventDetectorBolt2 = new EventDetectorWithCassandraBolt(cassandraDao,
-                Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE, "CAN");
+                Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE, TWEETS_TABLE, "CAN", USA_TASK_NUM, CAN_TASK_NUM);
 
 //    EventDetectorManagerWithCassandraBolt eventDetectorManagerBolt = new EventDetectorManagerWithCassandraBolt(cassandraDao);
         EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM);

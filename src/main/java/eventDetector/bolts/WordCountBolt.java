@@ -13,6 +13,7 @@ import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
+import java.io.IOException;
 import java.util.*;
 
 public class WordCountBolt extends BaseRichBolt {
@@ -57,22 +58,46 @@ public class WordCountBolt extends BaseRichBolt {
     boolean blockEnd = tuple.getBooleanByField("blockEnd");
 
 
-    USATask = USATask%2+13;
-    CANTask = CANTask%2+15;
+    USATask = USATask%2+14;
+    CANTask = CANTask%2+16;
     Date nowDate = new Date();
+
+    if("dummyBLOCKdone".equals(word)) {
+      System.out.println("dummy word " + componentId);
+      if(country.equals("USA")) {
+        this.collector.emitDirect(14, new Values(word, round, true, tuple.getValueByField("dates"), "USA"));
+        this.collector.emitDirect(15, new Values(word, round, true, tuple.getValueByField("dates"), "USA"));
+      }
+      else {
+        this.collector.emitDirect(16, new Values(word, round, true, tuple.getValueByField("dates"), "CAN"));
+        this.collector.emitDirect(17, new Values(word, round, true, tuple.getValueByField("dates"), "CAN"));
+      }
+      return;
+    }
+
     if(blockEnd) {
-      System.out.println( new Date() + " round end " + round + " for " + country + " for " + componentId);
+//      System.out.println( new Date() + " round end " + round + " for " + country + " for " + componentId);
 
       try {
         Iterator<Row> iteratorProcessed = cassandraDao.getProcessed(round, componentId).iterator();
         List<Object> values = new ArrayList<>();
         values.add(round);
         values.add(componentId);
-        values.add(iteratorProcessed.next().getLong("spoutSent"));
+        if(iteratorProcessed.hasNext()) {
+          Row x = iteratorProcessed.next();
+          if(!x.isNull("spoutSent"))
+            values.add(x.getLong("spoutSent"));
+          else
+            values.add(0L);
+        }
+        else
+          values.add(0L);
         values.add(counts.get(round));
         values.add(true);
         values.add(country);
+        Constants.lock.lock();
         cassandraDao.insertIntoProcessed(values.toArray());
+        Constants.lock.unlock();
 
         Iterator<Row> iteratorByCountry = cassandraDao.getProcessedByCountry(round, country).iterator();
         while (iteratorByCountry.hasNext()){
@@ -82,12 +107,15 @@ public class WordCountBolt extends BaseRichBolt {
             return;
           }
         }
-          System.out.println("USA sending finish");
-          this.collector.emitDirect(13, new Values(word, round, true, tuple.getValueByField("dates"), "USA"));
+//          System.out.println(componentId + " sending done for round " + round);
+        if(country.equals("USA")) {
           this.collector.emitDirect(14, new Values(word, round, true, tuple.getValueByField("dates"), "USA"));
-          System.out.println("CAN sending finish");
-          this.collector.emitDirect(15, new Values(word, round, true, tuple.getValueByField("dates"), "CAN"));
+          this.collector.emitDirect(15, new Values(word, round, true, tuple.getValueByField("dates"), "USA"));
+        }
+        else {
           this.collector.emitDirect(16, new Values(word, round, true, tuple.getValueByField("dates"), "CAN"));
+          this.collector.emitDirect(17, new Values(word, round, true, tuple.getValueByField("dates"), "CAN"));
+        }
 
         counts.remove(round);
 
