@@ -1,15 +1,15 @@
 package eventDetector.spout;
 
-import backtype.storm.spout.SpoutOutputCollector;
-import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseRichSpout;
-import backtype.storm.tuple.Fields;
-import backtype.storm.tuple.Values;
+import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import cassandraConnector.CassandraDao;
 import eventDetector.drawing.ExcelWriter;
+import org.apache.storm.spout.SpoutOutputCollector;
+import org.apache.storm.task.TopologyContext;
+import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.topology.base.BaseRichSpout;
+import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Values;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
@@ -78,7 +78,7 @@ public class CassandraSpout extends BaseRichSpout {
                     collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
                     try {
                         System.out.println("sleeeeeeeep");
-                            Thread.sleep(120000);
+                        Thread.sleep(120000);
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
@@ -130,7 +130,7 @@ public class CassandraSpout extends BaseRichSpout {
         lastDate = new Date();
 
         if(!start )
-            ExcelWriter.putData(componentId,nowDate,lastDate, "cassSpout", "both", current_round);
+            ExcelWriter.putData(componentId,nowDate,lastDate, "cassSpout", "both", current_round, cassandraDao);
 
 
         try {

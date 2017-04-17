@@ -1,15 +1,15 @@
 package eventDetector.bolts;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Tuple;
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import eventDetector.drawing.ExcelWriter;
 import eventDetector.drawing.LineChart;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
+import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.topology.base.BaseRichBolt;
+import org.apache.storm.tuple.Tuple;
 import org.jfree.data.category.DefaultCategoryDataset;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
@@ -56,7 +56,7 @@ public class EventCompareBolt extends BaseRichBolt {
         Date nowDate = new Date();
         if("dummyBLOCKdone".equals(key)) {
             try {
-                ExcelWriter.createTimeChart();
+                ExcelWriter.createTimeChart(cassandraDao);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -94,7 +94,7 @@ public class EventCompareBolt extends BaseRichBolt {
         }
         lastDate = new Date();
 
-        ExcelWriter.putData(componentId,nowDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
+        ExcelWriter.putData(componentId,nowDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound, cassandraDao);
 
     }
 
@@ -121,4 +121,5 @@ public class EventCompareBolt extends BaseRichBolt {
     public void declareOutputFields(OutputFieldsDeclarer declarer)
     {
     }
+
 }

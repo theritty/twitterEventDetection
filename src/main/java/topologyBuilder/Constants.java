@@ -1,8 +1,6 @@
 package topologyBuilder;
 
-/**
- * Created by ceren on 10.05.2016.
- */
+
 public class Constants {
     public static final String COUNTRY1_COUNT_BOLT_ID = "count-bolt1";
     public static final String COUNTRY1_EVENT_DETECTOR_BOLT = "event-detector-bolt1";
@@ -24,5 +22,6 @@ public class Constants {
 
     public static final String CASS_SPOUT_ID = "cassandraSpout";
     public static final String TOPOLOGY_NAME = "word-count-topology";
+
 
 }

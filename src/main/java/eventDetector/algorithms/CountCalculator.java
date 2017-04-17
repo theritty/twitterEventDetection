@@ -1,8 +1,8 @@
 package eventDetector.algorithms;
 
+import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import cassandraConnector.CassandraDao;
 
 import java.util.ArrayList;
 import java.util.HashMap;

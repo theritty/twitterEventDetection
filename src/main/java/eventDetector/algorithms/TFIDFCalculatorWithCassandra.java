@@ -1,7 +1,9 @@
 package eventDetector.algorithms;
 
 import cassandraConnector.CassandraDao;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class TFIDFCalculatorWithCassandra {

@@ -14,7 +14,7 @@ public class getSpecificTweetList {
     }
 
     public static void getSpecificTweets(long round, String word) throws Exception {
-        CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events");
+        CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events", "processtimes.table");
         ResultSet resultSet = cassandraDao.getTweetsByRound(round);
 
         Iterator<Row> iterator = resultSet.iterator();
@@ -26,8 +26,8 @@ public class getSpecificTweetList {
         }
     }
     public static void prepareDemo() throws Exception {
-        CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events");
-        CassandraDao cassandraDao2 = new CassandraDao("tweetsdemo", "countsdemo", "eventsdemo");
+        CassandraDao cassandraDao = new CassandraDao("tweets", "counts", "events","processtimes.table");
+        CassandraDao cassandraDao2 = new CassandraDao("tweetsdemo", "countsdemo", "eventsdemo","processtimes.table");
         long round = 2034735;
         while(round<=2034751) {
             prepare(cassandraDao,cassandraDao2,round);

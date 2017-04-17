@@ -1,19 +1,22 @@
 package eventDetector.bolts;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Fields;
-import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
-import eventDetector.algorithms.TFIDFCalculatorWithCassandra;
 import cassandraConnector.CassandraDao;
+import eventDetector.algorithms.TFIDFCalculatorWithCassandra;
 import eventDetector.drawing.ExcelWriter;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
+import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.topology.base.BaseRichBolt;
+import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
@@ -139,7 +142,7 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
                     "Key: " + key );
         }
         lastDate = new Date();
-        ExcelWriter.putData(componentId,nowDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
+        ExcelWriter.putData(componentId,nowDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound, cassandraDao);
 
     }
 
@@ -151,4 +154,5 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     {
         declarer.declare(new Fields( "key", "tfidfs", "round", "country"));
     }
+
 }

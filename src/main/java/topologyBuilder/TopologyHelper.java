@@ -1,6 +1,6 @@
 package topologyBuilder;
 
-import backtype.storm.Config;
+import org.apache.storm.Config;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class TopologyHelper {
         return config;
     }
 
-    protected static synchronized Properties loadProperties( String propertiesFile ) throws IOException
+    public static synchronized Properties loadProperties(String propertiesFile) throws IOException
     {
         try {
             Properties properties = new Properties();
