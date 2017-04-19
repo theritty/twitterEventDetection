@@ -28,7 +28,7 @@ public class CountCalculator {
         String[] splittedList = tweet.split(" ");
         for(String s : splittedList) {
           allcount++;
-          if ((s != null || s.length() > 0) && (s.equals(word) || s.equals("#" + word))) {
+          if ((s != null || s.length() > 0) && s.equals(word) ) {
             count++;
           }
         }

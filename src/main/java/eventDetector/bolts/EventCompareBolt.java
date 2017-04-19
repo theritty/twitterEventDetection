@@ -8,6 +8,7 @@ import backtype.storm.tuple.Tuple;
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+import eventDetector.algorithms.CountCalculator;
 import eventDetector.drawing.ExcelWriter;
 import eventDetector.drawing.LineChart;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -97,7 +98,7 @@ public class EventCompareBolt extends BaseRichBolt {
     }
 
     protected DefaultCategoryDataset getCountListFromCass(long round, String key, String country) throws Exception {
-        long roundPast = round-10;
+        long roundPast = round-18;
 
         DefaultCategoryDataset countsList = new DefaultCategoryDataset( );
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
@@ -108,8 +109,12 @@ public class EventCompareBolt extends BaseRichBolt {
                 Row row = iterator.next();
                 countsList.addValue(row.getLong("count"), "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
             }
-            else
-                countsList.addValue(0L, "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
+            else {
+//                countsList.addValue(0L, "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
+                CountCalculator c = new CountCalculator();
+                long ct = c.addNewEntryToCassCounts(cassandraDao, roundPast, key, country).get("count");
+                countsList.addValue(ct, "counts", df.format(new Date(new Long(roundPast) * 12 * 60 * 1000)));
+            }
             roundPast+=2;
         }
         return countsList;
