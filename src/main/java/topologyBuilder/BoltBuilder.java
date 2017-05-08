@@ -33,16 +33,27 @@ public class BoltBuilder {
         CassandraSpout cassandraSpout = new CassandraSpout(cassandraDao,
                 Integer.parseInt(properties.getProperty("topology.compare.size")), FILENUM);
         WordCountBolt countBoltCAN = new WordCountBolt(COUNT_THRESHOLD, FILENUM);
+        WordCountBolt countBoltUSA = new WordCountBolt(COUNT_THRESHOLD, FILENUM);
+        EventDetectorWithCassandraBolt eventDetectorBolt1 = new EventDetectorWithCassandraBolt(cassandraDao,
+                Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE);
         EventDetectorWithCassandraBolt eventDetectorBolt2 = new EventDetectorWithCassandraBolt(cassandraDao,
                 Constants.RESULT_FILE_PATH, FILENUM, TFIDF_EVENT_RATE);
 
         EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM);
         builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout,1);
+
+        builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBoltUSA,1).
+                fieldsGrouping(Constants.CASS_SPOUT_ID, "USA", new Fields("word"));
         builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBoltCAN,1).
                 fieldsGrouping(Constants.CASS_SPOUT_ID, "CAN", new Fields("word"));
+
+        builder.setBolt( Constants.COUNTRY1_EVENT_DETECTOR_BOLT, eventDetectorBolt1,1).
+                shuffleGrouping(Constants.COUNTRY1_COUNT_BOLT_ID);
         builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt2,1).
                 shuffleGrouping(Constants.COUNTRY2_COUNT_BOLT_ID);
-        builder.setBolt( Constants.COUNTRY2_EVENT_COMPARE_BOLT, eventCompareBolt,1).
+
+        builder.setBolt( Constants.EVENT_COMPARE_BOLT, eventCompareBolt,1).
+                globalGrouping(Constants.COUNTRY1_EVENT_DETECTOR_BOLT).
                 globalGrouping(Constants.COUNTRY2_EVENT_DETECTOR_BOLT);
 
         return builder.createTopology();

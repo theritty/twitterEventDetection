@@ -67,6 +67,7 @@ public class CassandraSpout extends BaseRichSpout {
                 if(sent) return;
                 try {
 //          getEventInfo.report();
+                    collector.emit("USA", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
                     collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
                     try {
                         System.out.println("sleeeeeeeep");
@@ -76,6 +77,7 @@ public class CassandraSpout extends BaseRichSpout {
                         e.printStackTrace();
                     }
 
+                    collector.emit("USA", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
                     collector.emit("CAN", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
                     sent=true;
 
@@ -94,18 +96,18 @@ public class CassandraSpout extends BaseRichSpout {
 
             if (readRoundlist.size() > compareSize) readRoundlist.remove(0);
 
-//            try {
+            try {
                 if(!start) {
-//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass sleeping " + current_round);
-//                    Thread.sleep(120000);
-//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass wake up " + current_round);
+                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass sleeping " + current_round);
+                    Thread.sleep(10000);
+                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass wake up " + current_round);
                     ExcelWriter.putData(componentId,startDate,lastDate, "cassSpout", "both", current_round);
                 }
                 else start = false;
-//            }
-//            catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 //            try {
 ////                TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass sleeping " + current_round);
 //                Thread.sleep(1000);
@@ -131,6 +133,7 @@ public class CassandraSpout extends BaseRichSpout {
         }
         else {
             splitAndEmit(tweet, current_round, tmp_roundlist, country);
+            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
                     new Date() + ": Round end from cass spout =>" + current_round );
@@ -220,6 +223,7 @@ public class CassandraSpout extends BaseRichSpout {
      */
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
         declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
     }
 
