@@ -31,6 +31,7 @@ public class CassandraSpout extends BaseRichSpout {
     private Date startDate = new Date();
     private Date lastDate = new Date();
     private long startRound = 0;
+    private boolean sent=false;
 
 
     public CassandraSpout(CassandraDao cassandraDao, int compareSize, String filenum) throws Exception {
@@ -59,11 +60,11 @@ public class CassandraSpout extends BaseRichSpout {
          * we will wait and then return
          */
 
-        boolean sent=false;
         if(iterator == null || !iterator.hasNext())
         {
             if(roundlist.size()==0)
             {
+                if(sent) return;
                 try {
 //          getEventInfo.report();
                     collector.emit("CAN", new Values("dummy", current_round+1, true, new ArrayList<Long>()));
@@ -74,10 +75,9 @@ public class CassandraSpout extends BaseRichSpout {
                     catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    if(!sent) {
-                        collector.emit("CAN", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
-                        sent=true;
-                    }
+
+                    collector.emit("CAN", new Values("dummyBLOCKdone", current_round+1, true, new ArrayList<Long>()));
+                    sent=true;
 
                     System.out.println("Number of tweets: " + count_tweets);
 
