@@ -33,6 +33,19 @@ public class CassandraSpout extends BaseRichSpout {
     private long startRound = 0;
     private boolean sent=false;
 
+    private int USATaskNumber = 5;
+    private int CANTaskNumber = 5;
+
+    private int numWorkers = 1;
+    private int numDetectors = 1;
+
+
+    private int USATask = 0;
+    private int CANTask = 0;
+
+    private HashMap<String, Integer> USAwordMap = new HashMap<>();
+    private HashMap<String, Integer> CANwordMap = new HashMap<>();
+
 
     public CassandraSpout(CassandraDao cassandraDao, int compareSize, String filenum) throws Exception {
         this.cassandraDao = cassandraDao;
@@ -99,13 +112,29 @@ public class CassandraSpout extends BaseRichSpout {
             try {
                 if(!start) {
                     TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass sleeping " + current_round);
+                    USAwordMap.clear();
+                    CANwordMap.clear();
                     Thread.sleep(10000);
                     TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass wake up " + current_round);
+
+
+                    TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass sleeping " + current_round);
+                    while(true) {
+                        Iterator<Row> iteratorProcessed = cassandraDao.getAllProcessed(current_round).iterator();
+                        boolean fin = true;
+                        while (iteratorProcessed.hasNext()) {
+                            if(!iteratorProcessed.next().getBool("finished")) fin = false;
+                        }
+                        if(fin) break;
+                        else Thread.sleep(2000);
+                    }
+                    TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass wake up " + current_round);
+
                     ExcelWriter.putData(componentId,startDate,lastDate, "cassSpout", "both", current_round);
                 }
                 else start = false;
             }
-            catch (InterruptedException e) {
+            catch (Exception e) {
                 e.printStackTrace();
             }
 //            try {
@@ -133,8 +162,25 @@ public class CassandraSpout extends BaseRichSpout {
         }
         else {
             splitAndEmit(tweet, current_round, tmp_roundlist, country);
-            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
-            collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
+
+            for(int k=2+numWorkers;k<CANTaskNumber+USATaskNumber+2+numWorkers+numDetectors;k++) {
+                try {
+                    List<Object> values = new ArrayList<>();
+                    values.add(current_round);
+                    values.add(k-1);
+                    values.add(false);
+                    cassandraDao.insertIntoProcessed(values.toArray());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            for(int k=2+numWorkers;k<CANTaskNumber+USATaskNumber+2+numWorkers;k++)
+                collector.emitDirect(k, new Values("BLOCKEND", current_round, true, tmp_roundlist));
+
+
+
+//            collector.emit("USA", new Values("BLOCKEND", current_round, true, tmp_roundlist));
+//            collector.emit("CAN", new Values("BLOCKEND", current_round, true, tmp_roundlist));
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
                     new Date() + ": Round end from cass spout =>" + current_round );
 
@@ -151,14 +197,40 @@ public class CassandraSpout extends BaseRichSpout {
 //        }
     }
 
+    public void sendToNextTaskNum(String country, String tweet, long round, ArrayList<Long> roundlist) {
+        if(country.equals("USA")) {
+            if(USAwordMap.containsKey(tweet)) {
+                this.collector.emitDirect(USAwordMap.get(tweet), new Values(tweet, round, false, roundlist));
+            }
+            else {
+                this.collector.emitDirect(USATask, new Values(tweet, round, false, roundlist));
+                USAwordMap.put(tweet, USATask++);
+                if ((USATask < 2 + numWorkers) || (USATask >= USATaskNumber + 2 + numWorkers))
+                    USATask = 2 + numWorkers;
+            }
+        }
+        else {
+            if(CANwordMap.containsKey(tweet)) {
+                this.collector.emitDirect(CANwordMap.get(tweet), new Values(tweet, round, false, roundlist));
+            }
+            else {
+                this.collector.emitDirect(CANTask, new Values(tweet, round, false, roundlist));
+                CANwordMap.put(tweet, CANTask++);
+                if ((CANTask < USATaskNumber + 2 + numWorkers) || (CANTask >= CANTaskNumber + USATaskNumber + 2 + numWorkers))
+                    CANTask = USATaskNumber + 2 + numWorkers;
+            }
+        }
+    }
+
     public void splitAndEmit(String tweetSentence, long round, ArrayList<Long> roundlist, String country) {
         List<String> tweets = Arrays.asList(tweetSentence.split(" "));
         for (String tweet : tweets) {
             if (!tweet.equals("") && tweet.length() > 2 && !tweet.equals("hiring") && !tweet.equals("careerarc")) {
-                this.collector.emit(country, new Values(tweet, round, false, roundlist));
+                sendToNextTaskNum(country, tweet, round, roundlist);
             }
         }
     }
+
     public void getRoundListFromCassandra(){
         ResultSet resultSet;
         try {
@@ -223,8 +295,8 @@ public class CassandraSpout extends BaseRichSpout {
      */
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declareStream("USA", new Fields("word", "round", "blockEnd", "dates"));
-        declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
+        declarer.declare(new Fields("word", "round", "blockEnd", "dates"));
+//        declarer.declareStream("CAN", new Fields("word", "round", "blockEnd", "dates"));
     }
 
 }
