@@ -42,14 +42,14 @@ public class BoltBuilder {
         EventCompareBolt eventCompareBolt = new EventCompareBolt(cassandraDao, FILENUM);
         builder.setSpout(Constants.CASS_SPOUT_ID, cassandraSpout,1);
 
-        builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBoltUSA,1).
+        builder.setBolt(Constants.COUNTRY1_COUNT_BOLT_ID, countBoltUSA,5).
                 fieldsGrouping(Constants.CASS_SPOUT_ID, "USA", new Fields("word"));
-        builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBoltCAN,1).
+        builder.setBolt(Constants.COUNTRY2_COUNT_BOLT_ID, countBoltCAN,5).
                 fieldsGrouping(Constants.CASS_SPOUT_ID, "CAN", new Fields("word"));
 
-        builder.setBolt( Constants.COUNTRY1_EVENT_DETECTOR_BOLT, eventDetectorBolt1,1).
+        builder.setBolt( Constants.COUNTRY1_EVENT_DETECTOR_BOLT, eventDetectorBolt1,2).
                 shuffleGrouping(Constants.COUNTRY1_COUNT_BOLT_ID);
-        builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt2,1).
+        builder.setBolt( Constants.COUNTRY2_EVENT_DETECTOR_BOLT, eventDetectorBolt2,2).
                 shuffleGrouping(Constants.COUNTRY2_COUNT_BOLT_ID);
 
         builder.setBolt( Constants.EVENT_COMPARE_BOLT, eventCompareBolt,1).
