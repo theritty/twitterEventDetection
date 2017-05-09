@@ -7,14 +7,12 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import cassandraConnector.CassandraDao;
 import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class WordCountBolt extends BaseRichBolt {
 
@@ -25,14 +23,24 @@ public class WordCountBolt extends BaseRichBolt {
   private long ignoredCount = 0;
   private int componentId;
   private String fileNum;
+  private String country;
   private Date lastDate = new Date();
   private Date startDate = new Date();
+  private CassandraDao cassandraDao;
+  private int numDetector;
+  private int firstDetectorId;
+  private int detectorTask;
 
 
-  public WordCountBolt(int threshold, String filenum)
+  public WordCountBolt(int threshold, String filenum, String country, CassandraDao cassandraDao, int numDetector, int firstDetectorNum)
   {
     this.threshold = threshold;
     this.fileNum = filenum + "/";
+    this.country = country;
+    this.cassandraDao = cassandraDao;
+    this.numDetector = numDetector;
+    this.firstDetectorId = firstDetectorNum;
+    this.detectorTask = firstDetectorNum;
   }
   @Override
   public void prepare(Map config, TopologyContext context,
@@ -47,13 +55,28 @@ public class WordCountBolt extends BaseRichBolt {
   public void execute(Tuple tuple) {
     String word = tuple.getStringByField("word");
     long round = tuple.getLongByField("round");
+    boolean blockend = tuple.getBooleanByField("blockEnd");
 
     if("dummyBLOCKdone".equals(word))
-       this.collector.emit(new Values(word, round, false, tuple.getValueByField("dates"), tuple.getSourceStreamId()));
+      for(int i=firstDetectorId;i<firstDetectorId+numDetector;i++)
+        this.collector.emitDirect(i, new Values(word, round, false));
 
     TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Word count " + componentId + " working "  + round);
-    if(round > currentRound)
+    if(blockend)
     {
+      try {
+        List<Object> values = new ArrayList<>();
+        values.add(round);
+        values.add(componentId);
+        values.add(true);
+        cassandraDao.insertIntoProcessed(values.toArray());
+
+        for(int i=firstDetectorId;i<firstDetectorId+numDetector;i++)
+          this.collector.emitDirect(i, new Values("BLOCKEND", round, true));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
               "Word count "+ componentId + " end for round " + currentRound + " at " + lastDate);
 
@@ -62,7 +85,7 @@ public class WordCountBolt extends BaseRichBolt {
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
               "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff );
       if ( currentRound!=0)
-        ExcelWriter.putData(componentId,startDate,lastDate, "wc",tuple.getSourceStreamId(), currentRound);
+        ExcelWriter.putData(componentId,startDate,lastDate, "wc", country, currentRound);
 
       startDate = new Date();
       TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
@@ -86,7 +109,9 @@ public class WordCountBolt extends BaseRichBolt {
     countsForRounds.put(word, count);
 
     if (count == threshold) {
-      this.collector.emit(new Values(word, round, false, tuple.getValueByField("dates"), tuple.getSourceStreamId()));
+      this.collector.emitDirect(detectorTask++, new Values(word, round, false));
+      if(detectorTask==firstDetectorId+numDetector)
+        detectorTask=firstDetectorId;
     }
       lastDate = new Date();
 
@@ -94,7 +119,7 @@ public class WordCountBolt extends BaseRichBolt {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("key", "round", "blockEnd", "rounds", "country"));
+    declarer.declare(new Fields("key", "round", "blockEnd"));
   }
 
 }

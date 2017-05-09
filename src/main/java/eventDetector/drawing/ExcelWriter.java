@@ -24,7 +24,7 @@ public class ExcelWriter {
     private static long startRound = 0;
     private static String fileNum="12345";
     private static int lastInd ;
-    private static int rowNum = 7200;
+    private static int rowNum = 120000;
     private static int columnNum = 200;
     private static int parallelismNum = 9;
 
@@ -50,7 +50,7 @@ public class ExcelWriter {
         while (duration-->0)
             times[(int) timeStart++][id + parallelismNum * ((int) ((round - startRound)/2) % 10) ] = id;
 
-        System.out.println( "Key: " + id + ", name: " + boltName + ", country: " + country );
+//        System.out.println( "Key: " + id + ", name: " + boltName + ", country: " + country );
     }
 
     public static void createTimeChart () throws IOException {
