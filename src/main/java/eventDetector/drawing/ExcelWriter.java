@@ -24,7 +24,7 @@ public class ExcelWriter {
     private static long startRound = 0;
     private static String fileNum="12345";
     private static int lastInd ;
-    private static int rowNum = 7200;
+    private static int rowNum = 120000;
     private static int columnNum = 200;
     private static int parallelismNum = 9;
 
