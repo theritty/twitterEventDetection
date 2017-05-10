@@ -89,7 +89,7 @@ public class TopologyCreator {
             case ( "local" ):
                 if(localCluster==null) localCluster = new LocalCluster();
                 Config conf = new Config();
-                conf.setDebug(false);
+                conf.setDebug(true);
 //                conf.put(Config.TOPOLOGY_SLEEP_SPOUT_WAIT_STRATEGY_TIME_MS, 6);
                 localCluster.submitTopology( topologyName, conf, stormTopology );
 

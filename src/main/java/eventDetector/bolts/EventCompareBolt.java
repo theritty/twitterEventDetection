@@ -15,12 +15,13 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class EventCompareBolt extends BaseRichBolt {
+
+    private OutputCollector collector;
     private String drawFilePath;
     private CassandraDao cassandraDao;
     private int componentId;
@@ -42,6 +43,7 @@ public class EventCompareBolt extends BaseRichBolt {
     @Override
     public void prepare(Map config, TopologyContext context,
                         OutputCollector collector) {
+        this.collector = collector;
         this.componentId = context.getThisTaskId()-1;
         System.out.println("compare: " + componentId );
     }
@@ -54,13 +56,6 @@ public class EventCompareBolt extends BaseRichBolt {
         long round = tuple.getLongByField("round");
         String country = tuple.getStringByField("country");
 
-        if("dummyBLOCKdone".equals(key)) {
-            try {
-                ExcelWriter.createTimeChart();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
 
         TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Compare " + componentId + " working " + round);
         if(currentRound < round) {
@@ -73,15 +68,13 @@ public class EventCompareBolt extends BaseRichBolt {
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
                     "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff);
             if ( currentRound!=0)
-                ExcelWriter.putData(componentId,startDate,lastDate, "Compare", "both", currentRound);
+                ExcelWriter.putData(componentId,startDate,lastDate, currentRound);
             startDate = new Date();
             TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
                     "Compare bolt " + componentId + " start of round " + round + " at " + startDate);
             currentRound = round;
         }
 
-
-        if(tfidfs.size()<2) return;
 
         System.out.println(new Date() + ": Event found => " + key + " at round " + round  + " for " + country + " ");
         if(tfidfs.get(tfidfs.size()-2)==0) tfidfs.set(tfidfs.size()-2, 0.0001);
@@ -94,11 +87,12 @@ public class EventCompareBolt extends BaseRichBolt {
             e.printStackTrace();
         }
         lastDate = new Date();
+        collector.ack(tuple);
 
     }
 
     protected DefaultCategoryDataset getCountListFromCass(long round, String key, String country) throws Exception {
-        long roundPast = round-18;
+        long roundPast = round-9;
 
         DefaultCategoryDataset countsList = new DefaultCategoryDataset( );
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm");
@@ -107,15 +101,15 @@ public class EventCompareBolt extends BaseRichBolt {
             Iterator<Row> iterator = resultSet.iterator();
             if (iterator.hasNext()) {
                 Row row = iterator.next();
-                countsList.addValue(row.getLong("count"), "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
+                countsList.addValue(row.getLong("count"), "counts", df.format(new Date(new Long(roundPast) * 6*60*1000)));
             }
             else {
 //                countsList.addValue(0L, "counts", df.format(new Date(new Long(roundPast) * 12*60*1000)));
                 CountCalculator c = new CountCalculator();
                 long ct = c.addNewEntryToCassCounts(cassandraDao, roundPast, key, country).get("count");
-                countsList.addValue(ct, "counts", df.format(new Date(new Long(roundPast) * 12 * 60 * 1000)));
+                countsList.addValue(ct, "counts", df.format(new Date(new Long(roundPast) * 6 * 60 * 1000)));
             }
-            roundPast+=2;
+            roundPast++;
         }
         return countsList;
     }

@@ -7,13 +7,16 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import eventDetector.algorithms.TFIDFCalculatorWithCassandra;
 import cassandraConnector.CassandraDao;
+import eventDetector.algorithms.TFIDFCalculatorWithCassandra;
 import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
@@ -22,12 +25,9 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
     private double tfidfEventRate;
     private CassandraDao cassandraDao;
     private int componentId;
-    private long currentRound = 0;
     private String fileNum;
     private Date lastDate = new Date();
     private Date startDate = new Date();
-    private HashMap<Long, Long> ignores;
-    private long ignoredCount = 0L;
     private ArrayList<String> words;
     private int compareSize;
     private String country;
@@ -38,7 +38,6 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         this.filePath = filePath + fileNum;
         this.cassandraDao = cassandraDao;
         this.fileNum = fileNum + "/";
-        this.ignores = new HashMap<>();
         this.words = new ArrayList<>();
         this.compareSize = compareSize;
         this.country = country;
@@ -55,108 +54,45 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-
         String wrd = tuple.getStringByField("key");
         long round = tuple.getLongByField("round");
         boolean blockend = tuple.getBooleanByField("blockEnd");
 
-        if("dummyBLOCKdone".equals(wrd)) {
-            this.collector.emit(new Values(wrd, new ArrayList<Double>(), round, country));
-            return;
-        }
-
         if(!blockend) {
             words.add(wrd);
+            collector.ack(tuple);
             return;
         }
 
         TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() +  " Detector " + componentId + " working " + round);
 
-        if(currentRound < round) {
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Detector bolt " + componentId + " end of round " + currentRound + " at " + lastDate);
+        TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+                "Detector bolt " + componentId + " end of round " + round + " at " + lastDate);
 
-            double diff = (lastDate.getTime()-startDate.getTime())/1000;
-            if(diff==0.0) diff=1.0;
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-                    "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff);
-            if ( currentRound!=0)
-                ExcelWriter.putData(componentId,startDate,lastDate, "detector", country, currentRound);
+        double diff = (lastDate.getTime()-startDate.getTime())/1000;
+        if(diff==0.0) diff=1.0;
+        TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+                "Word count "+ componentId + " time taken for round" + round + " is " + diff);
+        if ( round!=0)
+            ExcelWriter.putData(componentId,startDate,lastDate, round);
 
-            startDate = new Date();
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
-                    "Detector bolt " + componentId + " start of round " + round + " at " + new Date());
-            currentRound = round;
-        }
-
-        if(round < currentRound)
-        {
-            ignores.putIfAbsent(round, 0L);
-            ignores.put(round,ignores.get(round)+1);
-
-            ignoredCount++;
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
-                    "Detector bolt Ignoring " + wrd + " from round " + round +
-                            " while evaluating round " + currentRound + ". total ignore count: " + ignoredCount);
-
-            for(long r:ignores.keySet())
-                TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
-                        "Detector bolt Ignored count " + componentId + " : " + ignoredCount + " round " + r +
-                                " ignore count: " + ignores.get(r));
-
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
-                    "---------------------------------------------------------------------------------");
-            return;
-        }
-
+        startDate = new Date();
+        TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+                "Detector bolt " + componentId + " start of round " + round + " at " + new Date());
 
         for(String key : words) {
-            ArrayList<Double> tfidfs = new ArrayList<>();
-            ArrayList<Long> rounds = new ArrayList<>();
-            for (int i = compareSize-1; i >= 0; i--)
-                rounds.add(round - i);
-
-            for (long roundNum : rounds) {
-                TFIDFCalculatorWithCassandra calculator = new TFIDFCalculatorWithCassandra();
-                tfidfs.add(calculator.tfIdf(cassandraDao, rounds, key, roundNum, country));
-            }
-            boolean allzero = true;
-            for (double tfidf : tfidfs) {
-                if (tfidf != 0.0) {
-                    allzero = false;
-                    break;
-                }
-            }
-
-            if (!allzero) {
-//            System.out.println("Tf idf calculated for " + key + " at round " + round+ " country " + country);
-
-                if(key.equals("pulisic") ||key.equals("draymond") ||key.equals("adam")) {
-                    if (tfidfs.size() < 2 || tfidfs.get(tfidfs.size() - 2) == 0) {
-                        System.out.println("Tf idf: " + key + " at round " + round + " country " + country + " " + (tfidfs.get(tfidfs.size() - 1) / 0.0001) + " " + tfidfEventRate);
-                    } else {
-                        System.out.println("Tf idf: " + key + " at round " + round + " country " + country + " " + (tfidfs.get(tfidfs.size() - 1) / tfidfs.get(tfidfs.size() - 2)) + " " + tfidfEventRate);
-                    }
-                }
-
-                TopologyHelper.writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt",
-                        "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
-                if (tfidfs.size() < 2 || tfidfs.get(tfidfs.size() - 2) == 0) {
-                    if (tfidfs.get(tfidfs.size() - 1) / 0.0001 > tfidfEventRate) {
-                        this.collector.emit(new Values(key, tfidfs, round, country));
-                    }
-                } else if (tfidfs.get(tfidfs.size() - 1) / tfidfs.get(tfidfs.size() - 2) > tfidfEventRate) {
-                    this.collector.emit(new Values(key, tfidfs, round, country));
-                }
-
-
-
-            } else {
-                TopologyHelper.writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-allzero-" + country + ".txt",
-                        "Key: " + key);
-            }
-            lastDate = new Date();
+            isEventCandidate(key, round);
         }
+
+        markComponentAsFinishedInCassaandra(round);
+        lastDate = new Date();
+
+        collector.ack(tuple);
+        words.clear();
+
+    }
+
+    private void markComponentAsFinishedInCassaandra(long round) {
 
         try {
             List<Object> values = new ArrayList<>();
@@ -167,9 +103,44 @@ public class EventDetectorWithCassandraBolt extends BaseRichBolt {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-        words.clear();
+    private void isEventCandidate(String key, long round) {
+        ArrayList<Double> tfidfs = new ArrayList<>();
+        ArrayList<Long> rounds = new ArrayList<>();
+        for (int i = compareSize-1; i >= 0; i--)
+            rounds.add(round - i);
 
+        for (long roundNum : rounds) {
+            TFIDFCalculatorWithCassandra calculator = new TFIDFCalculatorWithCassandra();
+            tfidfs.add(calculator.tfIdf(cassandraDao, rounds, key, roundNum, country));
+        }
+        if(tfidfs.size()<2) return;
+
+        boolean allzero = true;
+        for (double tfidf : tfidfs) {
+            if (tfidf != 0.0) {
+                allzero = false;
+                break;
+            }
+        }
+
+        if (!allzero) {
+            TopologyHelper.writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-" + country + ".txt",
+                    "Key: " + key + ". Tf-idf values: " + tfidfs.toString());
+
+            if (tfidfs.get(tfidfs.size() - 2) == 0) {
+                if (tfidfs.get(tfidfs.size() - 1) / 0.0001 > tfidfEventRate) {
+                    this.collector.emit(new Values(key, tfidfs, round, country));
+                }
+            } else if (tfidfs.get(tfidfs.size() - 1) / tfidfs.get(tfidfs.size() - 2) > tfidfEventRate) {
+                this.collector.emit(new Values(key, tfidfs, round, country));
+            }
+
+        } else {
+            TopologyHelper.writeToFile(filePath + "/tfidf-" + Long.toString(round) + "-allzero-" + country + ".txt",
+                    "Key: " + key);
+        }
     }
 
 

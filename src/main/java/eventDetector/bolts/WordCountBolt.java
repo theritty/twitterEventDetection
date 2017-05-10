@@ -23,20 +23,19 @@ public class WordCountBolt extends BaseRichBolt {
   private long ignoredCount = 0;
   private int componentId;
   private String fileNum;
-  private String country;
   private Date lastDate = new Date();
   private Date startDate = new Date();
   private CassandraDao cassandraDao;
   private int numDetector;
   private int firstDetectorId;
   private int detectorTask;
+  private long lastRoundEnd = 0;
 
 
   public WordCountBolt(int threshold, String filenum, String country, CassandraDao cassandraDao, int numDetector, int firstDetectorNum)
   {
     this.threshold = threshold;
     this.fileNum = filenum + "/";
-    this.country = country;
     this.cassandraDao = cassandraDao;
     this.numDetector = numDetector;
     this.firstDetectorId = firstDetectorNum;
@@ -57,64 +56,85 @@ public class WordCountBolt extends BaseRichBolt {
     long round = tuple.getLongByField("round");
     boolean blockend = tuple.getBooleanByField("blockEnd");
 
-    if("dummyBLOCKdone".equals(word))
-      for(int i=firstDetectorId;i<firstDetectorId+numDetector;i++)
-        this.collector.emitDirect(i, new Values(word, round, false));
-
     TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Word count " + componentId + " working "  + round);
     if(blockend)
     {
-      try {
-        List<Object> values = new ArrayList<>();
-        values.add(round);
-        values.add(componentId);
-        values.add(true);
-        cassandraDao.insertIntoProcessed(values.toArray());
-
-        for(int i=firstDetectorId;i<firstDetectorId+numDetector;i++)
-          this.collector.emitDirect(i, new Values("BLOCKEND", round, true));
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-
-      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-              "Word count "+ componentId + " end for round " + currentRound + " at " + lastDate);
-
-      double diff = (lastDate.getTime()-startDate.getTime())/1000;
-      if(diff==0.0) diff=1.0;
-      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
-              "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff );
-      if ( currentRound!=0)
-        ExcelWriter.putData(componentId,startDate,lastDate, "wc", country, currentRound);
-
-      startDate = new Date();
-      TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
-              "Word count "+ componentId + " starting for round " + round + " at " + startDate );
+      blockEndProcess(round);
+      collector.ack(tuple);
 
       countsForRounds.clear();
+      lastRoundEnd = round;
       currentRound = round;
+
+      return;
     }
     else if(round < currentRound) {
       ignoredCount++;
       if(ignoredCount%1000==0)
         TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + "ignoreCount.txt",
               "Word count ignored count " + componentId + ": " + ignoredCount );
+      collector.ack(tuple);
       return;
     }
+
     Long count = countsForRounds.get(word);
+    if (count == null) count = 0L;
+    if(count>=threshold) {
+      collector.ack(tuple);
+      return;
+    }
+    else {
+      processNewWord(word, ++count, round);
+    }
 
-    if (count == null) count = 1L;
-    else count++;
+    lastDate = new Date();
+    collector.ack(tuple);
+  }
 
-    countsForRounds.put(word, count);
 
-    if (count == threshold) {
+  private void blockEndProcess(long round) {
+    System.out.println("Receive blockend for " + round + ", bolt id " + componentId);
+    try {
+      List<Object> values = new ArrayList<>();
+      values.add(round);
+      values.add(componentId);
+      values.add(true);
+      cassandraDao.insertIntoProcessed(values.toArray());
+
+      if(lastRoundEnd<round)
+        for(int i=firstDetectorId;i<firstDetectorId+numDetector;i++)
+          this.collector.emitDirect(i, new Values("BLOCKEND", round, true));
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+            "Word count "+ componentId + " end for round " + currentRound + " at " + lastDate);
+
+    double diff = (lastDate.getTime()-startDate.getTime())/1000;
+    if(diff==0.0) diff=1.0;
+    TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + currentRound + ".txt",
+            "Word count "+ componentId + " time taken for round" + currentRound + " is " + diff );
+    if ( currentRound!=0)
+      ExcelWriter.putData(componentId,startDate,lastDate, currentRound);
+
+    startDate = new Date();
+    TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + round + ".txt",
+            "Word count "+ componentId + " starting for round " + round + " at " + startDate );
+
+
+  }
+
+  private void processNewWord(String word, long count, long round) {
+
+    if(count==threshold) {
       this.collector.emitDirect(detectorTask++, new Values(word, round, false));
       if(detectorTask==firstDetectorId+numDetector)
         detectorTask=firstDetectorId;
     }
-      lastDate = new Date();
 
+    countsForRounds.put(word, count);
   }
 
   @Override

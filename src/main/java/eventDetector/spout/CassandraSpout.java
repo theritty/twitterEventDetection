@@ -6,13 +6,14 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import cassandraConnector.CassandraDao;
 import eventDetector.drawing.ExcelWriter;
 import topologyBuilder.Constants;
 import topologyBuilder.TopologyHelper;
 
+import java.io.IOException;
 import java.util.*;
 
 public class CassandraSpout extends BaseRichSpout {
@@ -25,7 +26,6 @@ public class CassandraSpout extends BaseRichSpout {
     private long current_round;
     private long count_tweets = 0;
     private String fileNum;
-    private boolean start = true;
     private Date startDate = new Date();
     private Date lastDate = new Date();
     private long startRound = 0;
@@ -36,9 +36,10 @@ public class CassandraSpout extends BaseRichSpout {
     private int numWorkers ;
     private int numDetectors ;
 
-
     private int USATask = 0;
     private int CANTask = 0;
+
+    private boolean chartCreated= false;
 
     private HashMap<String, Integer> USAwordMap = new HashMap<>();
     private HashMap<String, Integer> CANwordMap = new HashMap<>();
@@ -77,39 +78,12 @@ public class CassandraSpout extends BaseRichSpout {
         {
             if(roundlist.size()==0)
             {
-//          getEventInfo.report();
-                System.out.println("Number of tweets: " + count_tweets);
-                try {
-                    System.out.println("sleeeeeeeep");
-                    Thread.sleep(1800000);
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                streamEnd();
                 return;
             }
-
-            ExcelWriter.putData(componentId,startDate,lastDate, "cassSpout", "both", current_round);
-
-            current_round = roundlist.remove(0);
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
-                    new Date() + ": Round submission from cass spout =>" + current_round );
-
-//            try {
-//                if(!start) {
-//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass sleeping " + current_round);
-//                    Thread.sleep(10000);
-//                    TopologyHelper.writeToFile(Constants.WORKHISTORY_FILE + fileNum+ "workhistory.txt", new Date() + " Cass wake up " + current_round);
-//                }
-//                else start = false;
-//            }
-//            catch (Exception e) {
-//                e.printStackTrace();
-//            }
-            startDate = new Date();
-
-            ResultSet resultSet = getDataFromCassandra(current_round);
-            iterator = resultSet.iterator();
+            else {
+                streamNewRound();
+            }
         }
         Row row = iterator.next();
         String tweet = row.getString("tweet");
@@ -122,47 +96,95 @@ public class CassandraSpout extends BaseRichSpout {
         }
         else {
             splitAndEmit(tweet, current_round, country);
+            putProcessedBoltInfoToCassandra();
+            sendBlockEndInfoAndWait();
 
-            for(int k=2+numWorkers;k<CANTaskNumber+USATaskNumber+2+numWorkers+numDetectors;k++) {
-                try {
-                    List<Object> values = new ArrayList<>();
-                    values.add(current_round);
-                    values.add(k-1);
-                    values.add(false);
-                    cassandraDao.insertIntoProcessed(values.toArray());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            USAwordMap.clear();
+            CANwordMap.clear();
+            TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass wake up " + current_round);
+        }
+        lastDate = new Date();
+    }
+
+
+    private void streamEnd() {
+        //          getEventInfo.report();
+        System.out.println("Number of tweets: " + count_tweets);
+        try {
+            System.out.println("sleeeeeeeep");
+            Thread.sleep(120000);
+            if(!chartCreated) {
+                ExcelWriter.createTimeChart();
+                chartCreated = true;
             }
-            for(int k=2+numWorkers;k<CANTaskNumber+USATaskNumber+2+numWorkers;k++)
-                collector.emitDirect(k, new Values("BLOCKEND", current_round, true));
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-            TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
-                    new Date() + ": Round end from cass spout =>" + current_round );
+    private void streamNewRound( ) {
+        ExcelWriter.putData(componentId,startDate,lastDate, current_round);
 
+        current_round = roundlist.remove(0);
+        TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
+                new Date() + ": Round submission from cass spout =>" + current_round );
 
+        startDate = new Date();
+
+        ResultSet resultSet = getDataFromCassandra(current_round);
+        iterator = resultSet.iterator();
+    }
+
+    private void putProcessedBoltInfoToCassandra() {
+        for(int k=2+numWorkers;k<CANTaskNumber+USATaskNumber+2+numWorkers+numDetectors;k++) {
             try {
-                TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass sleeping " + current_round);
-                while (true) {
-                    Iterator<Row> iteratorProcessed = cassandraDao.getAllProcessed(current_round).iterator();
-                    boolean fin = true;
-                    while (iteratorProcessed.hasNext()) {
-                        if (!iteratorProcessed.next().getBool("finished")) fin = false;
-                    }
-                    if (fin) break;
-                    else Thread.sleep(2000);
-                }
-                USAwordMap.clear();
-                CANwordMap.clear();
-                TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass wake up " + current_round);
+                List<Object> values = new ArrayList<>();
+                values.add(current_round);
+                values.add(k-1);
+                values.add(false);
+                cassandraDao.insertIntoProcessed(values.toArray());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
-        lastDate = new Date();
-
     }
+
+
+    private void sendBlockEndInfoAndWait() {
+        System.out.println("Sending blockend for " + current_round);
+        for(int k=2+numWorkers;k<CANTaskNumber+USATaskNumber+2+numWorkers;k++)
+            collector.emitDirect(k, new Values("BLOCKEND", current_round, true));
+
+        TopologyHelper.writeToFile(Constants.TIMEBREAKDOWN_FILE_PATH + fileNum + current_round + ".txt",
+                new Date() + ": Round end from cass spout =>" + current_round );
+
+        int sleepCnt = 0;
+        try {
+            TopologyHelper.writeToFile(Constants.RESULT_FILE_PATH + fileNum + "workhistory.txt", new Date() + " Cass sleeping " + current_round);
+            while (true) {
+                Iterator<Row> iteratorProcessed = cassandraDao.getAllProcessed(current_round).iterator();
+                boolean fin = true;
+                while (iteratorProcessed.hasNext()) {
+                    if (!iteratorProcessed.next().getBool("finished")) fin = false;
+                }
+                if (fin) break;
+                else Thread.sleep(2000);
+
+                if(++sleepCnt>2) {
+                    System.out.println("Sending blockend again for " + current_round + " ");
+                    for(int k=2+numWorkers;k<CANTaskNumber+USATaskNumber+2+numWorkers;k++)
+                        collector.emitDirect(k, new Values("BLOCKEND", current_round, true));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void sendToNextTaskNum(String country, String tweet, long round) {
         if(country.equals("USA")) {
@@ -215,10 +237,10 @@ public class CassandraSpout extends BaseRichSpout {
                     return m1.compareTo(m2);
                 }
             });
-//            while (roundlist.get(0)<4068072)
-//                roundlist.remove(0);
-//            while (roundlist.get(roundlist.size()-1)>4069777)
-//                roundlist.remove(roundlist.size()-1);
+            while (roundlist.get(0)<4068478)
+                roundlist.remove(0);
+            while (roundlist.get(roundlist.size()-1)>=4070160)
+                roundlist.remove(roundlist.size()-1);
 
             int i = 0;
             while(2>i++)

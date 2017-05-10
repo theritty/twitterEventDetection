@@ -3,7 +3,10 @@ package eventDetector.algorithms;
 import cassandraConnector.CassandraDao;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class MatchEvents {
   public static HashMap<String,ArrayList<Integer>> prepareEventVectors(ArrayList<String> events, long round) throws Exception {

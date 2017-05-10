@@ -1,15 +1,14 @@
 package eventDetector.drawing;
 
-import java.io.IOException;
-
-import java.io.FileOutputStream;
-import java.util.Date;
-
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import topologyBuilder.Constants;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
 
 /**
  * A very simple program that writes some data to an Excel file
@@ -42,7 +41,7 @@ public class ExcelWriter {
         fileNum = filenum +"/";
     }
 
-    public static void putData(int id, Date boltStartTime, Date boltEndTime, String boltName, String country, long round) {
+    public static void putData(int id, Date boltStartTime, Date boltEndTime, long round) {
 
         long timeStart = (boltStartTime.getTime()-startTime.getTime())/1000;
         long duration = (boltEndTime.getTime()-boltStartTime.getTime())/1000;

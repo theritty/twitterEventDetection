@@ -2,8 +2,10 @@ package topologyBuilder;
 
 import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
-import eventDetector.bolts.*;
 import cassandraConnector.CassandraDao;
+import eventDetector.bolts.EventCompareBolt;
+import eventDetector.bolts.EventDetectorWithCassandraBolt;
+import eventDetector.bolts.WordCountBolt;
 import eventDetector.spout.CassandraSpout;
 
 import java.util.Properties;
